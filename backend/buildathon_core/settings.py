@@ -165,7 +165,7 @@ EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Buildathon Team <noreply@buildathon.org>')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Build Ops Team <noreply@buildops.org>')
 
 # Cashfree Payment Gateway Settings
 CASHFREE_APP_ID = os.getenv('CASHFREE_APP_ID', '')
@@ -184,8 +184,8 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://127.0.0.1:8000')
 
 # Event Details
-EVENT_NAME = os.getenv('EVENT_NAME', 'National Buildathon 2026')
-EVENT_DATE = os.getenv('EVENT_DATE', 'November 28-29, 2026')
+EVENT_NAME = os.getenv('EVENT_NAME', 'Build Ops')
+EVENT_DATE = os.getenv('EVENT_DATE', 'December 8th, 5:00 PM – December 9th, 9:00 PM, 2026')
 EVENT_VENUE = os.getenv('EVENT_VENUE', 'Innovation & Technology Hub, Campus Main Hall')
 REGISTRATION_FEE_INR = int(os.getenv('REGISTRATION_FEE_INR', 499))
 

@@ -63,7 +63,7 @@ export const PaymentStatus = () => {
             </div>
             <h2 className="text-xl font-bold text-slate-900 mb-1">Payment Successful!</h2>
             <p className="text-xs text-slate-600 mb-6">
-              Your registration for National Buildathon 2026 is confirmed.
+              Your registration for Build Ops is confirmed.
             </p>
 
             <div className="bg-slate-50 rounded-md p-4 border border-slate-200 text-left text-xs space-y-2 mb-6">

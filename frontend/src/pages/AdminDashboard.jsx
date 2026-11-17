@@ -139,7 +139,7 @@ export const AdminDashboard = () => {
               <h1 className="text-xl font-bold text-slate-900">Admin Control Panel</h1>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              National Buildathon 2026 • Event Management, Attendance & Verification
+              Build Ops • Event Management, Attendance & Verification
             </p>
           </div>
 

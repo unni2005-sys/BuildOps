@@ -150,7 +150,7 @@ export const StudentDashboard = () => {
             </div>
             <h2 className="text-lg font-bold text-slate-900 mb-2">No Registered Team Found</h2>
             <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
-              You are not registered in any team yet. Register your team of two participants to generate registration credentials, digital tickets, and enter National Buildathon 2026.
+              You are not registered in any team yet. Register your team of two participants to generate registration credentials, digital tickets, and enter Build Ops.
             </p>
             <Link
               to="/student/register-team"
@@ -307,7 +307,7 @@ export const StudentDashboard = () => {
                       <code className="text-slate-800 font-mono text-xs">{team.qr_token || 'Generated'}</code>
                     </div>
                     <p className="text-blue-800 text-[11px] max-w-sm">
-                      Please carry a digital or printed copy of this PDF to the entrance on November 28, 2026 for gate QR scanning.
+                      Please carry a digital or printed copy of this PDF to the entrance on December 8, 2026 for gate QR scanning.
                     </p>
                   </div>
                 ) : (

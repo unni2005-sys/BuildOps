@@ -12,20 +12,22 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # 1. Ensure Admin exists
-        admin, _ = User.objects.get_or_create(
-            email='admin@buildathon.org',
-            defaults={
-                'full_name': 'Chief Admin',
-                'role': 'ADMIN',
-                'is_staff': True,
-                'is_superuser': True,
-                'is_verified': True,
-                'is_active': True
-            }
-        )
-        admin.set_password('Admin@123456')
-        admin.save()
-        self.stdout.write(self.style.SUCCESS('Admin: admin@buildathon.org / Admin@123456'))
+        for admin_email in ['admin@buildops.org', 'admin@buildathon.org']:
+            admin_user, _ = User.objects.get_or_create(
+                email=admin_email,
+                defaults={
+                    'full_name': 'Chief Admin',
+                    'role': 'ADMIN',
+                    'is_staff': True,
+                    'is_superuser': True,
+                    'is_verified': True,
+                    'is_active': True
+                }
+            )
+            admin_user.set_password('Admin@123456')
+            admin_user.save()
+        admin = User.objects.get(email='admin@buildops.org')
+        self.stdout.write(self.style.SUCCESS('Admin: admin@buildops.org / Admin@123456'))
 
         # 2. Team Alpha (Confirmed, Paid, Not Arrived)
         u1, _ = User.objects.get_or_create(

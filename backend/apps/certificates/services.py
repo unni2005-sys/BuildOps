@@ -123,7 +123,7 @@ def generate_certificate_for_member(member):
     # Signature & Verification Table
     sig_data = [
         [
-            Paragraph("____________________________<br/><b>Event Convener</b><br/>National Buildathon 2026", ParagraphStyle('Sig1', fontName='Helvetica', fontSize=10, leading=14, alignment=1)),
+            Paragraph(f"____________________________<br/><b>Event Convener</b><br/>{settings.EVENT_NAME}", ParagraphStyle('Sig1', fontName='Helvetica', fontSize=10, leading=14, alignment=1)),
             Paragraph(f"<b>Certificate ID:</b> {certificate.certificate_id}<br/>"
                       f"<b>Team Reg ID:</b> {team.registration_id}<br/>"
                       f"<b>Issued:</b> {certificate.generated_at.strftime('%B %d, %Y') if certificate.generated_at else 'Verified'}",

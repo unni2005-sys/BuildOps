@@ -14,7 +14,7 @@ export const Home = () => {
             Official Registration & Management Portal
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
-            National Buildathon 2026
+            Build Ops
           </h1>
           <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-8">
             Compete in teams of two, showcase technical innovation, receive digital tickets, and earn verified individual participation certificates.
@@ -100,8 +100,8 @@ export const Home = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
             <div>
               <p className="text-xs uppercase text-slate-500 font-bold mb-1">Date & Time</p>
-              <p className="font-semibold text-slate-800">November 28 - 29, 2026</p>
-              <p className="text-slate-600 text-xs mt-0.5">36-Hour Hackathon & Build Event</p>
+              <p className="font-semibold text-slate-800">December 8th, 5:00 PM – December 9th, 9:00 PM</p>
+              <p className="text-slate-600 text-xs mt-0.5">28-Hour Build Ops Hackathon & Build Event</p>
             </div>
             <div>
               <p className="text-xs uppercase text-slate-500 font-bold mb-1">Venue Location</p>
@@ -118,7 +118,7 @@ export const Home = () => {
       </main>
 
       <footer className="bg-slate-900 text-slate-400 py-6 text-center text-xs border-t border-slate-800">
-        <p>&copy; 2026 National Buildathon Committee. All rights reserved.</p>
+        <p>&copy; 2026 Build Ops Committee. All rights reserved.</p>
         <p className="mt-1 text-slate-500">Authorized Personnel: <Link to="/login" className="underline hover:text-slate-300">Staff / Admin Access</Link></p>
       </footer>
     </div>

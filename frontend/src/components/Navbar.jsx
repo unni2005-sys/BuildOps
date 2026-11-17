@@ -19,7 +19,7 @@ export const Navbar = () => {
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight hover:text-teal-400">
               <span className="bg-teal-500 text-slate-900 px-2 py-0.5 rounded text-sm font-black">2026</span>
-              <span>Buildathon Portal</span>
+              <span>Build Ops Portal</span>
             </Link>
 
             {isAuthenticated && (

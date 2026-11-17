@@ -65,7 +65,7 @@ export const RegisterTeam = () => {
             <Users size={22} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Register Your Buildathon Team</h1>
+            <h1 className="text-xl font-bold text-slate-900">Register Your Build Ops Team</h1>
             <p className="text-xs text-slate-500">Every team must consist of exactly two participants.</p>
           </div>
         </div>

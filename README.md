@@ -1,6 +1,6 @@
-# National Buildathon 2026 - Registration & Management System
+# Build Ops - Registration & Management System
 
-A complete, production-ready full-stack web application for managing Buildathon events. The system supports student registration in teams of two, online payment integration with Cashfree, digital ticket generation with embedded QR codes, automated email delivery, student dashboards, an admin management suite, camera-based QR attendance tracking, and automatic individual participation certificate generation using ReportLab.
+A complete, production-ready full-stack web application for managing the **Build Ops** hackathon and build event (December 8th, 5:00 PM – December 9th, 9:00 PM, 2026). The system supports student registration in teams of two, online payment integration with Cashfree, digital ticket generation with embedded QR codes, automated email delivery, student dashboards, an admin management suite, camera-based QR attendance tracking, and automatic individual participation certificate generation using ReportLab.
 
 ---
 
@@ -143,7 +143,7 @@ The database comes pre-seeded with accounts for all roles:
 
 | Role | Email | Password | Status / Scenario |
 |---|---|---|---|
-| **Admin** | `admin@buildathon.org` | `Admin@123456` | Full administrative control, QR scanner, reports |
+| **Admin** | `admin@buildops.org` | `Admin@123456` | Full administrative control, QR scanner, reports |
 | **Student (Leader)** | `arjun@alpha.com` | `Student@123` | Team "Neural Ninjas" (Paid & Confirmed, Ready for QR check-in) |
 | **Student (Member)** | `sneha@alpha.com` | `Student@123` | Member 2 of Team "Neural Ninjas" |
 | **Student (Arrived)** | `vikram@beta.com` | `Student@123` | Team "Cyber Voyagers" (Arrived; Participation Certificate unlocked) |
