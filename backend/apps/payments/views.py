@@ -88,6 +88,12 @@ class SimulatePaymentView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
+        if settings.CASHFREE_ENV == 'PRODUCTION':
+            return Response(
+                {'error': 'Payment simulation is disabled in production mode.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         order_id = request.data.get('order_id')
         if not order_id:
             return Response({'error': 'order_id is required'}, status=status.HTTP_400_BAD_REQUEST)

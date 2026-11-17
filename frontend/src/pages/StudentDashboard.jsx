@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/client';
+import api, { API_BASE_URL } from '../api/client';
 import {
   Ticket,
   CreditCard,
@@ -62,7 +62,7 @@ export const StudentDashboard = () => {
     } catch (err) {
       console.error('Download ticket error:', err);
       const token = localStorage.getItem('access_token');
-      window.open(`/api/tickets/${team.ticket_id}/download/?token=${token}`, '_blank');
+      window.open(`${API_BASE_URL}/tickets/${team.ticket_id}/download/?token=${token}`, '_blank');
     }
   };
 
@@ -187,7 +187,7 @@ export const StudentDashboard = () => {
                 {/* Visual QR Code Preview */}
                 <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs flex flex-col items-center shrink-0">
                   <img
-                    src={`/api/tickets/${team.ticket_id}/qr/`}
+                    src={`${API_BASE_URL}/tickets/${team.ticket_id}/qr/`}
                     alt={`QR Code for ${team.registration_id}`}
                     className="w-40 h-40 object-contain"
                   />

@@ -54,7 +54,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             return obj.ticket.id
         if obj.payment_status == 'SUCCESS':
             from apps.tickets.services import generate_ticket_for_team
-            ticket = generate_ticket_for_team(obj)
+            ticket = generate_ticket_for_team(obj, send_email=False)
             return ticket.id
         return None
 
@@ -63,7 +63,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             return obj.ticket.qr_token
         if obj.payment_status == 'SUCCESS':
             from apps.tickets.services import generate_ticket_for_team
-            ticket = generate_ticket_for_team(obj)
+            ticket = generate_ticket_for_team(obj, send_email=False)
             return ticket.qr_token
         return None
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../api/client';
+import api, { API_BASE_URL } from '../api/client';
 import {
   Users,
   CreditCard,
@@ -151,7 +151,7 @@ export const AdminDashboard = () => {
     } catch (err) {
       console.error(err);
       const token = localStorage.getItem('access_token');
-      window.open(`/api/tickets/${ticketId}/download/?token=${token}`, '_blank');
+      window.open(`${API_BASE_URL}/tickets/${ticketId}/download/?token=${token}`, '_blank');
     }
   };
 
@@ -170,7 +170,7 @@ export const AdminDashboard = () => {
     } catch (err) {
       console.error(err);
       const token = localStorage.getItem('access_token');
-      window.open(`${endpoint}?token=${token}`, '_blank');
+      window.open(`${API_BASE_URL}${endpoint}?token=${token}`, '_blank');
     }
   };
 
@@ -421,20 +421,20 @@ export const AdminDashboard = () => {
 
                 <div className="space-y-2 pt-2">
                   <p className="text-xs font-semibold text-slate-600 uppercase">Export Shortcuts</p>
-                  <a
-                    href="/api/teams/admin/reports/teams-csv/"
-                    className="flex items-center justify-between text-xs p-2 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 text-slate-700"
+                  <button
+                    onClick={() => handleDownloadReport('/teams/admin/reports/teams-csv/', 'buildathon_teams.csv')}
+                    className="w-full flex items-center justify-between text-xs p-2 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 text-slate-700 cursor-pointer"
                   >
                     <span>Teams CSV Export</span>
                     <Download size={14} />
-                  </a>
-                  <a
-                    href="/api/teams/admin/reports/participants-csv/"
-                    className="flex items-center justify-between text-xs p-2 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 text-slate-700"
+                  </button>
+                  <button
+                    onClick={() => handleDownloadReport('/teams/admin/reports/participants-csv/', 'buildathon_participants.csv')}
+                    className="w-full flex items-center justify-between text-xs p-2 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 text-slate-700 cursor-pointer"
                   >
                     <span>Participants CSV Export</span>
                     <Download size={14} />
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -612,7 +612,7 @@ export const AdminDashboard = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <button
-                onClick={() => handleDownloadReport('/api/teams/admin/reports/teams-csv/', 'buildathon_teams.csv')}
+                onClick={() => handleDownloadReport('/teams/admin/reports/teams-csv/', 'buildathon_teams.csv')}
                 className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between text-left cursor-pointer"
               >
                 <div>
@@ -630,7 +630,7 @@ export const AdminDashboard = () => {
               </button>
 
               <button
-                onClick={() => handleDownloadReport('/api/teams/admin/reports/participants-csv/', 'buildathon_participants.csv')}
+                onClick={() => handleDownloadReport('/teams/admin/reports/participants-csv/', 'buildathon_participants.csv')}
                 className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between text-left cursor-pointer"
               >
                 <div>
@@ -648,7 +648,7 @@ export const AdminDashboard = () => {
               </button>
 
               <button
-                onClick={() => handleDownloadReport('/api/teams/admin/reports/payments-csv/', 'buildathon_payments.csv')}
+                onClick={() => handleDownloadReport('/teams/admin/reports/payments-csv/', 'buildathon_payments.csv')}
                 className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between text-left cursor-pointer"
               >
                 <div>
@@ -666,7 +666,7 @@ export const AdminDashboard = () => {
               </button>
 
               <button
-                onClick={() => handleDownloadReport('/api/teams/admin/reports/attendance-csv/', 'buildathon_attendance.csv')}
+                onClick={() => handleDownloadReport('/teams/admin/reports/attendance-csv/', 'buildathon_attendance.csv')}
                 className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between text-left cursor-pointer"
               >
                 <div>
@@ -903,7 +903,7 @@ export const AdminDashboard = () => {
                   <div className="pt-3 border-t border-slate-100 space-y-3">
                     <div className="flex items-center gap-3 p-2.5 bg-blue-50/60 rounded border border-blue-100">
                       <img
-                        src={`/api/tickets/${selectedTeam.ticket_id}/qr/`}
+                        src={`${API_BASE_URL}/tickets/${selectedTeam.ticket_id}/qr/`}
                         alt="Ticket QR"
                         className="w-14 h-14 bg-white p-1 rounded border border-slate-200"
                       />

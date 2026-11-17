@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,13 +77,18 @@ db_url = os.getenv('SUPABASE_DB_URL') or os.getenv('DATABASE_URL')
 if db_url and (db_url.startswith('postgres://') or db_url.startswith('postgresql://')):
     if db_url.startswith('postgres://'):
         db_url = 'postgresql://' + db_url[len('postgres://'):]
-    
-    db_config = dj_database_url.parse(db_url, conn_max_age=600)
+
+    is_pooler = 'pooler.supabase.com' in db_url or ':6543/' in db_url
+    db_config = dj_database_url.parse(db_url, conn_max_age=0 if is_pooler else 600)
     db_config['ENGINE'] = 'django.db.backends.postgresql'
     if 'OPTIONS' not in db_config:
         db_config['OPTIONS'] = {}
     if 'sslmode' not in db_config['OPTIONS']:
         db_config['OPTIONS']['sslmode'] = 'require'
+    if is_pooler:
+        # Supabase Transaction Pooler (port 6543) does not support prepared statements or server-side cursors
+        db_config['DISABLE_SERVER_SIDE_CURSORS'] = True
+        db_config['OPTIONS']['prepare_threshold'] = None
     DATABASES = {'default': db_config}
 elif os.getenv('DB_NAME') and os.getenv('DB_USER'):
     DATABASES = {
@@ -128,6 +134,10 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ),
 }
+if not DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
+        'rest_framework.renderers.JSONRenderer',
+    )
 
 # Simple JWT Configuration
 SIMPLE_JWT = {
@@ -140,9 +150,21 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS & CSRF Configuration
+_cors_origins = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
+if _cors_origins:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = _cors_origins
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+_csrf_origins = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
+if _csrf_origins:
+    CSRF_TRUSTED_ORIGINS = _csrf_origins
+
+# HTTPS Proxy awareness (Render, Railway, Fly, Cloudflare)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -153,6 +175,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # Media files (PDF Tickets, Certificates)
 MEDIA_URL = '/media/'

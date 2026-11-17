@@ -127,10 +127,10 @@ class DownloadTicketView(APIView):
         if not (is_admin or is_leader or is_member):
             return Response({'error': 'You are not authorized to download this ticket.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Check if PDF exists on disk; regenerate if missing
+        # Check if PDF exists on disk; regenerate silently if missing (e.g. after container restart)
         full_path = os.path.join(settings.MEDIA_ROOT, ticket.pdf_path) if ticket.pdf_path else None
         if not full_path or not os.path.exists(full_path):
-            ticket = generate_ticket_for_team(ticket.team)
+            ticket = generate_ticket_for_team(ticket.team, send_email=False)
             full_path = os.path.join(settings.MEDIA_ROOT, ticket.pdf_path)
 
         if not os.path.exists(full_path):
@@ -156,7 +156,7 @@ class AdminResendTicketEmailView(APIView):
 
         full_path = os.path.join(settings.MEDIA_ROOT, ticket.pdf_path) if ticket.pdf_path else None
         if not full_path or not os.path.exists(full_path):
-            ticket = generate_ticket_for_team(ticket.team)
+            ticket = generate_ticket_for_team(ticket.team, send_email=False)
             full_path = os.path.join(settings.MEDIA_ROOT, ticket.pdf_path)
 
         results = send_ticket_email(ticket.team, ticket, pdf_path=full_path)
