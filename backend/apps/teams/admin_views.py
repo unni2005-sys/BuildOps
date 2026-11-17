@@ -1,0 +1,210 @@
+import csv
+from django.http import HttpResponse
+from django.db.models import Sum, Count, Q
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from apps.accounts.permissions import IsAdminUserRole
+from apps.teams.models import Team, TeamMember
+from apps.payments.models import Payment
+from apps.attendance.models import AttendanceLog
+
+
+class AdminDashboardStatsView(APIView):
+    """
+    Returns aggregated metrics for the Admin Dashboard.
+    """
+    permission_classes = (IsAdminUserRole,)
+
+    def get(self, request):
+        total_teams = Team.objects.exclude(registration_status='CANCELLED').count()
+        total_participants = TeamMember.objects.exclude(team__registration_status='CANCELLED').count()
+        
+        successful_payments = Payment.objects.filter(payment_status='SUCCESS').count()
+        pending_payments = Team.objects.filter(payment_status='PENDING').exclude(registration_status='CANCELLED').count()
+
+        revenue_result = Payment.objects.filter(payment_status='SUCCESS').aggregate(total=Sum('amount'))
+        total_revenue = float(revenue_result['total'] or 0)
+
+        arrived_teams = Team.objects.filter(attendance_status='ARRIVED').count()
+        not_arrived_teams = Team.objects.filter(payment_status='SUCCESS', attendance_status='NOT_ARRIVED').count()
+
+        return Response({
+            'total_teams': total_teams,
+            'total_participants': total_participants,
+            'successful_payments': successful_payments,
+            'pending_payments': pending_payments,
+            'total_revenue': total_revenue,
+            'arrived_teams': arrived_teams,
+            'not_arrived_teams': not_arrived_teams,
+        })
+
+
+class ExportTeamsCSVView(APIView):
+    """
+    Exports all teams to CSV.
+    """
+    permission_classes = (IsAdminUserRole,)
+
+    def get(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="buildathon_teams.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Registration ID',
+            'Team Name',
+            'College Name',
+            'Payment Status',
+            'Registration Status',
+            'Attendance Status',
+            'Leader Name',
+            'Leader Email',
+            'Leader Phone',
+            'Member 2 Name',
+            'Member 2 Email',
+            'Member 2 Phone',
+            'Created At',
+            'Arrival Time'
+        ])
+
+        teams = Team.objects.prefetch_related('members').order_by('-created_at')
+        for team in teams:
+            members = list(team.members.all())
+            m1 = members[0] if len(members) > 0 else None
+            m2 = members[1] if len(members) > 1 else None
+
+            writer.writerow([
+                team.registration_id,
+                team.team_name,
+                team.college_name,
+                team.payment_status,
+                team.registration_status,
+                team.attendance_status,
+                m1.full_name if m1 else '',
+                m1.email if m1 else '',
+                m1.mobile_number if m1 else '',
+                m2.full_name if m2 else '',
+                m2.email if m2 else '',
+                m2.mobile_number if m2 else '',
+                team.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                team.arrival_timestamp.strftime('%Y-%m-%d %H:%M:%S') if team.arrival_timestamp else ''
+            ])
+
+        return response
+
+
+class ExportParticipantsCSVView(APIView):
+    """
+    Exports all individual participants to CSV.
+    """
+    permission_classes = (IsAdminUserRole,)
+
+    def get(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="buildathon_participants.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Participant Name',
+            'Email',
+            'Mobile Number',
+            'Role',
+            'Team Name',
+            'Registration ID',
+            'College Name',
+            'Attendance Status',
+            'Has Certificate'
+        ])
+
+        members = TeamMember.objects.select_related('team').prefetch_related('certificate').order_by('team__team_name', 'member_role')
+        for m in members:
+            has_cert = hasattr(m, 'certificate') and m.certificate is not None
+            writer.writerow([
+                m.full_name,
+                m.email,
+                m.mobile_number,
+                m.member_role,
+                m.team.team_name,
+                m.team.registration_id,
+                m.team.college_name,
+                m.team.attendance_status,
+                'YES' if has_cert else 'NO'
+            ])
+
+        return response
+
+
+class ExportPaymentsCSVView(APIView):
+    """
+    Exports all payment transactions to CSV.
+    """
+    permission_classes = (IsAdminUserRole,)
+
+    def get(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="buildathon_payments.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Order ID',
+            'Team Name',
+            'Registration ID',
+            'Amount',
+            'Currency',
+            'Status',
+            'Payment Reference',
+            'Payment Timestamp',
+            'Created At'
+        ])
+
+        payments = Payment.objects.select_related('team').order_by('-created_at')
+        for p in payments:
+            writer.writerow([
+                p.order_id,
+                p.team.team_name,
+                p.team.registration_id,
+                p.amount,
+                p.currency,
+                p.payment_status,
+                p.payment_reference or '',
+                p.payment_timestamp.strftime('%Y-%m-%d %H:%M:%S') if p.payment_timestamp else '',
+                p.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            ])
+
+        return response
+
+
+class ExportAttendanceCSVView(APIView):
+    """
+    Exports attendance check-in logs to CSV.
+    """
+    permission_classes = (IsAdminUserRole,)
+
+    def get(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="buildathon_attendance.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Log ID',
+            'Team Name',
+            'Registration ID',
+            'College Name',
+            'Action Details',
+            'Admin Email',
+            'Check-in Timestamp'
+        ])
+
+        logs = AttendanceLog.objects.select_related('team', 'admin').order_by('-checkin_timestamp')
+        for l in logs:
+            writer.writerow([
+                l.id,
+                l.team.team_name,
+                l.team.registration_id,
+                l.team.college_name,
+                l.action_details,
+                l.admin.email if l.admin else 'System',
+                l.checkin_timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            ])
+
+        return response
