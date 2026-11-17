@@ -135,6 +135,45 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleDownloadTicket = async (ticketId, regId) => {
+    if (!ticketId) return;
+    try {
+      const res = await api.get(`/tickets/${ticketId}/download/`, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Ticket_${regId || ticketId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      const token = localStorage.getItem('access_token');
+      window.open(`/api/tickets/${ticketId}/download/?token=${token}`, '_blank');
+    }
+  };
+
+  const handleDownloadReport = async (endpoint, filename) => {
+    try {
+      const res = await api.get(endpoint, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      const token = localStorage.getItem('access_token');
+      window.open(`${endpoint}?token=${token}`, '_blank');
+    }
+  };
+
   const handleResendTicketEmail = async (ticketId) => {
     if (!ticketId) return;
     try {
@@ -486,19 +525,18 @@ export const AdminDashboard = () => {
                       <td className="py-3 px-3 text-right space-x-1">
                         <button
                           onClick={() => setSelectedTeam(t)}
-                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-semibold"
+                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-semibold cursor-pointer"
                         >
                           Details
                         </button>
                         {t.ticket_id && (
-                          <a
-                            href={`/api/tickets/${t.ticket_id}/download/`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded text-[11px] font-semibold inline-block"
+                          <button
+                            onClick={() => handleDownloadTicket(t.ticket_id, t.registration_id)}
+                            className="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded text-[11px] font-semibold inline-block cursor-pointer"
+                            title="Download Official Ticket PDF"
                           >
-                            Ticket
-                          </a>
+                            Ticket PDF
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -573,9 +611,9 @@ export const AdminDashboard = () => {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <a
-                href="/api/teams/admin/reports/teams-csv/"
-                className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between"
+              <button
+                onClick={() => handleDownloadReport('/api/teams/admin/reports/teams-csv/', 'buildathon_teams.csv')}
+                className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between text-left cursor-pointer"
               >
                 <div>
                   <div className="w-8 h-8 rounded bg-teal-100 text-teal-700 flex items-center justify-center mb-3">
@@ -589,11 +627,11 @@ export const AdminDashboard = () => {
                 <span className="inline-flex items-center gap-1 text-xs text-teal-700 font-semibold mt-4">
                   <Download size={14} /> Download CSV
                 </span>
-              </a>
+              </button>
 
-              <a
-                href="/api/teams/admin/reports/participants-csv/"
-                className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between"
+              <button
+                onClick={() => handleDownloadReport('/api/teams/admin/reports/participants-csv/', 'buildathon_participants.csv')}
+                className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between text-left cursor-pointer"
               >
                 <div>
                   <div className="w-8 h-8 rounded bg-blue-100 text-blue-700 flex items-center justify-center mb-3">
@@ -607,11 +645,11 @@ export const AdminDashboard = () => {
                 <span className="inline-flex items-center gap-1 text-xs text-blue-700 font-semibold mt-4">
                   <Download size={14} /> Download CSV
                 </span>
-              </a>
+              </button>
 
-              <a
-                href="/api/teams/admin/reports/payments-csv/"
-                className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between"
+              <button
+                onClick={() => handleDownloadReport('/api/teams/admin/reports/payments-csv/', 'buildathon_payments.csv')}
+                className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between text-left cursor-pointer"
               >
                 <div>
                   <div className="w-8 h-8 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center mb-3">
@@ -625,11 +663,11 @@ export const AdminDashboard = () => {
                 <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-semibold mt-4">
                   <Download size={14} /> Download CSV
                 </span>
-              </a>
+              </button>
 
-              <a
-                href="/api/teams/admin/reports/attendance-csv/"
-                className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between"
+              <button
+                onClick={() => handleDownloadReport('/api/teams/admin/reports/attendance-csv/', 'buildathon_attendance.csv')}
+                className="p-5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex flex-col justify-between text-left cursor-pointer"
               >
                 <div>
                   <div className="w-8 h-8 rounded bg-amber-100 text-amber-700 flex items-center justify-center mb-3">
@@ -643,7 +681,7 @@ export const AdminDashboard = () => {
                 <span className="inline-flex items-center gap-1 text-xs text-amber-700 font-semibold mt-4">
                   <Download size={14} /> Download CSV
                 </span>
-              </a>
+              </button>
             </div>
           </div>
         )}
@@ -862,21 +900,41 @@ export const AdminDashboard = () => {
                 </div>
 
                 {selectedTeam.ticket_id && (
-                  <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2">
-                    <button
-                      onClick={() => handleResendTicketEmail(selectedTeam.ticket_id)}
-                      className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs"
-                    >
-                      <Send size={12} /> Resend Ticket Email
-                    </button>
-                    {selectedTeam.attendance_status === 'ARRIVED' && (
+                  <div className="pt-3 border-t border-slate-100 space-y-3">
+                    <div className="flex items-center gap-3 p-2.5 bg-blue-50/60 rounded border border-blue-100">
+                      <img
+                        src={`/api/tickets/${selectedTeam.ticket_id}/qr/`}
+                        alt="Ticket QR"
+                        className="w-14 h-14 bg-white p-1 rounded border border-slate-200"
+                      />
+                      <div>
+                        <p className="font-bold text-blue-950 text-xs">Digital Ticket & Gate QR Pass</p>
+                        <p className="text-[10px] font-mono text-slate-600 mt-0.5">Token: {selectedTeam.qr_token || 'Active'}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
                       <button
-                        onClick={() => handleRegenerateCerts(selectedTeam.id)}
-                        className="flex items-center gap-1 bg-teal-700 hover:bg-teal-600 text-white px-3 py-1.5 rounded text-xs"
+                        onClick={() => handleDownloadTicket(selectedTeam.ticket_id, selectedTeam.registration_id)}
+                        className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-semibold cursor-pointer"
                       >
-                        <RefreshCw size={12} /> Regenerate Certificates
+                        <Download size={12} /> Download Ticket (PDF)
                       </button>
-                    )}
+                      <button
+                        onClick={() => handleResendTicketEmail(selectedTeam.ticket_id)}
+                        className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs cursor-pointer"
+                      >
+                        <Send size={12} /> Resend Ticket Email
+                      </button>
+                      {selectedTeam.attendance_status === 'ARRIVED' && (
+                        <button
+                          onClick={() => handleRegenerateCerts(selectedTeam.id)}
+                          className="flex items-center gap-1 bg-teal-700 hover:bg-teal-600 text-white px-3 py-1.5 rounded text-xs cursor-pointer"
+                        >
+                          <RefreshCw size={12} /> Regenerate Certificates
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

@@ -1,12 +1,37 @@
 import csv
 from django.http import HttpResponse
 from django.db.models import Sum, Count, Q
+from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
+from apps.accounts.models import User
 from apps.accounts.permissions import IsAdminUserRole
 from apps.teams.models import Team, TeamMember
 from apps.payments.models import Payment
 from apps.attendance.models import AttendanceLog
+
+
+def get_authenticated_admin(request):
+    """
+    Authenticates admin from either Authorization header or ?token=<jwt> query parameter.
+    """
+    user = request.user
+    if user and user.is_authenticated:
+        if user.role == 'ADMIN' or user.is_staff or user.is_superuser:
+            return user
+        return None
+
+    token_str = request.query_params.get('token')
+    if token_str:
+        try:
+            decoded = AccessToken(token_str)
+            u = User.objects.get(id=decoded.get('user_id'))
+            if u.role == 'ADMIN' or u.is_staff or u.is_superuser:
+                return u
+        except Exception:
+            return None
+    return None
 
 
 class AdminDashboardStatsView(APIView):
@@ -42,10 +67,15 @@ class AdminDashboardStatsView(APIView):
 class ExportTeamsCSVView(APIView):
     """
     Exports all teams to CSV.
+    Supports both Authorization header and ?token=<jwt> query parameter.
     """
-    permission_classes = (IsAdminUserRole,)
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
+        admin = get_authenticated_admin(request)
+        if not admin:
+            return Response({'error': 'Admin authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="buildathon_teams.csv"'
 
@@ -96,10 +126,15 @@ class ExportTeamsCSVView(APIView):
 class ExportParticipantsCSVView(APIView):
     """
     Exports all individual participants to CSV.
+    Supports both Authorization header and ?token=<jwt> query parameter.
     """
-    permission_classes = (IsAdminUserRole,)
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
+        admin = get_authenticated_admin(request)
+        if not admin:
+            return Response({'error': 'Admin authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="buildathon_participants.csv"'
 
@@ -137,10 +172,15 @@ class ExportParticipantsCSVView(APIView):
 class ExportPaymentsCSVView(APIView):
     """
     Exports all payment transactions to CSV.
+    Supports both Authorization header and ?token=<jwt> query parameter.
     """
-    permission_classes = (IsAdminUserRole,)
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
+        admin = get_authenticated_admin(request)
+        if not admin:
+            return Response({'error': 'Admin authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="buildathon_payments.csv"'
 
@@ -177,10 +217,15 @@ class ExportPaymentsCSVView(APIView):
 class ExportAttendanceCSVView(APIView):
     """
     Exports attendance check-in logs to CSV.
+    Supports both Authorization header and ?token=<jwt> query parameter.
     """
-    permission_classes = (IsAdminUserRole,)
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
+        admin = get_authenticated_admin(request)
+        if not admin:
+            return Response({'error': 'Admin authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="buildathon_attendance.csv"'
 
