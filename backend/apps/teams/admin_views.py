@@ -100,8 +100,8 @@ class ExportTeamsCSVView(APIView):
         teams = Team.objects.prefetch_related('members').order_by('-created_at')
         for team in teams:
             members = list(team.members.all())
-            m1 = members[0] if len(members) > 0 else None
-            m2 = members[1] if len(members) > 1 else None
+            m1 = next((m for m in members if m.member_role == 'LEADER' or m.user_id == team.team_leader_id), members[0] if members else None)
+            m2 = next((m for m in members if m != m1), None)
 
             writer.writerow([
                 team.registration_id,

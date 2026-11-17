@@ -105,7 +105,7 @@ class TeamMember(models.Model):
     class Meta:
         db_table = 'team_members'
         unique_together = ('team', 'email')
-        ordering = ['-member_role', 'id']
+        ordering = ['member_role', 'id']
 
     def __str__(self):
         return f"{self.full_name} ({self.member_role}) - {self.team.team_name}"

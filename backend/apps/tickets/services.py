@@ -12,7 +12,7 @@ from apps.tickets.models import Ticket, generate_qr_token
 from apps.notifications.services import send_ticket_email
 
 
-def generate_ticket_for_team(team):
+def generate_ticket_for_team(team, send_email=True):
     """
     Idempotently creates a Ticket record and generates a PDF ticket for a confirmed team.
     """
@@ -117,12 +117,21 @@ def generate_ticket_for_team(team):
     story.append(Paragraph(f"Date: <b>{settings.EVENT_DATE}</b> | Venue: <b>{settings.EVENT_VENUE}</b>", subtitle_style))
     story.append(Spacer(1, 15))
 
-    # Details Table
+    # Details Table — explicitly identify LEADER (registered user) vs MEMBER
     members = list(team.members.all())
-    leader_name = members[0].full_name if len(members) > 0 else 'N/A'
-    leader_contact = f"{members[0].email} / {members[0].mobile_number}" if len(members) > 0 else 'N/A'
-    member2_name = members[1].full_name if len(members) > 1 else 'N/A'
-    member2_contact = f"{members[1].email} / {members[1].mobile_number}" if len(members) > 1 else 'N/A'
+    leader = next(
+        (m for m in members if m.member_role == 'LEADER' or m.user_id == team.team_leader_id),
+        members[0] if members else None
+    )
+    member2 = next(
+        (m for m in members if m != leader),
+        None
+    )
+
+    leader_name = leader.full_name if leader else 'N/A'
+    leader_contact = f"{leader.email} / {leader.mobile_number}" if leader else 'N/A'
+    member2_name = member2.full_name if member2 else 'N/A'
+    member2_contact = f"{member2.email} / {member2.mobile_number}" if member2 else 'N/A'
 
     details_data = [
         [Paragraph("Registration ID", bold_body), Paragraph(f"<b>{team.registration_id}</b>", bold_body)],
@@ -186,6 +195,7 @@ def generate_ticket_for_team(team):
     ticket.save(update_fields=['pdf_path'])
 
     # Deliver emails to both team members
-    send_ticket_email(team, ticket, pdf_path=pdf_filepath)
+    if send_email:
+        send_ticket_email(team, ticket, pdf_path=pdf_filepath)
 
     return ticket
