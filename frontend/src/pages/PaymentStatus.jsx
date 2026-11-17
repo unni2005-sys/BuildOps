@@ -38,58 +38,64 @@ export const PaymentStatus = () => {
   }, [orderId, navigate]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-lg border border-slate-200 shadow-sm text-center">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+      <div className="max-w-md w-full doom-card p-8 rounded-xl text-center animate-fade-in-up">
         {loading ? (
           <div className="py-8">
-            <RefreshCw size={28} className="animate-spin text-teal-600 mx-auto mb-3" />
-            <h2 className="text-base font-bold text-slate-800">Verifying Payment with Gateway...</h2>
-            <p className="text-xs text-slate-500 mt-1">Please do not refresh this window.</p>
+            <RefreshCw size={28} className="animate-spin text-emerald-400 mx-auto mb-3" />
+            <h2 className="font-display text-sm font-bold tracking-wider text-emerald-100 uppercase">
+              Verifying Payment...
+            </h2>
+            <p className="text-xs text-emerald-200/60 mt-1">Please do not refresh this window.</p>
           </div>
         ) : error ? (
           <div>
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
-              <AlertCircle size={28} />
+            <div className="w-12 h-12 rounded-full bg-rose-950/70 border border-rose-500/40 text-rose-400 flex items-center justify-center mx-auto mb-4">
+              <AlertCircle size={26} />
             </div>
-            <h2 className="text-lg font-bold text-slate-900 mb-2">Payment Verification Issue</h2>
-            <p className="text-xs text-slate-600 mb-6">{error}</p>
+            <h2 className="font-display text-lg font-bold text-rose-200 uppercase mb-2">
+              Verification Issue
+            </h2>
+            <p className="text-xs text-emerald-100/70 mb-6">{error}</p>
             <Link
               to="/student/dashboard"
-              className="inline-block bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs px-4 py-2 rounded-md transition"
+              className="inline-block doom-btn-secondary font-semibold text-xs px-5 py-2.5 rounded-lg"
             >
               Return to Dashboard
             </Link>
           </div>
         ) : (
           <div>
-            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 size={28} />
+            <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-400/50 text-emerald-300 flex items-center justify-center mx-auto mb-4 shadow-[0_0_26px_rgba(34,255,102,0.3)]">
+              <CheckCircle2 size={30} />
             </div>
-            <h2 className="text-xl font-bold text-slate-900 mb-1">Payment Successful!</h2>
-            <p className="text-xs text-slate-600 mb-6">
+            <h2 className="font-display text-xl font-bold tracking-wider text-arcane-gold uppercase mb-1">
+              Payment Successful!
+            </h2>
+            <p className="text-xs text-emerald-200/70 mb-6">
               Your registration for Build Ops is confirmed.
             </p>
 
-            <div className="bg-slate-50 rounded-md p-4 border border-slate-200 text-left text-xs space-y-2 mb-6">
+            <div className="doom-panel rounded-lg p-4 text-left text-xs space-y-2 mb-6">
               <div className="flex justify-between">
-                <span className="text-slate-500">Order ID:</span>
-                <span className="font-mono font-medium text-slate-800">{orderId}</span>
+                <span className="text-emerald-200/60">Order ID:</span>
+                <span className="font-mono-tech text-emerald-200">{orderId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Status:</span>
-                <span className="font-bold text-emerald-700">CONFIRMED & PAID</span>
+                <span className="text-emerald-200/60">Status:</span>
+                <span className="font-bold text-emerald-glow">CONFIRMED & PAID</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">E-Ticket:</span>
-                <span className="text-teal-700 font-semibold">Generated & Emailed</span>
+                <span className="text-emerald-200/60">E-Ticket:</span>
+                <span className="text-amber-200 font-semibold">Generated & Ready</span>
               </div>
             </div>
 
             <Link
               to="/student/dashboard"
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs py-2.5 px-4 rounded-md shadow-sm transition"
+              className="w-full inline-flex items-center justify-center gap-1.5 doom-btn-primary font-display tracking-wider uppercase text-xs py-2.5 px-4 rounded-lg"
             >
-              Go to Dashboard & Download Ticket <ArrowRight size={14} />
+              Go to Dashboard & E-Ticket <ArrowRight size={14} />
             </Link>
           </div>
         )}

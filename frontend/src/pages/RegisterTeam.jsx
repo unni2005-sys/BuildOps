@@ -194,10 +194,10 @@ export const RegisterTeam = () => {
 
   if (checkingExisting) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="flex items-center gap-2 text-slate-600 text-sm">
-          <RefreshCw size={18} className="animate-spin text-teal-600" />
-          <span>Loading registration...</span>
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
+        <div className="flex items-center gap-2.5 text-emerald-300 text-xs font-display tracking-widest uppercase">
+          <RefreshCw size={16} className="animate-spin text-emerald-400" />
+          <span>Loading Registration...</span>
         </div>
       </div>
     );
@@ -206,38 +206,42 @@ export const RegisterTeam = () => {
   // STEP 3: PAYMENT SUCCESS SCREEN
   if (step === 'SUCCESS') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-lg border border-slate-200 shadow-sm text-center">
-          <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 size={32} />
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] rounded-full bg-emerald-500/15 blur-[120px] animate-pulse-aura" />
+
+        <div className="max-w-md w-full doom-card p-8 rounded-xl text-center relative z-10 animate-fade-in-up">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-400/50 text-emerald-300 flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(34,255,102,0.35)]">
+            <CheckCircle2 size={34} />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-1">Payment Successful!</h2>
-          <p className="text-xs text-slate-600 mb-6">
-            Your team registration for <strong>Build Ops</strong> is confirmed and your E-Ticket has been generated.
+          <h2 className="font-display text-xl font-bold tracking-wider text-arcane-gold uppercase mb-1">
+            Payment Successful!
+          </h2>
+          <p className="text-xs text-emerald-200/70 mb-6">
+            Your team registration for <strong className="text-emerald-100">Build Ops</strong> is confirmed and your E-Ticket is live.
           </p>
 
-          <div className="bg-slate-50 rounded-md p-4 border border-slate-200 text-left text-xs space-y-2 mb-6">
+          <div className="doom-panel rounded-lg p-4 text-left text-xs space-y-2.5 mb-6">
             <div className="flex justify-between">
-              <span className="text-slate-500">Team Name:</span>
-              <span className="font-semibold text-slate-900">{paymentOrder?.team?.team_name || existingPendingTeam?.team_name}</span>
+              <span className="text-emerald-200/60">Team Name:</span>
+              <span className="font-semibold text-emerald-50">{paymentOrder?.team?.team_name || existingPendingTeam?.team_name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Order ID:</span>
-              <span className="font-mono text-slate-800">{paymentOrder?.order_id}</span>
+              <span className="text-emerald-200/60">Order ID:</span>
+              <span className="font-mono-tech text-emerald-200">{paymentOrder?.order_id}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Amount Paid:</span>
-              <span className="font-bold text-emerald-700">₹{paymentOrder?.amount || 500}</span>
+              <span className="text-emerald-200/60">Amount Paid:</span>
+              <span className="font-bold text-emerald-glow">₹{paymentOrder?.amount || 500}</span>
             </div>
           </div>
 
           <button
             onClick={() => navigate('/student/dashboard', { replace: true })}
-            className="w-full inline-flex items-center justify-center gap-1.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs py-2.5 px-4 rounded-md shadow-sm transition cursor-pointer"
+            className="w-full inline-flex items-center justify-center gap-2 doom-btn-primary text-xs font-display tracking-widest uppercase py-3 px-4 rounded-lg cursor-pointer"
           >
-            Go to Dashboard & View E-Ticket <ArrowRight size={14} />
+            View My E-Ticket <ArrowRight size={14} />
           </button>
-          <p className="text-[11px] text-slate-400 mt-3">
+          <p className="text-[11px] text-emerald-200/50 mt-3">
             Redirecting to your dashboard automatically...
           </p>
         </div>
@@ -248,55 +252,62 @@ export const RegisterTeam = () => {
   // STEP 2: CASHFREE PAYMENT GATEWAY CHECKOUT
   if (step === 'GATEWAY' && paymentOrder) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-lg border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-200 mb-5">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-md bg-teal-50 text-teal-700 flex items-center justify-center">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] rounded-full bg-emerald-500/12 blur-[120px]" />
+
+        <div className="max-w-md w-full doom-card p-8 rounded-xl relative z-10 animate-fade-in-up">
+          <div className="flex items-center justify-between pb-4 border-b border-emerald-500/20 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center">
                 <CreditCard size={20} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900">Cashfree Payment Gateway</h2>
-                <p className="text-[11px] text-slate-500">Secure Checkout ({paymentOrder.environment})</p>
+                <h2 className="font-display text-sm font-bold tracking-wider text-emerald-50 uppercase">
+                  Cashfree Checkout
+                </h2>
+                <p className="text-[11px] text-amber-200/75 font-mono-tech uppercase">
+                  Secure Gateway ({paymentOrder.environment})
+                </p>
               </div>
             </div>
-            <ShieldCheck size={20} className="text-emerald-600" />
+            <ShieldCheck size={20} className="text-emerald-400" />
           </div>
 
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-md text-xs flex items-center gap-2 mb-4">
-              <AlertCircle size={16} className="shrink-0" />
+            <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3 rounded-lg text-xs flex items-center gap-2 mb-4">
+              <AlertCircle size={16} className="shrink-0 text-rose-400" />
               <span>{error}</span>
             </div>
           )}
 
-          <div className="bg-slate-50 p-4 rounded-md border border-slate-200 space-y-2 text-xs mb-6">
+          <div className="doom-panel p-4 rounded-lg space-y-2.5 text-xs mb-6">
             <div className="flex justify-between">
-              <span className="text-slate-500">Event:</span>
-              <span className="font-semibold text-slate-900">Build Ops</span>
+              <span className="text-emerald-200/60">Event:</span>
+              <span className="font-semibold text-emerald-50">Build Ops</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Team:</span>
-              <span className="font-semibold text-slate-900">{paymentOrder.team?.team_name}</span>
+              <span className="text-emerald-200/60">Team:</span>
+              <span className="font-semibold text-emerald-50">{paymentOrder.team?.team_name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Registration ID:</span>
-              <span className="font-mono text-slate-800">{paymentOrder.team?.registration_id}</span>
+              <span className="text-emerald-200/60">Registration ID:</span>
+              <span className="font-mono-tech text-amber-200">{paymentOrder.team?.registration_id}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Order ID:</span>
-              <span className="font-mono text-slate-700">{paymentOrder.order_id}</span>
+              <span className="text-emerald-200/60">Order ID:</span>
+              <span className="font-mono-tech text-emerald-200/80">{paymentOrder.order_id}</span>
             </div>
-            <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-              <span className="font-semibold text-slate-700">Total Payable:</span>
-              <span className="text-lg font-black text-teal-700">₹{paymentOrder.amount}</span>
+            <div className="laser-divider my-2 opacity-60" />
+            <div className="flex justify-between items-center pt-1">
+              <span className="font-semibold text-emerald-100 uppercase tracking-wider text-[11px]">Total Payable:</span>
+              <span className="font-display text-xl font-black text-arcane-gold">₹{paymentOrder.amount}</span>
             </div>
           </div>
 
           <button
             onClick={handleCompletePayment}
             disabled={loading}
-            className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-4 rounded-md text-sm transition shadow-sm disabled:opacity-50 cursor-pointer"
+            className="w-full doom-btn-primary py-3 px-4 rounded-lg text-xs font-display tracking-[0.15em] uppercase disabled:opacity-50 cursor-pointer"
           >
             {loading ? 'Processing Payment...' : `Pay ₹${paymentOrder.amount} Now`}
           </button>
@@ -304,7 +315,7 @@ export const RegisterTeam = () => {
           <button
             onClick={() => navigate('/student/dashboard')}
             disabled={loading}
-            className="w-full mt-3 text-xs text-slate-500 hover:text-slate-800 py-1.5 cursor-pointer"
+            className="w-full mt-3 text-xs text-emerald-200/60 hover:text-amber-200 py-1.5 cursor-pointer transition"
           >
             Pay Later from Dashboard
           </button>
@@ -316,28 +327,36 @@ export const RegisterTeam = () => {
   // If user already registered a pending team earlier, let them jump right to Confirm & Pay
   if (existingPendingTeam) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-lg w-full bg-white p-8 rounded-lg border border-slate-200 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900 mb-1">Complete Your Team Payment</h2>
-          <p className="text-xs text-slate-500 mb-5">
-            Your team <strong>{existingPendingTeam.team_name}</strong> ({existingPendingTeam.registration_id}) is saved. Complete payment to generate your E-Ticket.
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+        <div className="max-w-lg w-full doom-card p-8 rounded-xl animate-fade-in-up">
+          <p className="font-imperial text-[10px] tracking-[0.26em] text-amber-200/80 uppercase">
+            Pending Registration
+          </p>
+          <h2 className="font-display text-lg font-bold tracking-wider text-buildops uppercase mt-1 mb-1">
+            Complete Team Payment
+          </h2>
+          <p className="text-xs text-emerald-200/70 mb-5">
+            Team <strong className="text-emerald-100">{existingPendingTeam.team_name}</strong>{' '}
+            (<span className="font-mono-tech text-amber-200">{existingPendingTeam.registration_id}</span>) is saved. Complete payment to unlock your E-Ticket.
           </p>
 
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-md text-xs flex items-center gap-2 mb-4">
-              <AlertCircle size={16} className="shrink-0" />
+            <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3 rounded-lg text-xs flex items-center gap-2 mb-4">
+              <AlertCircle size={16} className="shrink-0 text-rose-400" />
               <span>{error}</span>
             </div>
           )}
 
-          <div className="space-y-2 mb-6">
+          <div className="space-y-2.5 mb-6">
             {existingPendingTeam.members.map((m) => (
-              <div key={m.id} className="p-3 rounded-md bg-slate-50 border border-slate-200 text-xs flex justify-between items-center">
+              <div key={m.id} className="p-3.5 rounded-lg doom-panel text-xs flex justify-between items-center">
                 <div>
-                  <p className="font-semibold text-slate-900">{m.full_name}</p>
-                  <p className="text-slate-600">{m.email} • {m.mobile_number}</p>
+                  <p className="font-semibold text-emerald-50">{m.full_name}</p>
+                  <p className="text-emerald-200/65 font-mono-tech text-[11px] mt-0.5">{m.email} • {m.mobile_number}</p>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-200 text-slate-700 rounded">{m.member_role}</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 rounded uppercase">
+                  {m.member_role}
+                </span>
               </div>
             ))}
           </div>
@@ -345,7 +364,7 @@ export const RegisterTeam = () => {
           <button
             onClick={handleResumePayment}
             disabled={loading}
-            className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2.5 px-4 rounded-md text-sm transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full doom-btn-primary py-3 px-4 rounded-lg text-xs font-display tracking-[0.14em] uppercase disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
           >
             <CreditCard size={16} />
             {loading ? 'Opening Cashfree...' : `Confirm & Pay ₹${existingPendingTeam.fee_amount || 500}`}
@@ -357,21 +376,28 @@ export const RegisterTeam = () => {
 
   // STEP 1: TEAM REGISTRATION FORM
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-lg border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-3 border-b border-slate-200 pb-4 mb-6">
-          <div className="w-10 h-10 rounded-md bg-teal-50 text-teal-600 flex items-center justify-center">
+    <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-2xl mx-auto doom-card p-6 sm:p-8 rounded-xl animate-fade-in-up">
+        <div className="flex items-center gap-3.5 pb-5 border-b border-emerald-500/20 mb-6">
+          <div className="w-11 h-11 rounded-lg bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center shadow-[0_0_16px_rgba(34,255,102,0.2)]">
             <Users size={22} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Register Your Team</h1>
-            <p className="text-xs text-slate-500">Enter your team & second member details, then confirm and pay ₹500.</p>
+            <p className="font-imperial text-[10px] tracking-[0.26em] text-amber-200/80 uppercase">
+              Build Ops • Team of Two
+            </p>
+            <h1 className="font-display text-lg sm:text-xl font-bold tracking-wider text-buildops uppercase">
+              Register Your Team
+            </h1>
+            <p className="text-xs text-emerald-200/65 mt-0.5">
+              Verify leader info, add your partner, and confirm with ₹500 registration fee.
+            </p>
           </div>
         </div>
 
         {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-md text-xs flex items-center gap-2 mb-5">
-            <AlertCircle size={16} className="shrink-0" />
+          <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3 rounded-lg text-xs flex items-center gap-2 mb-5">
+            <AlertCircle size={16} className="shrink-0 text-rose-400" />
             <span>{error}</span>
           </div>
         )}
@@ -379,12 +405,14 @@ export const RegisterTeam = () => {
         <form onSubmit={handleConfirmAndPay} className="space-y-6">
           {/* Team Details */}
           <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+            <h3 className="text-[11px] font-display font-bold uppercase tracking-[0.18em] text-amber-200/90 border-l-2 border-emerald-400 pl-2.5">
               Team Details
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Team Name</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
+                  Team Name
+                </label>
                 <input
                   type="text"
                   name="team_name"
@@ -392,56 +420,64 @@ export const RegisterTeam = () => {
                   value={formData.team_name}
                   onChange={handleChange}
                   placeholder="e.g. Neural Ninjas"
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm doom-input"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">College Name</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
+                  College Name
+                </label>
                 <input
                   type="text"
                   name="college_name"
                   required
                   value={formData.college_name}
                   onChange={handleChange}
-                  placeholder="e.g. NIT / College Name"
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  placeholder="e.g. ASIET / College Name"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm doom-input"
                 />
               </div>
             </div>
           </div>
 
           {/* Participant 1 (Team Leader - Auto-populated from login) */}
-          <div className="space-y-3 pt-2 border-t border-slate-100">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-              Team Leader (Auto-filled from your account)
+          <div className="space-y-3 pt-4 border-t border-emerald-500/15">
+            <h3 className="text-[11px] font-display font-bold uppercase tracking-[0.18em] text-emerald-300 border-l-2 border-amber-300/70 pl-2.5">
+              Team Leader (Auto-filled)
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Name</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/60 mb-1">
+                  Name
+                </label>
                 <input
                   type="text"
                   disabled
                   value={user?.full_name || ''}
-                  className="w-full bg-slate-100 border border-slate-200 rounded-md px-3 py-2 text-sm text-slate-700"
+                  className="w-full rounded-lg px-3 py-2 text-sm doom-input"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/60 mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
                   disabled
                   value={user?.email || ''}
-                  className="w-full bg-slate-100 border border-slate-200 rounded-md px-3 py-2 text-sm text-slate-700"
+                  className="w-full rounded-lg px-3 py-2 text-sm doom-input"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Mobile Number</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/60 mb-1">
+                  Mobile Number
+                </label>
                 {user?.mobile_number ? (
                   <input
                     type="tel"
                     disabled
                     value={user.mobile_number}
-                    className="w-full bg-slate-100 border border-slate-200 rounded-md px-3 py-2 text-sm text-slate-700"
+                    className="w-full rounded-lg px-3 py-2 text-sm font-mono-tech doom-input"
                   />
                 ) : (
                   <input
@@ -452,7 +488,7 @@ export const RegisterTeam = () => {
                     value={formData.leader_phone}
                     onChange={handleChange}
                     placeholder="10-digit mobile"
-                    className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    className="w-full rounded-lg px-3 py-2 text-sm font-mono-tech doom-input"
                   />
                 )}
               </div>
@@ -460,12 +496,14 @@ export const RegisterTeam = () => {
           </div>
 
           {/* Participant 2 (Team Member) */}
-          <div className="space-y-3 pt-2 border-t border-slate-100">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-              Second Team Member Details
+          <div className="space-y-3 pt-4 border-t border-emerald-500/15">
+            <h3 className="text-[11px] font-display font-bold uppercase tracking-[0.18em] text-amber-200/90 border-l-2 border-emerald-400 pl-2.5">
+              Second Team Member
             </h3>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Full Name</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
+                Full Name
+              </label>
               <input
                 type="text"
                 name="member2_name"
@@ -473,12 +511,14 @@ export const RegisterTeam = () => {
                 value={formData.member2_name}
                 onChange={handleChange}
                 placeholder="Second member's full name"
-                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                className="w-full rounded-lg px-3 py-2.5 text-sm doom-input"
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Email Address</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   name="member2_email"
@@ -486,11 +526,13 @@ export const RegisterTeam = () => {
                   value={formData.member2_email}
                   onChange={handleChange}
                   placeholder="member2@college.edu"
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm doom-input"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Mobile Number (10 digits)</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
+                  Mobile Number (10 digits)
+                </label>
                 <input
                   type="tel"
                   name="member2_phone"
@@ -499,19 +541,20 @@ export const RegisterTeam = () => {
                   value={formData.member2_phone}
                   onChange={handleChange}
                   placeholder="10-digit mobile number"
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm font-mono-tech doom-input"
                 />
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200">
+          <div className="pt-4">
+            <div className="laser-divider mb-5 opacity-60" />
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-4 rounded-md text-sm transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full doom-btn-primary py-3 px-4 rounded-lg text-xs font-display tracking-[0.16em] uppercase disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
-              <CreditCard size={18} />
+              <CreditCard size={17} />
               {loading ? 'Confirming & Opening Payment Gateway...' : 'Confirm & Pay ₹500'}
             </button>
           </div>

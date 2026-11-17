@@ -7,8 +7,10 @@ export const ProtectedRoute = ({ children, requireAdmin = false, requireStudent 
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-slate-600 font-medium">Loading session...</p>
+      <div className="min-h-screen flex items-center justify-center bg-doom-canvas">
+        <p className="text-emerald-300 font-display text-xs tracking-[0.2em] uppercase animate-pulse">
+          Verifying Session...
+        </p>
       </div>
     );
   }

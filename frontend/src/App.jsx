@@ -18,8 +18,8 @@ const RootEntry = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-slate-600 text-sm font-medium">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-doom-canvas">
+        <p className="text-emerald-300 text-sm font-display tracking-widest uppercase animate-pulse">Initializing...</p>
       </div>
     );
   }
@@ -36,9 +36,9 @@ export function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+        <div className="min-h-screen flex flex-col bg-doom-canvas bg-arcane-grid text-emerald-50 relative">
           <Navbar />
-          <div className="flex-1">
+          <div className="flex-1 relative z-10">
             <Routes>
               {/* Entry & Auth Routes */}
               <Route path="/" element={<RootEntry />} />

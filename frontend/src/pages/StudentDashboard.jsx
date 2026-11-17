@@ -68,10 +68,10 @@ export const StudentDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="flex items-center gap-2 text-slate-600 text-sm">
-          <RefreshCw size={18} className="animate-spin text-teal-600" />
-          <span>Loading your dashboard...</span>
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
+        <div className="flex items-center gap-2.5 text-emerald-300 text-xs font-display tracking-widest uppercase">
+          <RefreshCw size={16} className="animate-spin text-emerald-400" />
+          <span>Loading Dashboard...</span>
         </div>
       </div>
     );
@@ -80,35 +80,37 @@ export const StudentDashboard = () => {
   if (!team) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
         {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-md text-xs flex items-center gap-2">
-            <AlertCircle size={16} className="shrink-0" />
+          <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3 rounded-lg text-xs flex items-center gap-2">
+            <AlertCircle size={16} className="shrink-0 text-rose-400" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Team Details & Payment Status Card */}
-        <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200">
+        <div className="doom-card rounded-xl p-6 sm:p-7">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-emerald-500/20">
             <div>
-              <span className="text-[11px] font-mono font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+              <span className="text-[11px] font-mono-tech font-bold text-amber-200 bg-amber-400/10 px-2.5 py-1 rounded border border-amber-300/35 tracking-wider">
                 {team.registration_id}
               </span>
-              <h1 className="text-xl font-bold text-slate-900 mt-2">{team.team_name}</h1>
-              <p className="text-xs text-slate-500 mt-0.5">{team.college_name}</p>
+              <h1 className="font-display text-2xl font-bold tracking-wider text-buildops uppercase mt-2.5">
+                {team.team_name}
+              </h1>
+              <p className="text-xs text-emerald-200/70 mt-0.5">{team.college_name}</p>
             </div>
 
             <div className="flex flex-col sm:items-end gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <span className="text-[10px] font-display font-semibold uppercase tracking-[0.2em] text-emerald-200/55">
                 Payment Status
               </span>
               <span
-                className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full ${
+                className={`inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full border ${
                   team.payment_status === 'SUCCESS'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/45 shadow-[0_0_14px_rgba(34,255,102,0.2)]'
+                    : 'bg-amber-500/15 text-amber-200 border-amber-400/40'
                 }`}
               >
                 {team.payment_status === 'SUCCESS' ? (
@@ -125,7 +127,7 @@ export const StudentDashboard = () => {
               {team.payment_status !== 'SUCCESS' && (
                 <button
                   onClick={() => navigate('/student/register-team')}
-                  className="mt-1 inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold px-4 py-2 rounded-md shadow-xs transition cursor-pointer"
+                  className="mt-1 inline-flex items-center gap-1.5 doom-btn-primary text-xs font-display tracking-wider uppercase px-4 py-2 rounded-lg cursor-pointer"
                 >
                   <CreditCard size={14} /> Confirm & Pay ₹{team.fee_amount || 500}
                 </button>
@@ -135,23 +137,29 @@ export const StudentDashboard = () => {
 
           {/* Team Members */}
           <div className="pt-5">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+            <h2 className="text-[11px] font-display font-bold uppercase tracking-[0.2em] text-amber-200/85 mb-3.5">
               Team Members
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {team.members.map((member) => (
                 <div
                   key={member.id}
-                  className="p-4 rounded-md border border-slate-200 bg-slate-50/70"
+                  className="p-4 rounded-lg doom-panel hover:border-emerald-400/40 transition"
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-semibold text-slate-900 text-sm">{member.full_name}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-200 text-slate-700 rounded">
+                    <span className="font-semibold text-emerald-50 text-sm">{member.full_name}</span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider border ${
+                        member.member_role === 'LEADER'
+                          ? 'bg-amber-400/15 text-amber-200 border-amber-300/35'
+                          : 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30'
+                      }`}
+                    >
                       {member.member_role}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600">{member.email}</p>
-                  <p className="text-xs text-slate-600 mt-0.5">{member.mobile_number}</p>
+                  <p className="text-xs text-emerald-200/75">{member.email}</p>
+                  <p className="text-xs font-mono-tech text-emerald-300/80 mt-0.5">{member.mobile_number}</p>
                 </div>
               ))}
             </div>
@@ -159,22 +167,26 @@ export const StudentDashboard = () => {
         </div>
 
         {/* E-Ticket Preview Card */}
-        <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+        <div className="doom-card rounded-xl p-6 sm:p-7">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-500/20">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Ticket size={22} />
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center shadow-[0_0_16px_rgba(34,255,102,0.2)]">
+                <Ticket size={21} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900">Your E-Ticket</h2>
-                <p className="text-xs text-slate-500">Valid for both team members at Build Ops check-in</p>
+                <h2 className="font-display text-base font-bold tracking-wider text-emerald-50 uppercase">
+                  Official E-Ticket
+                </h2>
+                <p className="text-xs text-emerald-200/65">
+                  Valid for both team members at Build Ops gate check-in
+                </p>
               </div>
             </div>
 
             {team.payment_status === 'SUCCESS' && team.has_ticket && (
               <button
                 onClick={handleDownloadTicket}
-                className="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-md shadow-xs transition cursor-pointer"
+                className="flex items-center justify-center gap-1.5 doom-btn-primary text-xs font-display tracking-wider uppercase px-4 py-2.5 rounded-lg cursor-pointer"
               >
                 <Download size={14} /> Download Ticket (PDF)
               </button>
@@ -183,42 +195,44 @@ export const StudentDashboard = () => {
 
           <div className="mt-5">
             {team.payment_status === 'SUCCESS' && team.ticket_id ? (
-              <div className="bg-slate-50 rounded-lg p-5 border border-slate-200 flex flex-col sm:flex-row items-center gap-6">
-                {/* Visual QR Code Preview */}
-                <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs flex flex-col items-center shrink-0">
+              <div className="doom-panel rounded-xl p-5 flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden">
+                {/* Crisp White QR Box (100% Scannable Contrast) */}
+                <div className="bg-white p-3 rounded-lg border-2 border-emerald-400/60 shadow-[0_0_25px_rgba(34,255,102,0.28)] flex flex-col items-center shrink-0">
                   <img
                     src={`${API_BASE_URL}/tickets/${team.ticket_id}/qr/`}
                     alt={`QR Code for ${team.registration_id}`}
                     className="w-40 h-40 object-contain"
                   />
-                  <span className="text-[10px] font-mono font-bold text-slate-500 mt-1.5 uppercase tracking-wider">
+                  <span className="text-[10px] font-mono-tech font-bold text-slate-800 mt-1.5 uppercase tracking-widest">
                     Entry QR Pass
                   </span>
                 </div>
 
                 {/* Ticket Summary */}
-                <div className="flex-1 space-y-2 text-center sm:text-left">
-                  <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                <div className="flex-1 space-y-2.5 text-center sm:text-left">
+                  <span className="inline-flex items-center gap-1.5 bg-emerald-500/15 text-emerald-300 border border-emerald-400/40 text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                     <CheckCircle2 size={12} /> Confirmed Pass
                   </span>
-                  <h3 className="text-base font-bold text-slate-900">Build Ops — December 8–9, 2026</h3>
-                  <p className="text-xs text-slate-600">
-                    Show this QR code at the registration desk on event day. One ticket covers both team members.
+                  <h3 className="font-display text-base font-bold tracking-wider text-arcane-gold uppercase">
+                    Build Ops • Dec 8–9, 2026
+                  </h3>
+                  <p className="text-xs text-emerald-100/75 leading-relaxed">
+                    Present this QR pass at the ASIET registration desk on event day. One pass covers both registered participants.
                   </p>
                   <div className="pt-1">
-                    <span className="text-[11px] font-semibold text-slate-500 block mb-0.5">
-                      Ticket Token
+                    <span className="text-[10px] font-display uppercase tracking-widest text-emerald-200/55 block mb-1">
+                      Secure Ticket Token
                     </span>
-                    <code className="text-xs font-mono bg-white px-2.5 py-1 rounded border border-slate-300 text-slate-800 select-all inline-block break-all">
+                    <code className="text-xs font-mono-tech bg-[#040a07] px-3 py-1.5 rounded-md border border-emerald-500/30 text-emerald-300 select-all inline-block break-all">
                       {team.qr_token}
                     </code>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="py-6 text-center">
-                <p className="text-xs text-slate-500">
-                  Your E-Ticket and QR code will appear here automatically as soon as your ₹{team.fee_amount || 500} payment is completed.
+              <div className="py-8 text-center">
+                <p className="text-xs text-emerald-200/60">
+                  Your E-Ticket and QR code will unlock automatically once your ₹{team.fee_amount || 500} payment is confirmed.
                 </p>
               </div>
             )}

@@ -85,21 +85,21 @@ export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="w-full max-w-[300px] min-h-[210px] bg-slate-900 rounded-lg overflow-hidden border border-slate-700 shadow-inner relative block">
+      <div className="w-full max-w-[300px] min-h-[210px] bg-[#030705] rounded-lg overflow-hidden border border-emerald-400/40 shadow-[0_0_24px_rgba(34,255,102,0.16)] relative block">
         <div id="html5-qr-video-reader" className="w-full block"></div>
 
         {cameraError && (
-          <div className="p-6 text-center text-slate-300 flex flex-col items-center justify-center min-h-[210px]">
-            <CameraOff size={26} className="text-amber-400 mb-1.5" />
-            <p className="text-xs font-semibold text-white mb-0.5">Camera Unavailable</p>
-            <p className="text-[10px] text-slate-400 max-w-xs mx-auto">
+          <div className="p-6 text-center text-emerald-100/70 flex flex-col items-center justify-center min-h-[210px]">
+            <CameraOff size={26} className="text-amber-300 mb-1.5" />
+            <p className="text-xs font-semibold text-emerald-50 mb-0.5">Camera Unavailable</p>
+            <p className="text-[10px] text-emerald-200/60 max-w-xs mx-auto">
               Please use manual Registration ID or Token lookup below.
             </p>
           </div>
         )}
       </div>
 
-      <p className="text-[11px] text-slate-500 mt-1.5 text-center">
+      <p className="text-[11px] text-emerald-200/60 mt-2 text-center font-mono-tech">
         Align ticket QR code inside viewfinder
       </p>
     </div>

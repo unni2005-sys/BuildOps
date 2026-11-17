@@ -2,9 +2,267 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #040806;
+    color: #e8f5ee;
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   }
+
+  ::selection {
+    background-color: rgba(34, 255, 102, 0.28);
+    color: #fef3c7;
+  }
+}
+
+/* Poster-Matched Typography */
+.font-display {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.font-imperial {
+  font-family: 'Cinzel', serif;
+}
+
+.font-mono-tech {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Deep Obsidian + Emerald Mist + Stained-Glass Gold Atmospheric Backdrop */
+.bg-doom-canvas {
+  background-color: #040806;
+  background-image:
+    radial-gradient(ellipse 75% 45% at 50% -8%, rgba(212, 175, 55, 0.12), transparent 65%),
+    radial-gradient(ellipse 70% 50% at 50% 108%, rgba(22, 163, 74, 0.22), transparent 70%),
+    radial-gradient(circle at 15% 40%, rgba(16, 185, 129, 0.08), transparent 45%),
+    radial-gradient(circle at 85% 60%, rgba(202, 168, 72, 0.06), transparent 45%),
+    linear-gradient(180deg, #050a07 0%, #07120c 48%, #040806 100%);
+  background-attachment: fixed;
+}
+
+/* Subtle Arcane Grid Overlay */
+.bg-arcane-grid {
+  background-size: 48px 48px;
+  background-image:
+    linear-gradient(to right, rgba(34, 255, 102, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 255, 102, 0.035) 1px, transparent 1px);
+}
+
+/* Metallic Silver-Chrome + Emerald Glow Title ("BUILD OPS") */
+.text-buildops {
+  background: linear-gradient(180deg, #ffffff 0%, #dbe7e0 48%, #9fb5a8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(34, 255, 102, 0.32));
+}
+
+/* Radiant Pale-Gold Glow (Inspired by Poster "COMING SOON" & Stained Glass) */
+.text-arcane-gold {
+  color: #fef3c7;
+  text-shadow:
+    0 0 10px rgba(254, 243, 199, 0.5),
+    0 0 24px rgba(212, 175, 55, 0.35),
+    0 0 40px rgba(34, 255, 102, 0.18);
+}
+
+.text-emerald-glow {
+  color: #4ade80;
+  text-shadow: 0 0 14px rgba(34, 255, 102, 0.45);
+}
+
+/* Obsidian-Emerald Glass Card with Top Energy Edge */
+.doom-card {
+  position: relative;
+  background: linear-gradient(165deg, rgba(10, 22, 16, 0.9) 0%, rgba(5, 12, 9, 0.94) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  box-shadow:
+    0 12px 40px -10px rgba(0, 0, 0, 0.85),
+    0 0 28px -8px rgba(16, 185, 129, 0.16),
+    inset 0 1px 0 rgba(254, 243, 199, 0.08);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.doom-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.7), rgba(254, 243, 199, 0.65), rgba(74, 222, 128, 0.7), transparent);
+  pointer-events: none;
+}
+
+.doom-card:hover {
+  border-color: rgba(74, 222, 128, 0.38);
+  box-shadow:
+    0 14px 44px -10px rgba(0, 0, 0, 0.9),
+    0 0 34px -6px rgba(34, 255, 102, 0.22),
+    inset 0 1px 0 rgba(254, 243, 199, 0.12);
+}
+
+/* Inner Sub-Panel */
+.doom-panel {
+  background: rgba(5, 13, 9, 0.78);
+  border: 1px solid rgba(52, 211, 153, 0.18);
+}
+
+/* Inputs */
+.doom-input {
+  background-color: rgba(4, 10, 7, 0.9);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  color: #ecfdf5;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.doom-input::placeholder {
+  color: #5c7a69;
+}
+
+.doom-input:focus {
+  outline: none;
+  border-color: #34d399;
+  box-shadow: 0 0 0 2px rgba(34, 255, 102, 0.16), 0 0 16px rgba(16, 185, 129, 0.18);
+  background-color: rgba(6, 15, 10, 0.98);
+}
+
+.doom-input:disabled {
+  background-color: rgba(12, 24, 18, 0.65);
+  border-color: rgba(52, 211, 153, 0.14);
+  color: #9bb5a6;
+}
+
+/* Primary Glowing Emerald Button with Light Sweep */
+.doom-btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #059669 0%, #10b981 55%, #16a34a 100%);
+  color: #031108;
+  font-weight: 700;
+  border: 1px solid rgba(110, 231, 183, 0.55);
+  box-shadow:
+    0 0 18px rgba(16, 185, 129, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.25s ease;
+}
+
+.doom-btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(254, 243, 199, 0.35), transparent);
+  transform: skewX(-22deg);
+  transition: left 0.55s ease;
+}
+
+.doom-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #10b981 0%, #22c55e 55%, #34d399 100%);
+  box-shadow:
+    0 0 26px rgba(34, 255, 102, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.doom-btn-primary:hover:not(:disabled)::after {
+  left: 140%;
+}
+
+.doom-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Secondary Obsidian Button */
+.doom-btn-secondary {
+  background: rgba(11, 26, 18, 0.85);
+  color: #d1fae5;
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  transition: all 0.2s ease;
+}
+
+.doom-btn-secondary:hover:not(:disabled) {
+  background: rgba(16, 40, 27, 0.95);
+  border-color: rgba(74, 222, 128, 0.55);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+}
+
+/* Glowing Emerald Laser Rift Divider */
+.laser-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(34, 255, 102, 0.55), rgba(254, 243, 199, 0.45), rgba(34, 255, 102, 0.55), transparent);
+}
+
+/* Subtle Glitch Shimmer Animation for Poster Display Text */
+@keyframes glitchShimmer {
+  0%, 92%, 100% {
+    text-shadow: 0 0 14px rgba(254, 243, 199, 0.45), 0 0 28px rgba(34, 255, 102, 0.2);
+    transform: translateX(0);
+  }
+  94% {
+    text-shadow: -2px 0 rgba(34, 255, 102, 0.7), 2px 0 rgba(254, 243, 199, 0.8);
+    transform: translateX(0.5px);
+  }
+  96% {
+    text-shadow: 2px 0 rgba(34, 255, 102, 0.7), -2px 0 rgba(212, 175, 55, 0.8);
+    transform: translateX(-0.5px);
+  }
+  98% {
+    text-shadow: 0 0 18px rgba(254, 243, 199, 0.6), 0 0 32px rgba(34, 255, 102, 0.35);
+    transform: translateX(0);
+  }
+}
+
+.animate-glitch-gold {
+  animation: glitchShimmer 5.5s infinite ease-in-out;
+}
+
+@keyframes pulseAura {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.03);
+  }
+}
+
+.animate-pulse-aura {
+  animation: pulseAura 4s infinite ease-in-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Dark Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #040907;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(52, 211, 153, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 222, 128, 0.45);
 }
 
 /* Prevent double view / split screen in html5-qrcode scanner */
