@@ -184,7 +184,7 @@ export const StudentDashboard = () => {
                     {team.payment_status}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Fee: INR {team.fee_amount || 499}</p>
+                <p className="text-xs text-slate-500 mt-1">Fee: INR {team.fee_amount || 500}</p>
               </div>
 
               <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
@@ -260,7 +260,7 @@ export const StudentDashboard = () => {
                   <div className="flex-1">
                     <h3 className="text-base font-bold text-amber-900">Payment Required to Confirm Registration</h3>
                     <p className="text-xs text-amber-800 mt-1 max-w-xl">
-                      A one-time registration fee of <strong>INR {team.fee_amount || 499}</strong> is required to confirm your team's entry and generate your digital E-Ticket.
+                      A one-time registration fee of <strong>INR {team.fee_amount || 500}</strong> is required to confirm your team's entry and generate your digital E-Ticket.
                     </p>
                     <div className="mt-4">
                       <button
@@ -268,7 +268,7 @@ export const StudentDashboard = () => {
                         disabled={actionLoading}
                         className="bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs px-4 py-2.5 rounded-md shadow-sm transition disabled:opacity-50"
                       >
-                        {actionLoading ? 'Initiating Gateway...' : `Proceed to Pay INR ${team.fee_amount || 499}`}
+                        {actionLoading ? 'Initiating Gateway...' : `Proceed to Pay INR ${team.fee_amount || 500}`}
                       </button>
                     </div>
                   </div>

@@ -110,7 +110,7 @@ export const Home = () => {
             </div>
             <div>
               <p className="text-xs uppercase text-slate-500 font-bold mb-1">Registration Fee</p>
-              <p className="font-semibold text-slate-800">INR 499 per team</p>
+              <p className="font-semibold text-slate-800">INR 500 per team</p>
               <p className="text-slate-600 text-xs mt-0.5">Includes food, kit, entry pass & certificates</p>
             </div>
           </div>

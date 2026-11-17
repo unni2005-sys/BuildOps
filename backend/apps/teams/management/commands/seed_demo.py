@@ -58,7 +58,7 @@ class Command(BaseCommand):
         if created:
             TeamMember.objects.create(team=team_alpha, user=u1, full_name=u1.full_name, email=u1.email, mobile_number='9876500001', member_role='LEADER')
             TeamMember.objects.create(team=team_alpha, user=u2, full_name=u2.full_name, email=u2.email, mobile_number='9876500002', member_role='MEMBER')
-            Payment.objects.create(team=team_alpha, order_id='ORDER_ALPHA01', amount=499, currency='INR', payment_status='SUCCESS', payment_reference='CF_REF_ALPHA01', payment_timestamp=timezone.now())
+            Payment.objects.create(team=team_alpha, order_id='ORDER_ALPHA01', amount=500, currency='INR', payment_status='SUCCESS', payment_reference='CF_REF_ALPHA01', payment_timestamp=timezone.now())
             ticket_alpha = generate_ticket_for_team(team_alpha)
             self.stdout.write(self.style.SUCCESS(f"Created Team Alpha (Paid, Ready to scan). QR Token: {ticket_alpha.qr_token}"))
 
@@ -91,7 +91,7 @@ class Command(BaseCommand):
         if created:
             TeamMember.objects.create(team=team_beta, user=u3, full_name=u3.full_name, email=u3.email, mobile_number='9876500003', member_role='LEADER')
             TeamMember.objects.create(team=team_beta, user=u4, full_name=u4.full_name, email=u4.email, mobile_number='9876500004', member_role='MEMBER')
-            Payment.objects.create(team=team_beta, order_id='ORDER_BETA02', amount=499, currency='INR', payment_status='SUCCESS', payment_reference='CF_REF_BETA02', payment_timestamp=timezone.now())
+            Payment.objects.create(team=team_beta, order_id='ORDER_BETA02', amount=500, currency='INR', payment_status='SUCCESS', payment_reference='CF_REF_BETA02', payment_timestamp=timezone.now())
             generate_ticket_for_team(team_beta)
             perform_team_check_in(team_beta, admin, action_details='Seed Arrival Check-in')
             self.stdout.write(self.style.SUCCESS("Created Team Beta (Already Arrived with Certificates)"))

@@ -204,7 +204,7 @@ export const RegisterTeam = () => {
               {loading ? 'Creating Team Registration...' : 'Complete Team Registration'}
             </button>
             <p className="text-center text-xs text-slate-500 mt-2">
-              Registration fee of INR 499 is payable after team creation.
+              Registration fee of INR 500 is payable after team creation.
             </p>
           </div>
         </form>
