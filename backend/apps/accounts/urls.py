@@ -5,7 +5,9 @@ from apps.accounts.views import (
     VerifyEmailView,
     ResendVerificationView,
     LoginView,
-    UserProfileView
+    UserProfileView,
+    AdminUserListView,
+    AdminUserDeleteView
 )
 
 urlpatterns = [
@@ -15,4 +17,8 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='account-login'),
     path('refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     path('me/', UserProfileView.as_view(), name='account-profile'),
+    
+    # Admin User Management
+    path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
+    path('admin/users/<int:pk>/', AdminUserDeleteView.as_view(), name='admin-user-delete'),
 ]

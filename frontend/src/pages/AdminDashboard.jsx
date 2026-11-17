@@ -16,7 +16,11 @@ import {
   AlertCircle,
   Eye,
   ShieldCheck,
-  Send
+  Send,
+  Trash2,
+  AlertTriangle,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 
 export const AdminDashboard = () => {
@@ -24,11 +28,17 @@ export const AdminDashboard = () => {
   const [teams, setTeams] = useState([]);
   const [payments, setPayments] = useState([]);
   const [emailLogs, setEmailLogs] = useState([]);
+  const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
   const [attendanceFilter, setAttendanceFilter] = useState('');
+
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('');
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -77,9 +87,21 @@ export const AdminDashboard = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const params = {};
+      if (userSearchQuery) params.search = userSearchQuery;
+      if (userRoleFilter) params.role = userRoleFilter;
+      const res = await api.get('/accounts/admin/users/', { params });
+      setUsers(res.data.users || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const loadAll = async () => {
     setLoading(true);
-    await Promise.all([fetchStats(), fetchTeams(), fetchPayments(), fetchEmailLogs()]);
+    await Promise.all([fetchStats(), fetchTeams(), fetchPayments(), fetchEmailLogs(), fetchUsers()]);
     setLoading(false);
   };
 
@@ -90,6 +112,28 @@ export const AdminDashboard = () => {
   useEffect(() => {
     fetchTeams();
   }, [searchQuery, paymentFilter, attendanceFilter]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [userSearchQuery, userRoleFilter]);
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    setDeleteLoading(true);
+    try {
+      const res = await api.delete(`/accounts/admin/users/${userToDelete.id}/`);
+      setActionMsg(res.data.message || 'User account successfully deleted from database.');
+      setTimeout(() => setActionMsg(''), 4000);
+      setUserToDelete(null);
+      await Promise.all([fetchUsers(), fetchTeams(), fetchStats()]);
+    } catch (err) {
+      console.error(err);
+      setActionMsg(err.response?.data?.error || 'Failed to delete user account.');
+      setTimeout(() => setActionMsg(''), 4000);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const handleResendTicketEmail = async (ticketId) => {
     if (!ticketId) return;
@@ -196,6 +240,16 @@ export const AdminDashboard = () => {
             }`}
           >
             Transactions ({payments.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`pb-3 px-2 border-b-2 transition ${
+              activeTab === 'users'
+                ? 'border-teal-600 text-teal-700'
+                : 'border-transparent hover:text-slate-800'
+            }`}
+          >
+            Users & Accounts ({users.length})
           </button>
           <button
             onClick={() => setActiveTab('reports')}
@@ -651,6 +705,115 @@ export const AdminDashboard = () => {
           </div>
         )}
 
+        {/* Users & Accounts Tab */}
+        {activeTab === 'users' && (
+          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">User Accounts Management</h3>
+                <p className="text-xs text-slate-500">View registered students and admins, or permanently remove accounts.</p>
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search size={14} className="absolute left-2.5 top-2.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    placeholder="Search name or email..."
+                    className="pl-8 pr-3 py-1.5 border border-slate-300 rounded-md text-xs w-48 sm:w-60 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  />
+                </div>
+
+                <select
+                  value={userRoleFilter}
+                  onChange={(e) => setUserRoleFilter(e.target.value)}
+                  className="border border-slate-300 rounded-md px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                >
+                  <option value="">All Roles</option>
+                  <option value="STUDENT">Students</option>
+                  <option value="ADMIN">Admins</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold">
+                    <th className="py-2.5 px-3">Full Name</th>
+                    <th className="py-2.5 px-3">Email</th>
+                    <th className="py-2.5 px-3">Role</th>
+                    <th className="py-2.5 px-3">Verification</th>
+                    <th className="py-2.5 px-3">Associated Team</th>
+                    <th className="py-2.5 px-3">Registered Date</th>
+                    <th className="py-2.5 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {users.map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-50/50">
+                      <td className="py-2.5 px-3 font-semibold text-slate-900">{u.full_name}</td>
+                      <td className="py-2.5 px-3 text-slate-700 font-mono text-[11px]">{u.email}</td>
+                      <td className="py-2.5 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          u.role === 'ADMIN'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                          u.is_verified
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>
+                          {u.is_verified ? <CheckCircle2 size={10} /> : <Clock size={10} />}
+                          {u.is_verified ? 'Verified' : 'Unverified'}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-600">
+                        {u.team_info ? (
+                          <div>
+                            <span className="font-semibold text-slate-800">{u.team_info.team_name}</span>{' '}
+                            <span className="text-[10px] text-slate-500 font-mono">({u.team_info.registration_id})</span>
+                            <span className="block text-[10px] text-teal-700 font-semibold">{u.team_info.role}</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">No team</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-500 text-[11px]">
+                        {new Date(u.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <button
+                          onClick={() => setUserToDelete(u)}
+                          className="inline-flex items-center gap-1 text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 rounded transition font-medium cursor-pointer"
+                          title="Delete user account and all data"
+                        >
+                          <Trash2 size={12} /> Delete Account
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-slate-400">
+                        No user accounts found matching your filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* Team Details Modal */}
         {selectedTeam && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
@@ -724,6 +887,57 @@ export const AdminDashboard = () => {
               >
                 Close
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Delete User Account Confirmation Modal */}
+        {userToDelete && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl border border-rose-200">
+              <div className="flex items-center gap-3 text-rose-600 mb-3">
+                <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={22} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Delete User Account</h3>
+                  <p className="text-xs text-rose-600 font-semibold">Irreversible Database Deletion</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                Are you sure you want to permanently delete the account for{' '}
+                <strong className="text-slate-900">{userToDelete.full_name} ({userToDelete.email})</strong>?
+              </p>
+
+              <div className="bg-rose-50 border border-rose-200 p-3.5 rounded-md text-xs text-rose-900 space-y-1.5 mb-5">
+                <p className="font-bold">This operation will permanently erase:</p>
+                <ul className="list-disc pl-4 space-y-1 text-[11px] text-rose-800">
+                  <li>User profile, authentication credentials and tokens</li>
+                  <li>Any teams registered or led by this user</li>
+                  <li>Associated payments, tickets, and check-in attendance records</li>
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  disabled={deleteLoading}
+                  onClick={() => setUserToDelete(null)}
+                  className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded text-xs font-semibold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={deleteLoading}
+                  onClick={confirmDeleteUser}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold shadow-xs transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Trash2 size={14} />
+                  {deleteLoading ? 'Deleting Account...' : 'Permanently Delete User'}
+                </button>
+              </div>
             </div>
           </div>
         )}

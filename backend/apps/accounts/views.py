@@ -122,3 +122,77 @@ class UserProfileView(APIView):
 
     def get(self, request):
         return Response(UserSerializer(request.user).data)
+
+
+class AdminUserListView(APIView):
+    """
+    Admin endpoint to view and search all registered user accounts.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        if not (request.user.role == 'ADMIN' or request.user.is_staff or request.user.is_superuser):
+            return Response({'error': 'Admin permissions required.'}, status=status.HTTP_403_FORBIDDEN)
+
+        from django.db import models
+        from apps.accounts.serializers import AdminUserSerializer
+
+        queryset = User.objects.all().order_by('-created_at')
+
+        role = request.query_params.get('role')
+        if role and role.upper() != 'ALL':
+            queryset = queryset.filter(role=role.upper())
+
+        search = request.query_params.get('search')
+        if search:
+            q = search.strip()
+            queryset = queryset.filter(
+                models.Q(full_name__icontains=q) | models.Q(email__icontains=q)
+            )
+
+        serializer = AdminUserSerializer(queryset, many=True)
+        return Response({'count': queryset.count(), 'users': serializer.data})
+
+
+class AdminUserDeleteView(APIView):
+    """
+    Admin endpoint to permanently delete a user account and all their records from the entire database.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def delete(self, request, pk):
+        if not (request.user.role == 'ADMIN' or request.user.is_staff or request.user.is_superuser):
+            return Response({'error': 'Admin permissions required.'}, status=status.HTTP_403_FORBIDDEN)
+
+        from django.db import models, transaction
+        from apps.teams.models import TeamMember, Team
+
+        try:
+            target_user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'error': 'User account not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Safety check: Cannot delete own logged-in admin account
+        if target_user.id == request.user.id:
+            return Response({'error': 'You cannot delete your own admin account.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_email = target_user.email
+        user_name = target_user.full_name
+
+        with transaction.atomic():
+            # 1. Clean up any team memberships where this user was a member
+            TeamMember.objects.filter(
+                models.Q(user=target_user) | models.Q(email=user_email.lower())
+            ).delete()
+
+            # 2. Delete verification tokens
+            EmailVerificationToken.objects.filter(user=target_user).delete()
+
+            # 3. Permanently delete the user account (cascades to led teams, payments, tickets)
+            target_user.delete()
+
+        logger.info(f"Admin {request.user.email} permanently deleted user {user_email} (ID: {pk})")
+        return Response({
+            'message': f'User account "{user_name}" ({user_email}) has been permanently deleted from the database.',
+            'deleted_user_id': pk
+        }, status=status.HTTP_200_OK)

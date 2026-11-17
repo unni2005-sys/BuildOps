@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import models
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from apps.accounts.models import User, EmailVerificationToken
@@ -11,6 +12,41 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'full_name', 'email', 'role', 'is_verified', 'is_admin', 'created_at')
         read_only_fields = ('id', 'role', 'is_verified', 'is_admin', 'created_at')
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    is_admin = serializers.BooleanField(read_only=True)
+    team_info = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'full_name', 'email', 'role', 'is_verified', 'is_active', 'is_admin', 'created_at', 'team_info')
+
+    def get_team_info(self, obj):
+        from apps.teams.models import TeamMember, Team
+        # Check if user leads a team
+        led_team = Team.objects.filter(team_leader=obj).exclude(registration_status='CANCELLED').first()
+        if led_team:
+            return {
+                'id': led_team.id,
+                'team_name': led_team.team_name,
+                'registration_id': led_team.registration_id,
+                'role': 'LEADER',
+                'payment_status': led_team.payment_status
+            }
+        # Check if user is a member of any team
+        member = TeamMember.objects.filter(
+            models.Q(user=obj) | models.Q(email=obj.email.lower())
+        ).exclude(team__registration_status='CANCELLED').select_related('team').first()
+        if member:
+            return {
+                'id': member.team.id,
+                'team_name': member.team.team_name,
+                'registration_id': member.team.registration_id,
+                'role': member.member_role,
+                'payment_status': member.team.payment_status
+            }
+        return None
 
 
 class StudentRegisterSerializer(serializers.Serializer):
