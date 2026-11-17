@@ -1,9 +1,12 @@
 import os
 from django.conf import settings
 from django.http import FileResponse, Http404
+from django.db.models import Q
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
+from apps.accounts.models import User
 from apps.accounts.permissions import IsAdminUserRole
 from apps.teams.models import Team, TeamMember
 from apps.certificates.models import Certificate
@@ -21,14 +24,8 @@ class MyCertificateView(APIView):
         user = request.user
         # Find team member corresponding to this user
         member = TeamMember.objects.select_related('team').filter(
-            user=user
+            Q(user=user) | Q(email=user.email.lower())
         ).exclude(team__registration_status='CANCELLED').first()
-
-        if not member:
-            # Check by email
-            member = TeamMember.objects.select_related('team').filter(
-                email=user.email.lower()
-            ).exclude(team__registration_status='CANCELLED').first()
 
         if not member:
             return Response({'error': 'You are not registered as a member in any active team.'}, status=status.HTTP_404_NOT_FOUND)
@@ -60,8 +57,9 @@ class MyCertificateView(APIView):
 class DownloadCertificateView(APIView):
     """
     Serves the certificate PDF to the member or admin.
+    Supports both Authorization header and ?token=<jwt> query parameter.
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request, pk):
         try:
@@ -70,8 +68,25 @@ class DownloadCertificateView(APIView):
             raise Http404("Certificate not found.")
 
         user = request.user
+        if not user or not user.is_authenticated:
+            token_str = request.query_params.get('token')
+            if token_str:
+                try:
+                    decoded = AccessToken(token_str)
+                    user_id = decoded.get('user_id')
+                    user = User.objects.get(id=user_id)
+                except Exception:
+                    user = None
+
+        if not user or not user.is_authenticated:
+            return Response({'error': 'Authentication credentials required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         is_admin = user.role == 'ADMIN' or user.is_staff or user.is_superuser
-        is_owner = (cert.member.user == user) or (cert.member.email.lower() == user.email.lower())
+        is_owner = (
+            (cert.member.user == user) or
+            (cert.member.email.lower() == user.email.lower()) or
+            (cert.member.team.team_leader == user)
+        )
 
         if not (is_admin or is_owner):
             return Response({'error': 'You are not authorized to download this certificate.'}, status=status.HTTP_403_FORBIDDEN)
@@ -86,7 +101,7 @@ class DownloadCertificateView(APIView):
 
         filename = f"Certificate_{cert.certificate_id}.pdf"
         response = FileResponse(open(full_path, 'rb'), content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename="{filename}"'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
 

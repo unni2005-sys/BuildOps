@@ -87,14 +87,48 @@ export const StudentDashboard = () => {
     }
   };
 
-  const handleDownloadTicket = () => {
+  const handleDownloadTicket = async () => {
     if (!team?.ticket_id) return;
-    window.open(`/api/tickets/${team.ticket_id}/download/`, '_blank');
+    try {
+      const response = await api.get(`/tickets/${team.ticket_id}/download/`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Ticket_${team.registration_id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download ticket error:', err);
+      const token = localStorage.getItem('access_token');
+      window.open(`/api/tickets/${team.ticket_id}/download/?token=${token}`, '_blank');
+    }
   };
 
-  const handleDownloadCertificate = () => {
+  const handleDownloadCertificate = async () => {
     if (!certificateData?.download_url) return;
-    window.open(certificateData.download_url, '_blank');
+    try {
+      const response = await api.get(certificateData.download_url, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Certificate_${certificateData.certificate_id || 'BuildOps'}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Certificate download error:', err);
+      const token = localStorage.getItem('access_token');
+      window.open(`${certificateData.download_url}?token=${token}`, '_blank');
+    }
   };
 
   if (loading) {
@@ -278,7 +312,7 @@ export const StudentDashboard = () => {
 
             {/* E-Ticket Card */}
             <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center">
                     <Ticket size={22} />
@@ -292,23 +326,46 @@ export const StudentDashboard = () => {
                 {team.payment_status === 'SUCCESS' && team.has_ticket && (
                   <button
                     onClick={handleDownloadTicket}
-                    className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-md shadow-sm transition"
+                    className="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-md shadow-sm transition"
                   >
-                    <Download size={14} /> Download Ticket (PDF)
+                    <Download size={14} /> Download Official PDF Ticket
                   </button>
                 )}
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-200">
+              <div className="mt-4">
                 {team.payment_status === 'SUCCESS' ? (
-                  <div className="bg-blue-50/60 rounded-md p-4 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div>
-                      <p className="font-semibold text-blue-900">Secure QR Token:</p>
-                      <code className="text-slate-800 font-mono text-xs">{team.qr_token || 'Generated'}</code>
+                  <div className="bg-gradient-to-br from-slate-50 to-blue-50/40 rounded-lg p-5 border border-blue-100 flex flex-col md:flex-row items-center gap-6">
+                    {/* Visual QR Code Display */}
+                    <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-xs flex flex-col items-center shrink-0">
+                      <img
+                        src={`/api/tickets/${team.ticket_id}/qr/`}
+                        alt={`QR Code for ${team.registration_id}`}
+                        className="w-36 h-36 object-contain"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      <span className="text-[10px] font-mono font-bold text-slate-500 mt-1 uppercase tracking-wider">
+                        Gate Scan Pass
+                      </span>
                     </div>
-                    <p className="text-blue-800 text-[11px] max-w-sm">
-                      Please carry a digital or printed copy of this PDF to the entrance on December 8, 2026 for gate QR scanning.
-                    </p>
+
+                    <div className="flex-1 space-y-2 text-center md:text-left">
+                      <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                        <CheckCircle2 size={12} /> Confirmed Entry Ticket
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-900">{team.team_name} ({team.registration_id})</h4>
+                      <p className="text-xs text-slate-600">
+                        Present this QR code on your mobile device or bring a printed copy to the Build Ops registration desk on <strong>December 8th, 2026</strong>.
+                      </p>
+                      <div className="pt-1">
+                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">Secure Check-in Token</span>
+                        <code className="text-xs font-mono bg-white px-2.5 py-1 rounded border border-slate-300 text-slate-800 select-all inline-block break-all">
+                          {team.qr_token || 'Generated'}
+                        </code>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-xs text-slate-400 italic">

@@ -51,15 +51,25 @@ class TeamDetailSerializer(serializers.ModelSerializer):
     def get_ticket_id(self, obj):
         if hasattr(obj, 'ticket') and obj.ticket:
             return obj.ticket.id
+        if obj.payment_status == 'SUCCESS':
+            from apps.tickets.services import generate_ticket_for_team
+            ticket = generate_ticket_for_team(obj)
+            return ticket.id
         return None
 
     def get_qr_token(self, obj):
         if hasattr(obj, 'ticket') and obj.ticket:
             return obj.ticket.qr_token
+        if obj.payment_status == 'SUCCESS':
+            from apps.tickets.services import generate_ticket_for_team
+            ticket = generate_ticket_for_team(obj)
+            return ticket.qr_token
         return None
 
     def get_has_ticket(self, obj):
-        return hasattr(obj, 'ticket') and obj.ticket is not None
+        if hasattr(obj, 'ticket') and obj.ticket is not None:
+            return True
+        return obj.payment_status == 'SUCCESS'
 
     def get_fee_amount(self, obj):
         return settings.REGISTRATION_FEE_INR
