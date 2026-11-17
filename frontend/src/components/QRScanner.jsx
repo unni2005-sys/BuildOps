@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Camera, CameraOff, RefreshCw } from 'lucide-react';
+import { Camera, CameraOff } from 'lucide-react';
 
 export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
   const [cameraError, setCameraError] = useState(null);
@@ -19,7 +19,7 @@ export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 },
+            qrbox: { width: 180, height: 180 },
             aspectRatio: 1.0,
           },
           (decodedText) => {
@@ -27,9 +27,7 @@ export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
               onScanSuccess(decodedText.trim());
             }
           },
-          (errorMessage) => {
-            // Ignore normal scanning frame-by-frame non-match
-          }
+          () => {}
         );
         setIsStarted(true);
       } catch (err) {
@@ -57,26 +55,23 @@ export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md mx-auto">
-      <div className="w-full bg-slate-900 rounded-lg overflow-hidden border border-slate-700 shadow-md relative min-h-[300px] flex items-center justify-center">
-        <div id="html5-qr-video-reader" className="w-full"></div>
+    <div className="flex flex-col items-center w-full">
+      <div className="w-full max-w-[280px] h-[210px] bg-slate-900 rounded-lg overflow-hidden border border-slate-700 shadow-inner relative flex items-center justify-center">
+        <div id="html5-qr-video-reader" className="w-full h-full flex items-center justify-center"></div>
 
         {cameraError && (
-          <div className="p-6 text-center text-slate-300">
-            <CameraOff size={36} className="mx-auto text-amber-400 mb-2" />
-            <p className="text-sm font-semibold text-white mb-1">Camera Not Detected / Permission Blocked</p>
-            <p className="text-xs text-slate-400 max-w-xs mx-auto mb-3">
-              {cameraError}
-            </p>
-            <p className="text-xs text-teal-400 font-medium">
-              Please use the manual Token or Registration ID lookup below.
+          <div className="p-3 text-center text-slate-300">
+            <CameraOff size={26} className="mx-auto text-amber-400 mb-1" />
+            <p className="text-xs font-semibold text-white mb-0.5">Camera Unavailable</p>
+            <p className="text-[10px] text-slate-400 max-w-xs mx-auto">
+              Please use manual Registration ID or Token lookup below.
             </p>
           </div>
         )}
       </div>
 
-      <p className="text-xs text-slate-500 mt-2 text-center">
-        Point the camera at the QR code on the participant's E-Ticket.
+      <p className="text-[11px] text-slate-500 mt-1.5 text-center">
+        Align ticket QR code inside viewfinder
       </p>
     </div>
   );
