@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { CheckCircle2, AlertCircle, ArrowRight, Mail } from 'lucide-react';
+import { AlertCircle, ArrowRight, Mail } from 'lucide-react';
 
 export const Register = () => {
   const [formData, setFormData] = useState({
@@ -101,97 +101,6 @@ export const Register = () => {
       </div>
     );
   }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full bg-white p-8 rounded-lg border border-slate-200 shadow-sm">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">Student Registration</h2>
-          <p className="text-sm text-slate-600 mt-1">
-            Register your account to lead or join a Buildathon team
-          </p>
-        </div>
-
-        {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-md text-xs flex items-center gap-2 mb-4">
-            <AlertCircle size={16} className="shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Full Name</label>
-            <input
-              type="text"
-              name="fullName"
-              required
-              value={formData.fullName}
-              onChange={handleChange}
-              placeholder="e.g. Rohan Verma"
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="you@college.edu"
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Password</label>
-            <input
-              type="password"
-              name="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Minimum 6 characters"
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Repeat your password"
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-teal-600 hover:bg-teal-500 text-white font-medium py-2.5 px-4 rounded-md text-sm transition shadow-sm disabled:opacity-50"
-          >
-            {loading ? 'Submitting Registration...' : 'Create Student Account'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-xs text-slate-500">
-          Already registered?{' '}
-          <Link to="/login" className="text-teal-600 font-semibold hover:underline">
-            Sign In here
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
-};
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
