@@ -1,54 +1,83 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Camera, CameraOff } from 'lucide-react';
+import { CameraOff } from 'lucide-react';
 
 export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
   const [cameraError, setCameraError] = useState(null);
-  const [isStarted, setIsStarted] = useState(false);
-  const html5QrCodeRef = useRef(null);
+  const scannerRef = useRef(null);
+  const activeRef = useRef(isScanningActive);
+
+  // Keep latest prop value in ref so scanner callback reads fresh state
+  useEffect(() => {
+    activeRef.current = isScanningActive;
+  }, [isScanningActive]);
 
   useEffect(() => {
     const elementId = "html5-qr-video-reader";
-    const qrScanner = new Html5Qrcode(elementId);
-    html5QrCodeRef.current = qrScanner;
+    let isMounted = true;
+    let html5QrCode = null;
 
-    const startScanner = async () => {
+    const initScanner = async () => {
       try {
         setCameraError(null);
-        await qrScanner.start(
+        // Clear any leftover video elements before initializing (StrictMode safety)
+        const container = document.getElementById(elementId);
+        if (container) {
+          container.innerHTML = '';
+        }
+
+        html5QrCode = new Html5Qrcode(elementId);
+        scannerRef.current = html5QrCode;
+
+        await html5QrCode.start(
           { facingMode: "environment" },
           {
             fps: 10,
             qrbox: { width: 180, height: 180 },
-            aspectRatio: 1.0,
+            aspectRatio: 1.33,
           },
           (decodedText) => {
-            if (isScanningActive && decodedText) {
+            if (isMounted && activeRef.current && decodedText) {
               onScanSuccess(decodedText.trim());
             }
           },
           () => {}
         );
-        setIsStarted(true);
+
+        // If component unmounted while camera was still starting, stop immediately
+        if (!isMounted && html5QrCode) {
+          try {
+            await html5QrCode.stop();
+            html5QrCode.clear();
+          } catch (_) {}
+        }
       } catch (err) {
-        console.warn("Unable to start camera scanner:", err);
-        setCameraError(err?.message || "Camera access not available or permission denied.");
-        setIsStarted(false);
+        if (isMounted) {
+          console.warn("Unable to start camera scanner:", err);
+          setCameraError(err?.message || "Camera access not available or permission denied.");
+        }
       }
     };
 
-    startScanner();
+    // Slight defer prevents StrictMode double-camera start race condition
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        initScanner();
+      }
+    }, 100);
 
     return () => {
-      if (html5QrCodeRef.current) {
-        if (html5QrCodeRef.current.isScanning) {
-          html5QrCodeRef.current.stop().then(() => {
-            html5QrCodeRef.current.clear();
-          }).catch(err => console.error("Error stopping scanner", err));
+      isMounted = false;
+      clearTimeout(timer);
+      if (scannerRef.current) {
+        const instance = scannerRef.current;
+        scannerRef.current = null;
+        if (instance.isScanning) {
+          instance.stop().then(() => {
+            try { instance.clear(); } catch (_) {}
+          }).catch(() => {});
         } else {
-          try {
-            html5QrCodeRef.current.clear();
-          } catch (e) {}
+          try { instance.clear(); } catch (_) {}
         }
       }
     };
@@ -56,12 +85,12 @@ export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="w-full max-w-[280px] h-[210px] bg-slate-900 rounded-lg overflow-hidden border border-slate-700 shadow-inner relative flex items-center justify-center">
-        <div id="html5-qr-video-reader" className="w-full h-full flex items-center justify-center"></div>
+      <div className="w-full max-w-[300px] min-h-[210px] bg-slate-900 rounded-lg overflow-hidden border border-slate-700 shadow-inner relative block">
+        <div id="html5-qr-video-reader" className="w-full block"></div>
 
         {cameraError && (
-          <div className="p-3 text-center text-slate-300">
-            <CameraOff size={26} className="mx-auto text-amber-400 mb-1" />
+          <div className="p-6 text-center text-slate-300 flex flex-col items-center justify-center min-h-[210px]">
+            <CameraOff size={26} className="text-amber-400 mb-1.5" />
             <p className="text-xs font-semibold text-white mb-0.5">Camera Unavailable</p>
             <p className="text-[10px] text-slate-400 max-w-xs mx-auto">
               Please use manual Registration ID or Token lookup below.
