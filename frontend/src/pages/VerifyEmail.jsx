@@ -30,11 +30,11 @@ export const VerifyEmail = () => {
 
     try {
       const res = await api.post('/accounts/verify-email/', { token: t });
-      setStatusMsg({ type: 'success', text: res.data.message });
+      setStatusMsg({ type: 'success', text: 'Email verified! Opening Team Registration...' });
       setAuthData(res.data);
       setTimeout(() => {
-        navigate('/student/dashboard');
-      }, 1500);
+        navigate('/student/register-team', { replace: true });
+      }, 1000);
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.token?.[0] || err.response?.data?.error || 'Verification failed. The token may be expired or invalid.';

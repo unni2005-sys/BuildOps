@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from django.db import models
 from django.contrib.auth import authenticate
@@ -10,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'full_name', 'email', 'role', 'is_verified', 'is_admin', 'created_at')
+        fields = ('id', 'full_name', 'email', 'mobile_number', 'role', 'is_verified', 'is_admin', 'created_at')
         read_only_fields = ('id', 'role', 'is_verified', 'is_admin', 'created_at')
 
 
@@ -20,7 +21,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'full_name', 'email', 'role', 'is_verified', 'is_active', 'is_admin', 'created_at', 'team_info')
+        fields = ('id', 'full_name', 'email', 'mobile_number', 'role', 'is_verified', 'is_active', 'is_admin', 'created_at', 'team_info')
 
     def get_team_info(self, obj):
         from apps.teams.models import TeamMember, Team
@@ -52,6 +53,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
 class StudentRegisterSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=150)
     email = serializers.EmailField()
+    mobile_number = serializers.CharField(max_length=20)
     password = serializers.CharField(write_only=True, min_length=6)
 
     def validate_email(self, value):
@@ -60,11 +62,18 @@ class StudentRegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError("A user with this email already exists.")
         return normalized
 
+    def validate_mobile_number(self, value):
+        cleaned = re.sub(r'[\s\-]+', '', value.strip())
+        if not re.fullmatch(r'\d{10}', cleaned):
+            raise serializers.ValidationError("Please enter a valid 10-digit mobile number.")
+        return cleaned
+
     def create(self, validated_data):
         # Strict enforcement: Public registration is strictly for STUDENT role, requires email verification
         user = User.objects.create_user(
             email=validated_data['email'],
             full_name=validated_data['full_name'],
+            mobile_number=validated_data['mobile_number'],
             password=validated_data['password'],
             role='STUDENT',
             is_verified=False

@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from django.db import transaction
 from django.conf import settings
@@ -78,7 +79,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 class TeamCreateSerializer(serializers.Serializer):
     team_name = serializers.CharField(max_length=120)
     college_name = serializers.CharField(max_length=200)
-    leader_phone = serializers.CharField(max_length=20)
+    leader_phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
     
     member2_name = serializers.CharField(max_length=150)
     member2_email = serializers.EmailField()
@@ -88,8 +89,16 @@ class TeamCreateSerializer(serializers.Serializer):
         user = self.context['request'].user
         leader_email = user.email.strip().lower()
         member2_email = attrs['member2_email'].strip().lower()
-        leader_phone = attrs['leader_phone'].strip()
-        member2_phone = attrs['member2_phone'].strip()
+
+        raw_leader_phone = attrs.get('leader_phone') or getattr(user, 'mobile_number', '') or ''
+        leader_phone = re.sub(r'[\s\-]+', '', raw_leader_phone.strip())
+        member2_phone = re.sub(r'[\s\-]+', '', attrs['member2_phone'].strip())
+
+        if not re.fullmatch(r'\d{10}', leader_phone):
+            raise serializers.ValidationError("Team Leader mobile number must be a valid 10-digit number.")
+
+        if not re.fullmatch(r'\d{10}', member2_phone):
+            raise serializers.ValidationError("Member 2 mobile number must be a valid 10-digit number.")
 
         # Enforce distinct participants
         if leader_email == member2_email:
@@ -126,6 +135,9 @@ class TeamCreateSerializer(serializers.Serializer):
     @transaction.atomic
     def create(self, validated_data):
         user = self.context['request'].user
+        if not user.mobile_number:
+            user.mobile_number = validated_data['leader_phone']
+            user.save(update_fields=['mobile_number'])
         
         team = Team.objects.create(
             team_name=validated_data['team_name'].strip(),

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { CheckCircle2, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
 
 export const PaymentStatus = () => {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('order_id');
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
@@ -22,6 +23,9 @@ export const PaymentStatus = () => {
       try {
         const res = await api.get(`/payments/verify/${orderId}/`);
         setResult(res.data);
+        setTimeout(() => {
+          navigate('/student/dashboard', { replace: true });
+        }, 2500);
       } catch (err) {
         console.error(err);
         setError(err.response?.data?.error || err.response?.data?.message || 'Payment verification failed.');
@@ -31,7 +35,7 @@ export const PaymentStatus = () => {
     };
 
     verify();
-  }, [orderId]);
+  }, [orderId, navigate]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
