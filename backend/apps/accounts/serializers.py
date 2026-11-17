@@ -25,7 +25,7 @@ class StudentRegisterSerializer(serializers.Serializer):
         return normalized
 
     def create(self, validated_data):
-        # Strict enforcement: Public registration is strictly for STUDENT role
+        # Strict enforcement: Public registration is strictly for STUDENT role, requires email verification
         user = User.objects.create_user(
             email=validated_data['email'],
             full_name=validated_data['full_name'],

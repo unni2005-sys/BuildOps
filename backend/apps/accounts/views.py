@@ -34,7 +34,7 @@ class StudentRegisterView(APIView):
             'message': 'Registration successful! Please check your email to verify your account.',
             'email': user.email,
         }
-        # Include token in response in debug mode to make automated and local testing effortless
+        # Include token in response in debug mode for seamless local testing
         if settings.DEBUG:
             response_data['dev_verification_token'] = token_obj.token
 
