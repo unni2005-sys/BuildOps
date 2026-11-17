@@ -1,163 +1,104 @@
-# Build Ops - Registration & Management System
+# Build Ops — Registration & Management System
 
-A complete, production-ready full-stack web application for managing the **Build Ops** hackathon and build event (December 8th, 5:00 PM – December 9th, 9:00 PM, 2026). The system supports student registration in teams of two, online payment integration with Cashfree, digital ticket generation with embedded QR codes, automated email delivery, student dashboards, an admin management suite, camera-based QR attendance tracking, and automatic individual participation certificate generation using ReportLab.
+A full-stack web application for managing the **Build Ops** hackathon and build event (**December 8th, 5:00 PM – December 9th, 9:00 PM, 2026** | Registration Fee: **INR 500 per team**).
 
----
-
-## 1. System Architecture & Features
-
-### Core Modules
-- **Authentication & Roles (`apps/accounts`)**:
-  - Separate Student and Admin authentication using Django REST Framework and Simple JWT.
-  - Student registration with email verification token. Unverified students cannot sign in.
-  - Strict admin access control: Admins cannot register publicly; accounts are provisioned exclusively via management commands.
-- **Team Management (`apps/teams`)**:
-  - Strict 2-member team requirement (Leader + Member 2).
-  - Enforces duplicate prevention: each student email and phone number can belong to only one active team.
-  - Generates unique registration IDs (e.g. `BUILD-A8F29C`).
-- **Payment Processing (`apps/payments`)**:
-  - Cashfree Payment Gateway server-side integration (`POST /pg/orders`, webhook signature verification, `GET /pg/orders/{order_id}`).
-  - Idempotent payment verification: never trusts client responses; updates payment & registration status on verified gateway response.
-  - Includes a built-in sandbox payment simulator for local testing without live credit cards.
-- **E-Ticket & QR Generation (`apps/tickets`)**:
-  - One unique digital ticket per team with cryptographically secure random QR token (`TKT-...`).
-  - Professional PDF ticket generation using **ReportLab** with embedded QR code, team details, and event guidelines.
-  - Automated transactional email delivery to both team members with ticket PDF attached.
-- **QR Gate Attendance (`apps/attendance`)**:
-  - Dedicated QR camera scanner page built with `html5-qrcode`.
-  - Scans ticket QR or accepts manual Registration ID lookup.
-  - Checks payment and registration confirmation.
-  - Idempotent check-in: logs admin ID and arrival timestamp, marks team as `ARRIVED`.
-  - Duplicate prevention: displays clear **"Already Arrived"** warning if scanned again.
-- **Certificate Generation (`apps/certificates`)**:
-  - Automatically triggers generation of two individual participation certificates when a team is marked as arrived.
-  - High-resolution landscape PDF generated with **ReportLab** featuring participant name, team name, college, date, and unique certificate ID (`CERT-2026-...`).
-  - Available immediately in individual student dashboards.
-- **Admin Suite & Reporting**:
-  - Aggregated metrics: Total teams, Total participants, Paid teams, Pending teams, Total revenue, Arrived teams, Not yet arrived teams.
-  - Real-time search and filtering by payment and attendance status.
-  - 1-click CSV export for Teams, Participants, Payments, and Attendance logs.
-  - Email delivery logs with manual retry triggers.
+Built with **React + Vite + Tailwind CSS**, **Django + Django REST Framework + Simple JWT**, and **Supabase PostgreSQL**.
 
 ---
 
-## 2. Technology Stack
+## Key Features
 
-- **Frontend**: React 19, Vite, Tailwind CSS v4, React Router DOM, Axios, `html5-qrcode`, Lucide icons.
-- **Backend**: Python 3.14 / 3.12+, Django 6 / 5, Django REST Framework, Simple JWT, ReportLab, `qrcode[pil]`, Pillow, Requests, `python-dotenv`.
-- **Database**: Supabase PostgreSQL (via `psycopg3` & `dj-database-url`), with local SQLite fallback for offline zero-configuration testing.
+### Student Journey
+- **Sign Up & Email Verification (`apps/accounts`)**: Students register with Full Name, Email, 10-digit Mobile Number, and Password, and verify their email via Resend SMTP before accessing registration.
+- **Streamlined Team Registration (`apps/teams`)**: Opens automatically after verification. Team Leader details (Name, Email, Mobile) are auto-filled from the logged-in account; students enter Team Name, College, and Second Member details with strict 10-digit mobile and duplicate-entry validation.
+- **Confirm & Pay (`apps/payments`)**: Server-side Cashfree Payment Gateway integration (`POST /pg/orders`, webhook signature verification, idempotent status checks) with a Sandbox checkout mode for testing.
+- **Simple Student Dashboard (`apps/tickets`)**: Displays Team Details, Member Details, Payment Status, a live **E-Ticket QR Code preview**, and 1-click **Official PDF E-Ticket** download (generated via ReportLab).
+
+### Admin Control Panel
+- **Overview & Metrics**: Live counts for total teams, participants, paid/pending teams, total revenue, and arrivals.
+- **Team & Ticket Management**: Search and filter teams, inspect participant details, preview QR passes, download PDF tickets, and resend ticket emails.
+- **Users & Accounts Management**: Search/filter all user accounts and permanently delete accounts (with cascading cleanup and self-delete protection).
+- **Gate QR Scanner (`apps/attendance`)**: Dedicated compact camera scanner (`html5-qrcode`) + manual Registration ID fallback with duplicate check-in prevention.
+- **CSV Reports & Email Logs**: 1-click authenticated CSV exports (Teams, Participants, Payments, Attendance) and email delivery logs with manual retry.
 
 ---
 
-## 3. Directory Layout
+## Project Structure
 
-```
-Build Ops/
+```text
+BuildOps/
 ├── backend/
 │   ├── apps/
-│   │   ├── accounts/         # Users, JWT auth, email verification, permissions
-│   │   ├── teams/            # Teams, members, admin metrics, CSV reports
-│   │   ├── payments/         # Cashfree integration, orders, webhooks
-│   │   ├── tickets/          # QR tokens, ReportLab PDF tickets
-│   │   ├── attendance/       # QR validation, check-in, arrival logs
-│   │   ├── certificates/     # Individual ReportLab PDF certificates
-│   │   └── notifications/    # Transactional email services, delivery logs
-│   ├── buildathon_core/      # Settings, URL routing, WSGI/ASGI
-│   ├── media/                # Storage for generated tickets and certificates
+│   │   ├── accounts/          # Custom User model, JWT auth, email verification, admin user CRUD
+│   │   ├── teams/             # Team & TeamMember models, admin stats, CSV exports
+│   │   ├── payments/          # Cashfree order creation, webhooks, sandbox simulator
+│   │   ├── tickets/           # Secure QR tokens, live QR PNG endpoint, ReportLab PDF tickets
+│   │   ├── attendance/        # Gate QR validation, check-in, arrival logs
+│   │   ├── certificates/      # Individual ReportLab PDF certificates (admin-triggered)
+│   │   └── notifications/     # SMTP email delivery (Resend/Gmail) & EmailLog audit trail
+│   ├── buildathon_core/       # Django settings (Supabase Pooler + WhiteNoise), URLs, WSGI
 │   ├── manage.py
 │   ├── requirements.txt
-│   ├── .env.example
-│   └── .env
+│   ├── build.sh               # Render build script
+│   ├── Procfile               # Gunicorn start command
+│   └── .env.example
 ├── frontend/
+│   ├── public/
+│   │   └── _redirects         # SPA routing fallback (Netlify/Render)
 │   ├── src/
-│   │   ├── api/client.js     # Axios instance with JWT interceptors
-│   │   ├── context/          # AuthContext (user, tokens, roles)
-│   │   ├── components/       # Navbar, ProtectedRoute, QRScanner
-│   │   ├── pages/            # Home, Login, Register, VerifyEmail, Dashboard, Admin, Scanner
+│   │   ├── api/client.js      # Axios client with VITE_API_URL & JWT auto-refresh
+│   │   ├── context/           # AuthContext
+│   │   ├── components/        # Navbar, ProtectedRoute, QRScanner
+│   │   ├── pages/             # Home, Login, Register, VerifyEmail, RegisterTeam,
+│   │   │                      # StudentDashboard, PaymentStatus, AdminDashboard, AdminScanner
 │   │   ├── App.jsx
 │   │   └── main.jsx
+│   ├── vercel.json            # SPA routing fallback (Vercel)
+│   ├── vite.config.js
 │   ├── package.json
-│   └── vite.config.js        # Vite config with backend API proxy
+│   └── .env.example
+├── render.yaml                # Render Blueprint configuration
+├── .gitignore
 └── README.md
 ```
 
 ---
 
-## 4. Setup & Running Instructions
+## Local Development Setup
 
-### Prerequisites
-- Python 3.10+ (Python 3.14 supported)
-- Node.js 18+ and npm
-
-### Backend Setup
-1. Open a terminal in `backend/`:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a virtual environment:
-   ```bash
-   # Windows PowerShell:
-   py -m venv venv
-   .\venv\Scripts\Activate.ps1
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Configure environment variables in `backend/.env`:
-   - Supabase PostgreSQL: Set `SUPABASE_DB_URL=postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres?sslmode=require`
-   - If left blank, the backend automatically defaults to local SQLite (`db.sqlite3`).
-5. Run migrations:
-   ```bash
-   python manage.py migrate
-   ```
-6. Seed demo accounts and test teams:
-   ```bash
-   python manage.py seed_demo
-   ```
-7. Start the backend server:
-   ```bash
-   python manage.py runserver 127.0.0.1:8000
-   ```
-
-### Frontend Setup
-1. Open a terminal in `frontend/`:
-   ```bash
-   cd frontend
-   ```
-2. Install frontend dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-4. Open your browser at: `http://localhost:5173`
-
----
-
-## 5. Demo Accounts
-
-The database comes pre-seeded with accounts for all roles:
-
-| Role | Email | Password | Status / Scenario |
-|---|---|---|---|
-| **Admin** | `admin@buildops.org` | `Admin@123456` | Full administrative control, QR scanner, reports |
-| **Student (Leader)** | `arjun@alpha.com` | `Student@123` | Team "Neural Ninjas" (Paid & Confirmed, Ready for QR check-in) |
-| **Student (Member)** | `sneha@alpha.com` | `Student@123` | Member 2 of Team "Neural Ninjas" |
-| **Student (Arrived)** | `vikram@beta.com` | `Student@123` | Team "Cyber Voyagers" (Arrived; Participation Certificate unlocked) |
-| **Student (Pending)** | `kiran@gamma.com` | `Student@123` | Team "Algo Architects" (Pending payment) |
-
----
-
-## 6. Running Tests
-
-To run the automated backend test suite covering the entire registration, verification, duplicate prevention, payment simulation, ticket generation, check-in, duplicate prevention, and certificate download flow:
-
+### 1. Backend (Django)
 ```bash
 cd backend
-python manage.py test apps
+python -m venv venv
+# Windows: .\venv\Scripts\Activate.ps1  |  macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# Fill SUPABASE_DB_URL and EMAIL_* credentials in backend/.env
+python manage.py migrate
+python manage.py create_admin --email admin@buildops.com --name "Build Ops Admin" --password "YourStrongPassword"
+python manage.py runserver 127.0.0.1:8000
 ```
 
-All integration tests execute against the test database and verify the end-to-end lifecycle.
+### 2. Frontend (React + Vite)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:5173`.
+
+---
+
+## Production Hosting (Render + Vercel + Supabase)
+
+### Backend on Render
+- **Root Directory**: `backend`
+- **Build Command**: `./build.sh` (or `pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate`)
+- **Start Command**: `gunicorn buildathon_core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 60`
+- **Health Check Path**: `/api/health/`
+- **Required Env Vars**: `DEBUG=False`, `SECRET_KEY`, `ALLOWED_HOSTS=*`, `SUPABASE_DB_URL`, `FRONTEND_URL`, `BACKEND_URL`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, `EMAIL_*`, `CASHFREE_*`.
+
+### Frontend on Vercel
+- **Root Directory**: `frontend`
+- **Framework Preset**: `Vite`
+- **Env Var**: `VITE_API_URL=https://<your-render-service>.onrender.com/api`
