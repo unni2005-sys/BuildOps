@@ -49,7 +49,7 @@ export const Login = () => {
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-slate-900">Sign In</h2>
           <p className="text-sm text-slate-600 mt-1">
-            Access your team registration, tickets, and certificates
+            Access your team registration and digital E-Ticket
           </p>
         </div>
 

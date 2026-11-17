@@ -7,20 +7,9 @@ from apps.teams.models import Team, TeamMember
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
-    has_certificate = serializers.SerializerMethodField()
-    certificate_id = serializers.SerializerMethodField()
-
     class Meta:
         model = TeamMember
-        fields = ('id', 'full_name', 'email', 'mobile_number', 'member_role', 'has_certificate', 'certificate_id')
-
-    def get_has_certificate(self, obj):
-        return hasattr(obj, 'certificate') and obj.certificate is not None
-
-    def get_certificate_id(self, obj):
-        if hasattr(obj, 'certificate') and obj.certificate:
-            return obj.certificate.certificate_id
-        return None
+        fields = ('id', 'full_name', 'email', 'mobile_number', 'member_role')
 
 
 class TeamDetailSerializer(serializers.ModelSerializer):

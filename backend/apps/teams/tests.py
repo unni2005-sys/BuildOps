@@ -7,7 +7,6 @@ from apps.accounts.models import User
 from apps.teams.models import Team, TeamMember
 from apps.payments.models import Payment
 from apps.tickets.models import Ticket
-from apps.certificates.models import Certificate
 from apps.attendance.models import AttendanceLog
 
 
@@ -168,22 +167,7 @@ class BuildathonSystemIntegrationTests(TestCase):
         self.assertEqual(second_checkin_res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(second_checkin_res.data.get('already_arrived'))
 
-        # 9. Verify Automatic Certificate Generation for Both Members
-        members = team.members.all()
-        self.assertEqual(members.count(), 2)
-        for member in members:
-            self.assertTrue(Certificate.objects.filter(member=member).exists(), f"Certificate missing for {member.full_name}")
-            cert = Certificate.objects.get(member=member)
-            self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, cert.pdf_path)))
-
-        # Student 1 downloads their certificate
-        self.client.force_authenticate(user=self.student1)
-        cert_res = self.client.get('/api/certificates/my-certificate/')
-        self.assertEqual(cert_res.status_code, status.HTTP_200_OK)
-        self.assertTrue(cert_res.data['is_available'])
-        self.assertEqual(cert_res.data['participant_name'], self.student1.full_name)
-
-        # 10. Admin Stats & Reports
+        # 9. Admin Stats & Reports
         self.client.force_authenticate(user=self.admin)
         stats_res = self.client.get('/api/teams/admin/stats/')
         self.assertEqual(stats_res.status_code, status.HTTP_200_OK)

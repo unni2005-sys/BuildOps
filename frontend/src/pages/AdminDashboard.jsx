@@ -199,18 +199,6 @@ export const AdminDashboard = () => {
     }
   };
 
-  const handleRegenerateCerts = async (teamId) => {
-    try {
-      setActionMsg('Regenerating certificates...');
-      const res = await api.post(`/certificates/admin/regenerate/${teamId}/`);
-      setActionMsg(res.data.message || 'Certificates regenerated.');
-      setTimeout(() => setActionMsg(''), 4000);
-      fetchTeams();
-    } catch (err) {
-      setActionMsg('Certificate regeneration failed.');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -891,9 +879,6 @@ export const AdminDashboard = () => {
                           <span className="text-[10px] text-slate-500">{m.member_role}</span>
                         </div>
                         <p className="text-slate-600 text-[11px]">{m.email} • {m.mobile_number}</p>
-                        {m.has_certificate && (
-                          <p className="text-teal-700 font-mono text-[10px] mt-1">Cert ID: {m.certificate_id}</p>
-                        )}
                       </div>
                     ))}
                   </div>
@@ -926,14 +911,6 @@ export const AdminDashboard = () => {
                       >
                         <Send size={12} /> Resend Ticket Email
                       </button>
-                      {selectedTeam.attendance_status === 'ARRIVED' && (
-                        <button
-                          onClick={() => handleRegenerateCerts(selectedTeam.id)}
-                          className="flex items-center gap-1 bg-teal-700 hover:bg-teal-600 text-white px-3 py-1.5 rounded text-xs cursor-pointer"
-                        >
-                          <RefreshCw size={12} /> Regenerate Certificates
-                        </button>
-                      )}
                     </div>
                   </div>
                 )}

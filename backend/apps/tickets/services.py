@@ -169,8 +169,7 @@ def generate_ticket_for_team(team, send_email=True):
         Spacer(1, 4),
         Paragraph("<b>Important Instructions:</b><br/>"
                   "• Both participants must carry valid college photo IDs.<br/>"
-                  "• One ticket covers both team members.<br/>"
-                  "• Participation certificates will be unlocked upon arrival verification.",
+                  "• One ticket covers both team members.",
                   ParagraphStyle('Small', fontName='Helvetica', fontSize=8.5, leading=11, textColor=colors.HexColor('#475569')))
     ]
 

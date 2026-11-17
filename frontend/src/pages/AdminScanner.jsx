@@ -65,7 +65,7 @@ export const AdminScanner = () => {
       });
       setStatusAlert({
         type: 'success',
-        message: res.data.message || 'Team successfully checked in! Participation certificates generated.'
+        message: res.data.message || 'Team successfully checked in!'
       });
       setScanResult((prev) => ({
         ...prev,
@@ -279,7 +279,7 @@ export const AdminScanner = () => {
                     className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2.5 px-4 rounded-md text-xs transition shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     <CheckCircle2 size={16} />
-                    {checkinLoading ? 'Checking in & Generating Certificates...' : 'Mark as Arrived (Confirm Gate Entry)'}
+                    {checkinLoading ? 'Recording Check-in...' : 'Mark as Arrived (Confirm Gate Entry)'}
                   </button>
                 ) : scanResult.already_arrived ? (
                   <button

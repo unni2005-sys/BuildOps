@@ -147,13 +147,11 @@ class ExportParticipantsCSVView(APIView):
             'Team Name',
             'Registration ID',
             'College Name',
-            'Attendance Status',
-            'Has Certificate'
+            'Attendance Status'
         ])
 
-        members = TeamMember.objects.select_related('team').prefetch_related('certificate').order_by('team__team_name', 'member_role')
+        members = TeamMember.objects.select_related('team').order_by('team__team_name', 'member_role')
         for m in members:
-            has_cert = hasattr(m, 'certificate') and m.certificate is not None
             writer.writerow([
                 m.full_name,
                 m.email,
@@ -162,8 +160,7 @@ class ExportParticipantsCSVView(APIView):
                 m.team.team_name,
                 m.team.registration_id,
                 m.team.college_name,
-                m.team.attendance_status,
-                'YES' if has_cert else 'NO'
+                m.team.attendance_status
             ])
 
         return response

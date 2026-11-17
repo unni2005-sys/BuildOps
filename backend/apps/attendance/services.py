@@ -4,7 +4,6 @@ from django.db import transaction
 from apps.teams.models import Team
 from apps.tickets.models import Ticket
 from apps.attendance.models import AttendanceLog
-from apps.certificates.services import generate_certificates_for_team
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +62,7 @@ def validate_team_for_checkin(token_or_reg_id):
 
 def perform_team_check_in(team, admin_user, action_details="QR Camera Scan"):
     """
-    Performs arrival check-in for the entire team, logs attendance, and automatically triggers
-    certificate generation.
+    Performs arrival check-in for the entire team and logs attendance.
     """
     if team.attendance_status == 'ARRIVED':
         arrival_str = team.arrival_timestamp.strftime('%Y-%m-%d %H:%M:%S') if team.arrival_timestamp else 'Earlier'
@@ -84,11 +82,5 @@ def perform_team_check_in(team, admin_user, action_details="QR Camera Scan"):
             admin=admin_user if (admin_user and admin_user.is_authenticated) else None,
             action_details=action_details
         )
-
-    # Safely generate individual certificates
-    try:
-        generate_certificates_for_team(team)
-    except Exception as e:
-        logger.error(f"Error in automatic certificate generation for team {team.id}: {e}", exc_info=True)
 
     return True, f"Team '{team.team_name}' [{team.registration_id}] successfully marked as ARRIVED!"
