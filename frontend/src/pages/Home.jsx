@@ -36,7 +36,7 @@ const RULES_ITEMS = [
 
 export const Home = () => {
   const { isAuthenticated, isAdmin } = useAuth();
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [openRule, setOpenRule] = useState('01');
 
   // Intro reveal state: 'entering' -> 'holding' (huge full-screen title) -> 'settled' (full home screen)
@@ -50,6 +50,8 @@ export const Home = () => {
   });
 
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
+  const userMutedRef = useRef(false);
   const heroBgRef = useRef(null);
   const heroStageRef = useRef(null);
 
@@ -183,11 +185,62 @@ export const Home = () => {
     return () => io.disconnect();
   }, []);
 
-  const toggleMute = (e) => {
+  // Auto-launch Avengers Doomsday theme music on site load (with graceful browser autoplay unlock on first tap/click)
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.55;
+    audio.loop = true;
+
+    const tryPlay = () => {
+      if (userMutedRef.current) return;
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise
+          .then(() => {
+            setIsMusicPlaying(true);
+            removeUnlockListeners();
+          })
+          .catch(() => {
+            // Browser blocked unmuted autoplay; will unlock automatically on first pointer/key gesture
+            setIsMusicPlaying(false);
+          });
+      }
+    };
+
+    const removeUnlockListeners = () => {
+      window.removeEventListener('pointerdown', tryPlay);
+      window.removeEventListener('keydown', tryPlay);
+    };
+
+    window.addEventListener('pointerdown', tryPlay, { passive: true });
+    window.addEventListener('keydown', tryPlay, { passive: true });
+
+    tryPlay();
+
+    return () => {
+      removeUnlockListeners();
+      audio.pause();
+    };
+  }, []);
+
+  const toggleMusic = (e) => {
     e.stopPropagation();
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isMusicPlaying) {
+      userMutedRef.current = true;
+      audio.pause();
+      setIsMusicPlaying(false);
+    } else {
+      userMutedRef.current = false;
+      audio.volume = 0.55;
+      audio
+        .play()
+        .then(() => setIsMusicPlaying(true))
+        .catch(() => setIsMusicPlaying(false));
     }
   };
 
@@ -195,6 +248,9 @@ export const Home = () => {
 
   return (
     <div className="bg-[#030504] text-[#eef2ee] relative">
+      {/* Avengers Doomsday Epic Theme Soundtrack */}
+      <audio ref={audioRef} src="/doomsday-theme.mp3" loop preload="auto" />
+
       {/* =====================================================================
           HERO — FULL-SCREEN CINEMA REVEAL -> INTERACTIVE 3D HOME STAGE
          ===================================================================== */}
@@ -204,7 +260,7 @@ export const Home = () => {
           isRevealing ? 'cursor-pointer' : ''
         }`}
       >
-        {/* Continuous Fullscreen 3D Parallax Video Backdrop (never restarts) */}
+        {/* Continuous Fullscreen 3D Parallax Video Backdrop (muted so MP3 theme plays cleanly) */}
         <div
           ref={heroBgRef}
           className="absolute inset-0 z-0 will-change-transform pointer-events-none"
@@ -215,7 +271,7 @@ export const Home = () => {
             src="/doomsday.mp4"
             autoPlay
             loop
-            muted={isMuted}
+            muted
             playsInline
             className={`w-full h-full object-cover contrast-[1.08] transition-all duration-[1200ms] ease-out ${
               isRevealing ? 'opacity-80 brightness-[0.9]' : 'opacity-55 brightness-[0.82]'
@@ -401,11 +457,17 @@ export const Home = () => {
           </span>
 
           <button
-            onClick={toggleMute}
-            className="inline-flex items-center gap-2 px-3 py-1.5 border border-white/15 bg-[#030504]/70 hover:border-emerald-500/60 hover:text-[#eef2ee] transition cursor-pointer"
+            onClick={toggleMusic}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 border bg-[#030504]/70 hover:border-emerald-500/60 hover:text-[#eef2ee] transition cursor-pointer ${
+              isMusicPlaying ? 'border-emerald-500/50 text-emerald-300' : 'border-white/15 text-[#8b9b90]'
+            }`}
           >
-            {isMuted ? <VolumeX size={12} className="text-emerald-400" /> : <Volume2 size={12} className="text-emerald-400" />}
-            <span>{isMuted ? 'Sound Off' : 'Sound On'}</span>
+            {isMusicPlaying ? (
+              <Volume2 size={12} className="text-emerald-400" />
+            ) : (
+              <VolumeX size={12} className="text-emerald-400" />
+            )}
+            <span>{isMusicPlaying ? 'Sound On' : 'Sound Off'}</span>
           </button>
         </div>
 
