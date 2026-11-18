@@ -347,91 +347,243 @@ export const StudentDashboard = () => {
             )}
           </div>
 
-          {/* Ticket Body */}
+          {/* Ticket Body — Doomsday Collector's Concert Pass */}
           <div className="mt-6">
             {team.payment_status === 'SUCCESS' && team.ticket_id ? (
-              <div className="p-6 sm:p-7 rounded-2xl bg-gradient-to-br from-white/[0.04] via-emerald-950/[0.1] to-white/[0.02] border border-emerald-500/25 relative overflow-hidden flex flex-col md:flex-row items-center gap-8 shadow-xl">
-                {/* Crisp White QR Container (Optimal Optical Camera Scanning) */}
-                <div className="bg-white p-3.5 rounded-2xl border-2 border-emerald-400/40 shadow-[0_0_30px_rgba(16,185,129,0.25)] flex flex-col items-center shrink-0">
-                  <img
-                    src={`${API_BASE_URL}/tickets/${team.ticket_id}/qr/`}
-                    alt={`QR Pass for ${team.registration_id}`}
-                    className="w-40 h-40 object-contain"
-                  />
-                  <div className="mt-2 text-center border-t border-slate-200/80 pt-1.5 w-full">
-                    <span className="text-[10px] font-mono-tech font-bold text-slate-800 tracking-wider uppercase block">
-                      OFFICIAL QR PASS
-                    </span>
-                    <span className="text-[9px] font-mono-tech text-slate-600 block">
-                      ASIET GATE CLEARANCE
+              <div className="relative bg-[#040806] border border-emerald-500/50 shadow-[0_24px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(16,185,129,0.12)] overflow-hidden">
+                {/* Inner fine metallic gold hairline */}
+                <div className="pointer-events-none absolute inset-[3px] border border-[#d4b46a]/40 z-20" />
+
+                {/* Subtle blueprint grid texture */}
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-30"
+                  style={{
+                    backgroundImage:
+                      'linear-gradient(to right, rgba(16,185,129,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(16,185,129,0.12) 1px, transparent 1px)',
+                    backgroundSize: '24px 24px',
+                  }}
+                />
+
+                <div className="relative z-10 flex flex-col md:flex-row">
+                  {/* Left Vertical Spine (Desktop) */}
+                  <div className="hidden md:flex w-8 shrink-0 bg-[#0a1d14] border-r border-emerald-500/30 items-center justify-center py-4">
+                    <span className="font-mono-tech text-[9px] font-bold tracking-[0.22em] text-[#d4b46a] uppercase whitespace-nowrap -rotate-90 select-none">
+                      BUILD OPS 2026 // ASIET × TCS // {team.registration_id}
                     </span>
                   </div>
-                </div>
 
-                {/* Ticket Details & Credential Metadata */}
-                <div className="flex-1 space-y-4 text-center md:text-left w-full">
-                  <div>
-                    <span className="inline-flex items-center gap-1.5 bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>Verified Admission</span>
-                    </span>
-                    <h3 className="font-display text-xl sm:text-2xl font-black text-white tracking-tight">
-                      BUILD OPS 2026
-                    </h3>
-                  </div>
-
-                  {/* Metadata Specs Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-zinc-300 pt-1">
-                    <div className="flex items-center gap-2 justify-center md:justify-start">
-                      <Calendar size={13} className="text-emerald-400 shrink-0" />
-                      <span>Dec 8, 2026 • 12-Hour Sprint</span>
-                    </div>
-                    <div className="flex items-center gap-2 justify-center md:justify-start">
-                      <Clock size={13} className="text-emerald-400 shrink-0" />
-                      <span>5:00 PM – 8:00 AM IST</span>
-                    </div>
-                    <div className="flex items-center gap-2 justify-center md:justify-start">
-                      <MapPin size={13} className="text-emerald-400 shrink-0" />
-                      <span>Innovation Arena, ASIET</span>
-                    </div>
-                    <div className="flex items-center gap-2 justify-center md:justify-start">
-                      <Zap size={13} className="text-emerald-400 shrink-0" />
-                      <span>Wi-Fi, Meals & Power Included</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-zinc-400 leading-relaxed pt-1">
-                    Present this digital QR pass on your mobile device or bring the downloaded PDF ticket to the registration desk on arrival.
-                  </p>
-
-                  {/* Encrypted Token Box */}
-                  <div className="pt-2 border-t border-white/[0.08]">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] font-mono-tech uppercase tracking-wider text-zinc-400 font-semibold">
-                        Encrypted Security Token
+                  {/* Main Ticket Body (Left) */}
+                  <div className="flex-1 p-5 sm:p-7 flex flex-col justify-between gap-5">
+                    {/* Top Eyebrow + VIP Stamp */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-mono-tech text-[10px] font-bold tracking-[0.18em] text-[#d4b46a] uppercase">
+                        Dept. of Computer Applications • ASIET × TCS
                       </span>
-                      <button
-                        onClick={() => copyToClipboard(team.qr_token, 'token')}
-                        className="text-xs text-emerald-400 hover:text-emerald-300 font-mono-tech flex items-center gap-1 transition cursor-pointer"
-                      >
-                        {copiedToken ? (
-                          <>
-                            <Check size={12} className="text-emerald-400" />
-                            <span>Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy size={12} />
-                            <span>Copy Token</span>
-                          </>
-                        )}
-                      </button>
+                      <span className="inline-flex items-center gap-1.5 bg-[#082317] border border-emerald-500/70 px-2.5 py-1 font-mono-tech text-[10px] font-bold tracking-widest text-emerald-300 uppercase">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        VIP PASS • ADMIT 02
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2 bg-[#04060a] p-2.5 rounded-xl border border-white/[0.08]">
-                      <code className="text-xs font-mono-tech text-emerald-300 select-all flex-1 truncate">
-                        {team.qr_token}
-                      </code>
+                    {/* Monumental Poster Title */}
+                    <div>
+                      <h3
+                        className="text-3xl sm:text-4xl font-black tracking-tight text-white uppercase leading-none"
+                        style={{
+                          fontFamily: "'PosterTitle', 'Arvo', serif",
+                          textShadow: '2px 2px 0px #064e3b',
+                        }}
+                      >
+                        BUILD OPS
+                      </h3>
+                      <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+                        <span className="font-mono-tech text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-emerald-400 uppercase">
+                          Official 12-Hour Buildathon Entry Pass
+                        </span>
+                        <span className="font-mono-tech text-[10px] sm:text-[11px] font-bold tracking-wider text-[#f3d58d]">
+                          FEE PAID: ₹{team.fee_amount || 500}
+                        </span>
+                      </div>
+                      <div className="mt-2.5 flex h-[2px] w-full">
+                        <div className="w-2/3 bg-emerald-500" />
+                        <div className="w-1/3 bg-[#d4b46a]/80 ml-1" />
+                      </div>
+                    </div>
+
+                    {/* Event Specs Columns */}
+                    <div className="grid grid-cols-3 gap-3 py-3 border-y border-emerald-500/20 text-left">
+                      <div>
+                        <span className="block font-mono-tech text-[9px] tracking-widest text-[#d4b46a] uppercase">
+                          Event Date
+                        </span>
+                        <span className="block text-xs font-bold text-white mt-0.5">
+                          DEC 08 – 09, 2026
+                        </span>
+                      </div>
+                      <div className="border-l border-emerald-500/20 pl-3">
+                        <span className="block font-mono-tech text-[9px] tracking-widest text-[#d4b46a] uppercase">
+                          Window
+                        </span>
+                        <span className="block text-xs font-bold text-white mt-0.5">
+                          5:00 PM – 9:00 PM
+                        </span>
+                      </div>
+                      <div className="border-l border-emerald-500/20 pl-3">
+                        <span className="block font-mono-tech text-[9px] tracking-widest text-[#d4b46a] uppercase">
+                          Venue
+                        </span>
+                        <span className="block text-xs font-bold text-white mt-0.5">
+                          ASIET Campus
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Squad Name + Reg ID */}
+                    <div className="flex flex-wrap items-end justify-between gap-2">
+                      <div>
+                        <span className="block font-mono-tech text-[9px] tracking-widest text-emerald-400 uppercase">
+                          Registered Squad
+                        </span>
+                        <span
+                          className="block text-lg sm:text-xl font-bold text-white uppercase tracking-tight"
+                          style={{ fontFamily: "'PosterTitle', 'Arvo', serif" }}
+                        >
+                          {team.team_name}
+                        </span>
+                        <span className="block text-[11px] text-zinc-400 mt-0.5">
+                          {team.college_name}
+                        </span>
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <span className="block font-mono-tech text-[9px] tracking-widest text-[#d4b46a] uppercase">
+                          Registration ID
+                        </span>
+                        <span className="block font-mono-tech text-sm sm:text-base font-bold text-[#f3d58d] tracking-wider">
+                          {team.registration_id}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Compact Operatives Strip */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {team.members.map((member, idx) => (
+                        <div
+                          key={member.id}
+                          className={`bg-[#0b1510] border border-emerald-500/20 px-3 py-2 border-l-2 ${
+                            member.member_role === 'LEADER'
+                              ? 'border-l-emerald-400'
+                              : 'border-l-[#d4b46a]'
+                          }`}
+                        >
+                          <span
+                            className={`block font-mono-tech text-[9px] font-bold tracking-wider uppercase ${
+                              member.member_role === 'LEADER'
+                                ? 'text-[#f3d58d]'
+                                : 'text-emerald-400'
+                            }`}
+                          >
+                            0{idx + 1} // {member.member_role === 'LEADER' ? 'TEAM LEADER' : 'TEAM MEMBER'}
+                          </span>
+                          <span className="block text-xs font-bold text-white truncate mt-0.5">
+                            {member.full_name}
+                          </span>
+                          <span className="block font-mono-tech text-[10px] text-emerald-300/80 truncate">
+                            {member.mobile_number}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bottom Status Strip */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[10px] font-mono-tech">
+                      <span className="inline-flex items-center gap-1.5 text-emerald-400 font-bold tracking-wider uppercase">
+                        <span className="w-2 h-2 bg-emerald-400 inline-block" />
+                        CONFIRMED &amp; PAID
+                      </span>
+                      <span className="text-zinc-500 uppercase tracking-wider">
+                        Carry Valid College Photo ID
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Perforation Tear-Off Divider with Concert Ticket Semicircular Notches */}
+                  <div className="relative flex md:flex-col items-center justify-center shrink-0">
+                    {/* Mobile horizontal dashed divider + left/right notches */}
+                    <div className="w-full h-px border-t-2 border-dashed border-[#d4b46a]/60 md:hidden" />
+                    <div className="hidden md:block h-full w-px border-l-2 border-dashed border-[#d4b46a]/60" />
+
+                    {/* Top & Bottom Semicircular Cutouts on Desktop */}
+                    <div className="hidden md:block absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-[#090d16] border border-emerald-500/50 z-30" />
+                    <div className="hidden md:block absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-[#090d16] border border-emerald-500/50 z-30" />
+
+                    {/* Left & Right Semicircular Cutouts on Mobile */}
+                    <div className="md:hidden absolute -left-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#090d16] border border-emerald-500/50 z-30" />
+                    <div className="md:hidden absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#090d16] border border-emerald-500/50 z-30" />
+                  </div>
+
+                  {/* Right Tear-Off QR Stub */}
+                  <div className="md:w-64 shrink-0 bg-[#050a08] p-5 sm:p-6 flex flex-col items-center justify-between text-center gap-3.5">
+                    <div>
+                      <span className="block font-mono-tech text-[10px] font-bold tracking-[0.2em] text-[#d4b46a] uppercase">
+                        Gate Scan Stub
+                      </span>
+                      <span className="block font-mono-tech text-[9px] text-emerald-400/90 uppercase mt-0.5">
+                        Present at Entry Desk
+                      </span>
+                    </div>
+
+                    {/* High-Contrast QR Code with Tactical Gold Corner Brackets */}
+                    <div className="relative p-1.5">
+                      <span className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#d4b46a]" />
+                      <span className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-[#d4b46a]" />
+                      <span className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-[#d4b46a]" />
+                      <span className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#d4b46a]" />
+                      <div className="bg-white p-2 border border-emerald-500">
+                        <img
+                          src={`${API_BASE_URL}/tickets/${team.ticket_id}/qr/`}
+                          alt={`QR Pass for ${team.registration_id}`}
+                          className="w-36 h-36 object-contain"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Registration ID & Copyable Security Token */}
+                    <div className="w-full space-y-2">
+                      <span className="block font-mono-tech text-xs font-bold text-white tracking-widest">
+                        {team.registration_id}
+                      </span>
+
+                      <div className="flex items-center gap-1.5 bg-[#030605] border border-emerald-500/25 px-2.5 py-1.5">
+                        <code className="text-[10px] font-mono-tech text-emerald-300 select-all flex-1 truncate">
+                          {team.qr_token}
+                        </code>
+                        <button
+                          onClick={() => copyToClipboard(team.qr_token, 'token')}
+                          className="text-emerald-400 hover:text-[#f3d58d] transition shrink-0 cursor-pointer"
+                          title="Copy Security Token"
+                        >
+                          {copiedToken ? <Check size={12} /> : <Copy size={12} />}
+                        </button>
+                      </div>
+
+                      {/* Decorative Concert Barcode Strip */}
+                      <div className="flex items-stretch justify-center gap-[2px] h-5 pt-1 opacity-75">
+                        {Array.from({ length: 34 }).map((_, i) => (
+                          <span
+                            key={i}
+                            className={`inline-block ${
+                              i % 9 === 0 ? 'bg-emerald-400' : 'bg-zinc-400'
+                            }`}
+                            style={{
+                              width: ((i * 7 + (team.registration_id?.charCodeAt(i % team.registration_id.length) || 3)) % 3 === 0) ? '3px' : '1.5px',
+                            }}
+                          />
+                        ))}
+                      </div>
+
+                      <span className="block font-mono-tech text-[9px] font-bold tracking-[0.16em] text-[#d4b46a] uppercase">
+                        Admit Two • Dec 08–09 2026
+                      </span>
                     </div>
                   </div>
                 </div>
