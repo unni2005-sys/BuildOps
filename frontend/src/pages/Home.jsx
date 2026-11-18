@@ -1,46 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Tilt3D } from '../components/Tilt3D';
 import { ArrowUpRight, Volume2, VolumeX, Plus, Minus } from 'lucide-react';
-
-const SCHEDULE_ITEMS = [
-  {
-    index: '01',
-    day: 'DEC 08',
-    time: '17:00',
-    title: 'Gate Check-In & QR Scan',
-    note: 'Both team members verify college IDs and scan their digital pass.',
-  },
-  {
-    index: '02',
-    day: 'DEC 08',
-    time: '18:00',
-    title: 'Problem Statement Briefing',
-    note: 'Live release of official buildathon tracks and evaluation criteria.',
-  },
-  {
-    index: '03',
-    day: 'DEC 08',
-    time: '18:30',
-    title: 'Build Phase Begins',
-    note: 'Teams design, engineer, and deploy through the night on campus.',
-  },
-  {
-    index: '04',
-    day: 'DEC 09',
-    time: '02:00',
-    title: 'Midnight Mentor Checkpoint',
-    note: 'Architecture feedback and mid-sprint prototype stability reviews.',
-  },
-  {
-    index: '05',
-    day: 'DEC 09',
-    time: '07:30',
-    title: 'Live Demos & Final Judging',
-    note: 'Working product presentations before the ASIET × TCS jury until 09:00 AM.',
-  },
-];
 
 const RULES_ITEMS = [
   {
@@ -153,7 +114,7 @@ export const Home = () => {
     };
   }, []);
 
-  // Scroll reveal observer for clean staggered section entrances
+  // Scroll reveal observer for smooth section entrances
   useEffect(() => {
     const nodes = document.querySelectorAll('.reveal-block');
     if (!nodes.length) return;
@@ -202,7 +163,6 @@ export const Home = () => {
             playsInline
             className="w-full h-full object-cover opacity-55 contrast-[1.08] brightness-[0.82]"
           />
-          {/* Deep Cinema Vignette & Emerald Atmospheric Underglow */}
           <div
             className="absolute inset-0"
             style={{
@@ -222,7 +182,7 @@ export const Home = () => {
           <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400/70 shadow-[0_0_12px_#10b981]" />
         </div>
 
-        {/* Top Coordinates Strip */}
+        {/* Top Header Strip */}
         <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pt-5 sm:pt-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="w-[2px] h-5 sm:h-6 bg-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.65)]" />
@@ -327,7 +287,7 @@ export const Home = () => {
 
             {/* Primary Actions */}
             <div
-              className="mt-9 flex flex-wrap items-center justify-center gap-3.5"
+              className="mt-8 sm:mt-9 flex flex-wrap items-center justify-center gap-3.5"
               style={{ transform: 'translateZ(36px)' }}
             >
               {isAuthenticated ? (
@@ -360,10 +320,10 @@ export const Home = () => {
         </div>
 
         {/* Bottom Cinema Utility Bar */}
-        <div className="relative z-10 max-w-7xl w-full mx-auto px-5 sm:px-8 pb-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase">
-          <a href="#overview" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+        <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pb-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase">
+          <a href="#rules" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
             <span className="w-4 h-px bg-emerald-500/70 inline-block" />
-            <span>Scroll</span>
+            <span>Rules &amp; Entry</span>
           </a>
 
           <span className="hidden md:inline text-[#5a685e]">
@@ -381,248 +341,13 @@ export const Home = () => {
       </section>
 
       {/* =====================================================================
-          KINETIC TICKER TAPE
-         ===================================================================== */}
-      <div className="border-b border-white/[0.08] bg-[#060a08] overflow-hidden py-3 select-none">
-        <div className="animate-doomsday-marquee font-mono-tech text-[11px] tracking-[0.26em] uppercase text-[#8b9b90]">
-          {[0, 1].map((dup) => (
-            <div key={dup} className="flex items-center gap-10 pr-10 shrink-0">
-              <span>BUILD OPS 2026</span>
-              <span className="text-emerald-500">◆</span>
-              <span>DECEMBER 08 – 09</span>
-              <span className="text-emerald-500">◆</span>
-              <span>ASIET × TCS</span>
-              <span className="text-emerald-500">◆</span>
-              <span className="text-[#eef2ee]">TEAMS OF TWO</span>
-              <span className="text-emerald-500">◆</span>
-              <span className="text-[#d4b46a]">₹500 PER TEAM</span>
-              <span className="text-emerald-500">◆</span>
-              <span>ON-CAMPUS BUILDATHON</span>
-              <span className="text-emerald-500">◆</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* =====================================================================
-          SECTION 01 — EVENT DOSSIER + INTERACTIVE 3D CONCERT PASS
-         ===================================================================== */}
-      <section id="overview" className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 border-b border-white/[0.08]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
-          {/* Left: Architectural Fact Index */}
-          <div className="lg:col-span-6 space-y-8 reveal-block">
-            <div>
-              <span className="font-mono-tech text-[10px] tracking-[0.26em] text-emerald-400 uppercase block mb-3">
-                01 // OVERVIEW
-              </span>
-              <h2 className="font-poster text-3xl sm:text-4xl text-[#eef2ee] leading-tight tracking-tight">
-                Two builders. One live problem. Zero shortcuts.
-              </h2>
-            </div>
-
-            <div className="divide-y divide-white/[0.08] border-y border-white/[0.08]">
-              {[
-                {
-                  num: '01',
-                  label: 'FORMAT',
-                  value: 'Teams of 2 — on-campus engineering sprint hosted by Dept. of Computer Applications, ASIET × TCS.',
-                },
-                {
-                  num: '02',
-                  label: 'WINDOW',
-                  value: 'December 8, 5:00 PM through December 9, 9:00 AM, 2026.',
-                },
-                {
-                  num: '03',
-                  label: 'REGISTRATION',
-                  value: '₹500 per team via Razorpay. Single payment covers both participants.',
-                },
-                {
-                  num: '04',
-                  label: 'GATE PASS',
-                  value: 'Confirmed teams instantly receive a signed QR concert pass by email and in their portal.',
-                },
-              ].map((row) => (
-                <div key={row.num} className="py-4 grid grid-cols-12 gap-4 items-baseline">
-                  <span className="col-span-3 sm:col-span-3 font-mono-tech text-[10px] tracking-[0.2em] text-[#d4b46a]">
-                    {row.num} / {row.label}
-                  </span>
-                  <p className="col-span-9 sm:col-span-9 text-sm text-[#c8d4cb] leading-relaxed">
-                    {row.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right: Interactive 3D Collector's Concert Pass Preview */}
-          <div className="lg:col-span-6 reveal-block">
-            <div className="font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase mb-3 flex items-center justify-between">
-              <span>COLLECTOR GATE PASS PREVIEW</span>
-              <span className="text-emerald-400">MOVE CURSOR TO TILT 3D</span>
-            </div>
-
-            <Tilt3D maxTilt={11} perspective={1100} className="w-full">
-              <div className="relative bg-[#050a08] border border-emerald-500/55 shadow-[0_30px_70px_rgba(0,0,0,0.9)] overflow-hidden select-none">
-                {/* Inner fine metallic gold border */}
-                <div className="pointer-events-none absolute inset-[4px] border border-[#d4b46a]/35 z-20" />
-
-                {/* Architectural grid */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-25"
-                  style={{
-                    backgroundImage:
-                      'linear-gradient(to right, rgba(16,185,129,0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(16,185,129,0.16) 1px, transparent 1px)',
-                    backgroundSize: '20px 20px',
-                  }}
-                />
-
-                <div className="relative z-10 flex flex-col sm:flex-row">
-                  {/* Main Left Pass */}
-                  <div className="flex-1 p-6 flex flex-col justify-between gap-5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono-tech text-[9px] tracking-[0.2em] text-[#d4b46a] uppercase">
-                        ASIET × TCS
-                      </span>
-                      <span className="font-mono-tech text-[9px] tracking-[0.18em] text-emerald-300 border border-emerald-500/60 bg-emerald-500/10 px-2 py-0.5 uppercase">
-                        VIP • ADMIT 02
-                      </span>
-                    </div>
-
-                    <div style={{ transform: 'translateZ(24px)' }}>
-                      <div
-                        className="font-poster text-3xl sm:text-4xl text-[#eef2ee] tracking-tight leading-none"
-                        style={{ textShadow: '2px 2px 0 #064e3b' }}
-                      >
-                        BUILD OPS
-                      </div>
-                      <div className="mt-2 h-[2px] flex">
-                        <span className="w-2/3 bg-emerald-500" />
-                        <span className="w-1/3 bg-[#d4b46a]/80 ml-1" />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 font-mono-tech text-[10px] border-t border-white/10 pt-3">
-                      <div>
-                        <span className="text-[#8b9b90] block text-[9px]">DATE</span>
-                        <span className="text-[#eef2ee] font-bold">DEC 08 – 09, 2026</span>
-                      </div>
-                      <div>
-                        <span className="text-[#8b9b90] block text-[9px]">PASS ID</span>
-                        <span className="text-[#d4b46a] font-bold">BUILD-XXXXXXXX</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between font-mono-tech text-[9px] text-emerald-400 tracking-widest uppercase">
-                      <span>■ CONFIRMED ENTRY</span>
-                      <span className="text-[#8b9b90]">INR 500</span>
-                    </div>
-                  </div>
-
-                  {/* Perforation Line + Notches */}
-                  <div className="relative flex sm:flex-col items-center justify-center shrink-0">
-                    <div className="w-full h-px border-t border-dashed border-[#d4b46a]/60 sm:hidden" />
-                    <div className="hidden sm:block h-full w-px border-l border-dashed border-[#d4b46a]/60" />
-                    <div className="hidden sm:block absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-[#030504] border border-emerald-500/50 z-30" />
-                    <div className="hidden sm:block absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-[#030504] border border-emerald-500/50 z-30" />
-                  </div>
-
-                  {/* Right QR Stub */}
-                  <div className="sm:w-44 shrink-0 bg-[#040806] p-5 flex flex-col items-center justify-center gap-3 text-center">
-                    <span className="font-mono-tech text-[9px] tracking-[0.2em] text-[#d4b46a] uppercase">
-                      GATE STUB
-                    </span>
-
-                    {/* Minimal Tactical QR Graphic */}
-                    <div className="relative p-1.5" style={{ transform: 'translateZ(20px)' }}>
-                      <span className="absolute top-0 left-0 w-2.5 h-2.5 border-t border-l border-[#d4b46a]" />
-                      <span className="absolute top-0 right-0 w-2.5 h-2.5 border-t border-r border-[#d4b46a]" />
-                      <span className="absolute bottom-0 left-0 w-2.5 h-2.5 border-b border-l border-[#d4b46a]" />
-                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r border-[#d4b46a]" />
-                      <div className="w-24 h-24 bg-[#eef2ee] p-2 grid grid-cols-5 grid-rows-5 gap-0.5">
-                        {[
-                          1, 1, 1, 0, 1,
-                          1, 0, 1, 1, 0,
-                          1, 1, 1, 0, 1,
-                          0, 1, 0, 1, 1,
-                          1, 0, 1, 1, 1,
-                        ].map((cell, idx) => (
-                          <span
-                            key={idx}
-                            className={cell ? 'bg-[#030504]' : 'bg-transparent'}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Barcode Strip */}
-                    <div className="flex items-stretch justify-center gap-[2px] h-4 w-full opacity-75">
-                      {Array.from({ length: 24 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={i % 7 === 0 ? 'bg-emerald-400' : 'bg-[#8b9b90]'}
-                          style={{ width: i % 3 === 0 ? '2.5px' : '1px' }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Tilt3D>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================================
-          SECTION 02 — SCHEDULE INDEX
-         ===================================================================== */}
-      <section id="schedule" className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 border-b border-white/[0.08]">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12 reveal-block">
-          <div>
-            <span className="font-mono-tech text-[10px] tracking-[0.26em] text-emerald-400 uppercase block mb-3">
-              02 // SCHEDULE
-            </span>
-            <h2 className="font-poster text-3xl sm:text-4xl text-[#eef2ee] tracking-tight">
-              Run of Show
-            </h2>
-          </div>
-          <span className="font-mono-tech text-xs tracking-[0.18em] text-[#8b9b90] uppercase">
-            DEC 08, 17:00 — DEC 09, 09:00 IST
-          </span>
-        </div>
-
-        <div className="border-t border-white/[0.1] reveal-block">
-          {SCHEDULE_ITEMS.map((item) => (
-            <div
-              key={item.index}
-              className="group grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-6 py-6 border-b border-white/[0.08] hover:bg-emerald-500/[0.03] px-3 -mx-3 transition-colors"
-            >
-              <div className="md:col-span-3 flex items-center gap-4 font-mono-tech text-xs">
-                <span className="text-[#5a685e] group-hover:text-emerald-400 transition-colors">
-                  {item.index}
-                </span>
-                <span className="text-[#d4b46a] tracking-widest">{item.day}</span>
-                <span className="text-[#eef2ee] font-semibold">{item.time}</span>
-              </div>
-              <div className="md:col-span-4 font-display text-lg font-semibold text-[#eef2ee] group-hover:text-emerald-300 transition-colors">
-                {item.title}
-              </div>
-              <div className="md:col-span-5 text-sm text-[#8b9b90] leading-relaxed">
-                {item.note}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* =====================================================================
-          SECTION 03 — RULES ACCORDION
+          RULES & ENTRY
          ===================================================================== */}
       <section id="rules" className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 border-b border-white/[0.08]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-4 reveal-block">
             <span className="font-mono-tech text-[10px] tracking-[0.26em] text-emerald-400 uppercase block mb-3">
-              03 // PROTOCOL
+              PROTOCOL
             </span>
             <h2 className="font-poster text-3xl sm:text-4xl text-[#eef2ee] tracking-tight mb-4">
               Rules &amp; Entry
@@ -665,36 +390,14 @@ export const Home = () => {
       </section>
 
       {/* =====================================================================
-          SECTION 04 — MONUMENTAL CLOSING CTA
-         ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-5 sm:px-8 py-24 sm:py-32 text-center reveal-block">
-        <span className="font-mono-tech text-[10px] tracking-[0.28em] text-[#d4b46a] uppercase block mb-4">
-          REGISTRATIONS OPEN • ₹500 PER TEAM
-        </span>
-        <h2 className="font-poster text-4xl sm:text-6xl md:text-7xl text-[#eef2ee] tracking-tight mb-8">
-          DEC 08, 2026.
-        </h2>
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <Link
-            to={isAuthenticated ? (isAdmin ? '/admin/dashboard' : '/student/dashboard') : '/register'}
-            className="doom-btn-primary font-mono-tech text-xs uppercase tracking-[0.22em] px-9 py-4 gap-2"
-          >
-            <span>{isAuthenticated ? 'Go to Portal' : 'Register Your Team'}</span>
-            <ArrowUpRight size={15} />
-          </Link>
-        </div>
-      </section>
-
-      {/* =====================================================================
           MINIMALIST FOOTER
          ===================================================================== */}
-      <footer className="border-t border-white/[0.08] bg-[#020403] py-8 px-5 sm:px-8">
+      <footer className="bg-[#020403] py-8 px-5 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono-tech text-[11px] text-[#5a685e]">
           <span className="text-[#8b9b90] tracking-wider uppercase">
             BUILD OPS 2026 — ASIET × TCS
           </span>
           <div className="flex items-center gap-6 uppercase tracking-wider">
-            <a href="#schedule" className="hover:text-[#eef2ee] transition-colors">Schedule</a>
             <a href="#rules" className="hover:text-[#eef2ee] transition-colors">Rules</a>
             <Link to="/login" className="hover:text-[#eef2ee] transition-colors">Sign In</Link>
             <Link to="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">Register</Link>
