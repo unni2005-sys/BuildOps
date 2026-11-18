@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User, ShieldCheck, Ticket, QrCode, Code2 } from 'lucide-react';
+import { LogOut, User, ShieldCheck, Ticket, QrCode, Code2, ArrowRight } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -13,104 +13,109 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="bg-[#050c08]/90 backdrop-blur-md text-emerald-50 border-b border-emerald-500/20 sticky top-0 z-50 shadow-[0_4px_24px_rgba(0,0,0,0.65)]">
+    <nav className="bg-[#07090e]/80 backdrop-blur-xl border-b border-white/[0.08] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <span className="w-8 h-8 rounded bg-emerald-950/90 border border-amber-300/40 text-emerald-400 flex items-center justify-center shadow-[0_0_12px_rgba(34,255,102,0.22)] group-hover:border-emerald-400 transition">
-                <Code2 size={16} />
-              </span>
-              <div className="flex flex-col leading-none">
-                <span className="font-display font-black text-base tracking-[0.12em] text-buildops">
+          {/* Brand Logo */}
+          <div className="flex items-center gap-8">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 flex items-center justify-center group-hover:border-emerald-500/50 group-hover:bg-emerald-500/20 transition-all shadow-[0_0_12px_rgba(16,185,129,0.2)]">
+                <Code2 size={18} />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-display font-black text-base sm:text-lg tracking-tight text-white group-hover:text-emerald-400 transition-colors">
                   BUILD OPS
                 </span>
-                <span className="font-imperial text-[9px] tracking-[0.22em] text-amber-200/75 uppercase mt-0.5">
+                <span className="text-[10px] tracking-wider text-emerald-400 uppercase font-bold">
                   ASIET × TCS
                 </span>
               </div>
             </Link>
 
-            {isAuthenticated && (
-              <div className="hidden md:flex items-center ml-8 gap-5 text-xs font-semibold uppercase tracking-wider">
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+              <a href="/#rules" className="hover:text-white transition-colors">
+                Rules & Guidelines
+              </a>
+            </div>
+          </div>
+
+          {/* Right Action / Auth Controls */}
+          <div className="flex items-center gap-3">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3">
                 {isAdmin ? (
-                  <>
+                  <div className="hidden sm:flex items-center gap-2">
                     <Link
                       to="/admin/dashboard"
-                      className="text-emerald-200/75 hover:text-emerald-300 hover:drop-shadow-[0_0_8px_rgba(34,255,102,0.5)] transition"
+                      className="text-xs font-medium text-zinc-300 hover:text-white px-3 py-1.5 rounded-md hover:bg-white/5 transition"
                     >
-                      Dashboard
+                      Admin Dashboard
                     </Link>
                     <Link
                       to="/admin/scanner"
-                      className="text-emerald-200/75 hover:text-amber-200 flex items-center gap-1.5 transition"
+                      className="text-xs font-medium text-zinc-300 hover:text-white px-3 py-1.5 rounded-md hover:bg-white/5 flex items-center gap-1.5 transition"
                     >
-                      <QrCode size={15} className="text-emerald-400" /> QR Scanner
+                      <QrCode size={14} className="text-emerald-400" /> Gate Scanner
                     </Link>
-                  </>
+                  </div>
                 ) : (
                   <Link
                     to="/student/dashboard"
-                    className="text-emerald-200/75 hover:text-emerald-300 flex items-center gap-1.5 transition"
+                    className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-zinc-300 hover:text-white px-3 py-1.5 rounded-md hover:bg-white/5 transition"
                   >
-                    <Ticket size={15} className="text-emerald-400" /> My Dashboard
+                    <Ticket size={14} className="text-emerald-400" /> My Dashboard
                   </Link>
                 )}
-              </div>
-            )}
-          </div>
 
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-2.5">
-                <div className="flex items-center gap-2 text-xs bg-[#091710] px-3 py-1.5 rounded-md border border-emerald-500/25">
+                <div className="flex items-center gap-2 text-xs bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
                   {isAdmin ? (
-                    <ShieldCheck size={15} className="text-amber-300" />
+                    <ShieldCheck size={14} className="text-amber-400" />
                   ) : (
-                    <User size={15} className="text-emerald-400" />
+                    <User size={14} className="text-emerald-400" />
                   )}
-                  <span className="font-semibold text-emerald-50 max-w-[120px] sm:max-w-none truncate">
+                  <span className="font-medium text-zinc-200 max-w-[120px] sm:max-w-none truncate">
                     {user?.full_name}
                   </span>
                   <span
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border ${
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wider uppercase ${
                       isAdmin
-                        ? 'bg-amber-500/15 text-amber-200 border-amber-400/35'
-                        : 'bg-emerald-500/15 text-emerald-300 border-emerald-400/35'
+                        ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
+                        : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
                     }`}
                   >
                     {user?.role}
                   </span>
                 </div>
+
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-1.5 text-xs bg-[#091710] hover:bg-rose-950/70 hover:text-rose-200 hover:border-rose-500/40 text-emerald-200/80 px-3 py-1.5 rounded-md border border-emerald-500/25 transition cursor-pointer"
-                  title="Logout"
+                  className="p-2 rounded-lg text-zinc-400 hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition cursor-pointer"
+                  title="Sign Out"
                 >
-                  <LogOut size={14} />
-                  <span className="hidden sm:inline">Logout</span>
+                  <LogOut size={15} />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2.5 text-xs font-semibold">
+              <div className="flex items-center gap-2.5 sm:gap-3 text-sm">
                 <Link
                   to="/login"
-                  className="text-emerald-200/80 hover:text-amber-200 px-3 py-1.5 tracking-wider uppercase transition"
+                  className="text-zinc-300 hover:text-white font-medium px-3 py-1.5 rounded-lg hover:bg-white/5 transition text-xs sm:text-sm"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="doom-btn-primary px-4 py-1.5 rounded-md text-xs tracking-wider uppercase"
+                  className="btn-primary px-4 sm:px-5 py-2 rounded-xl font-semibold flex items-center gap-1.5 text-xs sm:text-sm shadow-[0_4px_16px_rgba(16,185,129,0.35)] cursor-pointer"
                 >
-                  Sign Up
+                  <span>Register Team</span>
+                  <ArrowRight size={14} />
                 </Link>
               </div>
             )}
           </div>
         </div>
       </div>
-      <div className="laser-divider opacity-60" />
     </nav>
   );
 };

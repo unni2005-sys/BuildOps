@@ -8,6 +8,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { VerifyEmail } from './pages/VerifyEmail';
+import { Home } from './pages/Home';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { RegisterTeam } from './pages/RegisterTeam';
 import { PaymentStatus } from './pages/PaymentStatus';
@@ -53,7 +54,7 @@ export function App() {
           <div className="flex-1 relative z-10">
             <Routes>
               {/* Entry & Auth Routes */}
-              <Route path="/" element={<RootEntry />} />
+              <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
