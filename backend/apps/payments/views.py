@@ -10,6 +10,8 @@ from apps.teams.models import Team, TeamMember
 from apps.payments.models import Payment
 from apps.payments.serializers import PaymentSerializer
 from apps.payments.services import (
+    RazorpayAuthError,
+    RazorpayGatewayError,
     is_razorpay_configured,
     is_razorpay_live,
     create_razorpay_order,
@@ -70,6 +72,10 @@ class CreateOrderView(APIView):
                     'team_name': team.team_name,
                 },
             }, status=status.HTTP_201_CREATED)
+        except RazorpayAuthError as e:
+            return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+        except RazorpayGatewayError as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

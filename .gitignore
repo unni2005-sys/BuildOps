@@ -42,10 +42,13 @@ yarn-error.log*
 # Environment
 .env
 backend/.env
+frontend/.env
 !backend/.env.example
+!frontend/.env.example
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+.agent/skills/cashfree-skills/

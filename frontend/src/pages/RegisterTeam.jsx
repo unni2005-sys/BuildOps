@@ -94,8 +94,9 @@ export const RegisterTeam = () => {
       return;
     }
 
+    const razorpayKeyId = order.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID || '';
     const options = {
-      key: order.key_id,
+      key: razorpayKeyId,
       amount: order.amount_paise,
       currency: order.currency || 'INR',
       name: 'Build Ops',
@@ -156,7 +157,8 @@ export const RegisterTeam = () => {
     const order = orderRes.data;
     setPaymentOrder(order);
 
-    if (!order.is_mock && order.key_id) {
+    const razorpayKeyId = order.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID;
+    if (!order.is_mock && razorpayKeyId) {
       await openRazorpayCheckout(order);
     } else {
       // Fallback test checkout screen when Razorpay keys are not yet configured
