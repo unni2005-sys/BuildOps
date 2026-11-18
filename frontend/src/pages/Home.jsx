@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ArrowUpRight, Volume2, VolumeX, Plus, Minus } from 'lucide-react';
 
+// Plays once per fresh page load/refresh; navigating back from /login or /register skips replay
+let hasPlayedIntroReveal = false;
+
 const RULES_ITEMS = [
   {
     id: '01',
@@ -35,6 +38,17 @@ export const Home = () => {
   const { isAuthenticated, isAdmin } = useAuth();
   const [isMuted, setIsMuted] = useState(true);
   const [openRule, setOpenRule] = useState('01');
+
+  // Intro reveal state: 'entering' -> 'holding' (huge full-screen title) -> 'settled' (full home screen)
+  const [introPhase, setIntroPhase] = useState(() => {
+    if (hasPlayedIntroReveal) return 'settled';
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      hasPlayedIntroReveal = true;
+      return 'settled';
+    }
+    return 'entering';
+  });
+
   const videoRef = useRef(null);
   const heroBgRef = useRef(null);
   const heroStageRef = useRef(null);
@@ -45,6 +59,40 @@ export const Home = () => {
     minutes: '00',
     seconds: '00',
   });
+
+  const isRevealing = introPhase !== 'settled';
+
+  // Cinema intro reveal sequence
+  useEffect(() => {
+    if (hasPlayedIntroReveal) return;
+
+    // Lock scroll briefly while the full-screen name reveal plays
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const t1 = setTimeout(() => {
+      setIntroPhase('holding');
+    }, 90);
+
+    const t2 = setTimeout(() => {
+      hasPlayedIntroReveal = true;
+      setIntroPhase('settled');
+      document.body.style.overflow = prevOverflow;
+    }, 2400);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
+
+  const skipIntro = () => {
+    if (!isRevealing) return;
+    hasPlayedIntroReveal = true;
+    setIntroPhase('settled');
+    document.body.style.overflow = '';
+  };
 
   // Live countdown to Dec 8, 2026, 5:00 PM IST
   useEffect(() => {
@@ -135,20 +183,28 @@ export const Home = () => {
     return () => io.disconnect();
   }, []);
 
-  const toggleMute = () => {
+  const toggleMute = (e) => {
+    e.stopPropagation();
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
     }
   };
 
+  const uiStateClass = isRevealing ? 'ui-hidden' : 'ui-visible';
+
   return (
     <div className="bg-[#030504] text-[#eef2ee] relative">
       {/* =====================================================================
-          HERO — FULL-VIEWPORT 3D CINEMA STAGE
+          HERO — FULL-SCREEN CINEMA REVEAL -> INTERACTIVE 3D HOME STAGE
          ===================================================================== */}
-      <section className="relative min-h-screen flex flex-col justify-between overflow-hidden border-b border-white/[0.08]">
-        {/* Fullscreen 3D Parallax Video Backdrop */}
+      <section
+        onClick={isRevealing ? skipIntro : undefined}
+        className={`relative min-h-screen flex flex-col justify-between overflow-hidden border-b border-white/[0.08] ${
+          isRevealing ? 'cursor-pointer' : ''
+        }`}
+      >
+        {/* Continuous Fullscreen 3D Parallax Video Backdrop (never restarts) */}
         <div
           ref={heroBgRef}
           className="absolute inset-0 z-0 will-change-transform pointer-events-none"
@@ -161,13 +217,16 @@ export const Home = () => {
             loop
             muted={isMuted}
             playsInline
-            className="w-full h-full object-cover opacity-55 contrast-[1.08] brightness-[0.82]"
+            className={`w-full h-full object-cover contrast-[1.08] transition-all duration-[1200ms] ease-out ${
+              isRevealing ? 'opacity-80 brightness-[0.9]' : 'opacity-55 brightness-[0.82]'
+            }`}
           />
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 transition-opacity duration-[1200ms]"
             style={{
-              background:
-                'radial-gradient(ellipse 65% 55% at 50% 48%, rgba(16,185,129,0.08) 0%, rgba(3,5,4,0.68) 60%, rgba(3,5,4,0.96) 100%)',
+              background: isRevealing
+                ? 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(16,185,129,0.12) 0%, rgba(3,5,4,0.48) 58%, rgba(3,5,4,0.94) 100%)'
+                : 'radial-gradient(ellipse 65% 55% at 50% 48%, rgba(16,185,129,0.08) 0%, rgba(3,5,4,0.68) 60%, rgba(3,5,4,0.96) 100%)',
             }}
           />
           <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#030504] to-transparent" />
@@ -176,14 +235,19 @@ export const Home = () => {
         {/* Subtle 3D Tilted Orbital Ring Behind Title */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-1/2 w-[560px] h-[560px] sm:w-[760px] sm:h-[760px] rounded-full border border-emerald-500/15 animate-orbit-3d z-[1]"
+          className={`pointer-events-none absolute top-1/2 left-1/2 w-[560px] h-[560px] sm:w-[760px] sm:h-[760px] rounded-full border border-emerald-500/15 animate-orbit-3d z-[1] transition-opacity duration-[1400ms] ${
+            introPhase === 'entering' ? 'opacity-0' : 'opacity-100'
+          }`}
         >
           <div className="absolute inset-8 rounded-full border border-dashed border-[#d4b46a]/15" />
           <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400/70 shadow-[0_0_12px_#10b981]" />
         </div>
 
-        {/* Top Header Strip */}
-        <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pt-5 sm:pt-6 flex items-center justify-between gap-3">
+        {/* Top Header Strip (fades in after name reveal) */}
+        <div
+          className={`relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pt-5 sm:pt-6 flex items-center justify-between gap-3 hero-ui-fade ${uiStateClass}`}
+          style={{ transitionDelay: isRevealing ? '0ms' : '180ms' }}
+        >
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="w-[2px] h-5 sm:h-6 bg-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.65)]" />
             <span
@@ -209,22 +273,21 @@ export const Home = () => {
             ref={heroStageRef}
             className="w-full flex flex-col items-center will-change-transform [transform-style:preserve-3d]"
           >
-            {/* Official Halftone Doomsday Poster Title */}
-            <div
-              className="w-full max-w-[680px] mb-6 select-none"
-              style={{ transform: 'translateZ(42px)' }}
-            >
+            {/* Official Halftone Doomsday Poster Title — Appears Huge Full-Screen First, Then Settles */}
+            <div className={`w-full max-w-[680px] mb-6 select-none title-reveal-stage phase-${introPhase}`}>
               <img
                 src="/buildops_poster_title_2x.png"
                 alt="Build Ops"
-                className="w-full h-auto object-contain mx-auto drop-shadow-[0_14px_38px_rgba(0,0,0,0.95)]"
+                className="w-full h-auto object-contain mx-auto"
               />
             </div>
 
             {/* Structured 2x2 (Mobile) / 4-Col (Desktop) Architectural Spec Bar */}
             <div
-              className="w-full max-w-[680px] grid grid-cols-2 sm:grid-cols-4 border border-white/15 bg-[#040806]/75 backdrop-blur-md"
-              style={{ transform: 'translateZ(20px)' }}
+              className={`w-full max-w-[680px] grid grid-cols-2 sm:grid-cols-4 border border-white/15 bg-[#040806]/75 backdrop-blur-md hero-ui-fade ${uiStateClass}`}
+              style={{
+                transitionDelay: isRevealing ? '0ms' : '260ms',
+              }}
             >
               <div className="px-3 py-3 border-b border-r border-white/10 sm:border-b-0">
                 <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
@@ -262,8 +325,10 @@ export const Home = () => {
 
             {/* Mechanical Monospace Countdown */}
             <div
-              className="mt-6 sm:mt-8 w-full max-w-[340px] sm:max-w-[420px] grid grid-cols-4 gap-2 sm:gap-4"
-              style={{ transform: 'translateZ(30px)' }}
+              className={`mt-6 sm:mt-8 w-full max-w-[340px] sm:max-w-[420px] grid grid-cols-4 gap-2 sm:gap-4 hero-ui-fade ${uiStateClass}`}
+              style={{
+                transitionDelay: isRevealing ? '0ms' : '380ms',
+              }}
             >
               {[
                 { val: timeLeft.days, label: 'DAYS' },
@@ -287,8 +352,10 @@ export const Home = () => {
 
             {/* Primary Actions */}
             <div
-              className="mt-8 sm:mt-9 flex flex-wrap items-center justify-center gap-3.5"
-              style={{ transform: 'translateZ(36px)' }}
+              className={`mt-8 sm:mt-9 flex flex-wrap items-center justify-center gap-3.5 hero-ui-fade ${uiStateClass}`}
+              style={{
+                transitionDelay: isRevealing ? '0ms' : '500ms',
+              }}
             >
               {isAuthenticated ? (
                 <Link
@@ -320,7 +387,10 @@ export const Home = () => {
         </div>
 
         {/* Bottom Cinema Utility Bar */}
-        <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pb-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase">
+        <div
+          className={`relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pb-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase hero-ui-fade ${uiStateClass}`}
+          style={{ transitionDelay: isRevealing ? '0ms' : '580ms' }}
+        >
           <a href="#rules" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
             <span className="w-4 h-px bg-emerald-500/70 inline-block" />
             <span>Rules &amp; Entry</span>
@@ -338,6 +408,15 @@ export const Home = () => {
             <span>{isMuted ? 'Sound Off' : 'Sound On'}</span>
           </button>
         </div>
+
+        {/* Subtle Skip Hint During Initial 2.4s Title Reveal */}
+        {isRevealing && (
+          <div className="pointer-events-none absolute bottom-7 inset-x-0 z-20 text-center">
+            <span className="font-mono-tech text-[10px] tracking-[0.32em] text-[#8b9b90]/75 uppercase animate-pulse">
+              ASIET × TCS • DEC 08, 2026
+            </span>
+          </div>
+        )}
       </section>
 
       {/* =====================================================================
