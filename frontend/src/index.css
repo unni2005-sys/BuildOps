@@ -270,32 +270,36 @@
 }
 
 /* =========================================================================
-   CINEMATIC FULL-SCREEN TITLE REVEAL CHOREOGRAPHY
+   CINEMATIC FULL-SCREEN TITLE REVEAL CHOREOGRAPHY (Slow IMAX Trailer Pacing)
    ========================================================================= */
 .title-reveal-stage {
   will-change: transform, opacity, filter;
   transition:
-    transform 1.35s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 1.25s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 1.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 3.2s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 2.8s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 3.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .title-reveal-stage.phase-entering {
   opacity: 0;
   transform: translate3d(0, 14vh, 42px) scale(1.22);
-  filter: blur(18px) brightness(0.35);
+  filter: blur(22px) brightness(0.25);
 }
 
 .title-reveal-stage.phase-holding {
   opacity: 1;
   transform: translate3d(0, 12vh, 42px) scale(1.08);
-  filter: blur(0px) brightness(1.08) drop-shadow(0 0 48px rgba(16, 185, 129, 0.42));
+  filter: blur(0px) brightness(1.08) drop-shadow(0 0 54px rgba(16, 185, 129, 0.45));
 }
 
 .title-reveal-stage.phase-settled {
   opacity: 1;
   transform: translate3d(0, 0, 42px) scale(1);
   filter: blur(0px) brightness(1) drop-shadow(0 14px 38px rgba(0, 0, 0, 0.95));
+  transition:
+    transform 2.2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 2.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (min-width: 768px) {
@@ -327,8 +331,8 @@
 
 .hero-ui-fade {
   transition:
-    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hero-ui-fade.ui-hidden {

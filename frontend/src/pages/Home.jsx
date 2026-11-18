@@ -74,13 +74,13 @@ export const Home = () => {
 
     const t1 = setTimeout(() => {
       setIntroPhase('holding');
-    }, 90);
+    }, 250);
 
     const t2 = setTimeout(() => {
       hasPlayedIntroReveal = true;
       setIntroPhase('settled');
       document.body.style.overflow = prevOverflow;
-    }, 2400);
+    }, 5200);
 
     return () => {
       clearTimeout(t1);
@@ -273,7 +273,7 @@ export const Home = () => {
             loop
             muted
             playsInline
-            className={`w-full h-full object-cover contrast-[1.08] transition-all duration-[1200ms] ease-out ${
+            className={`w-full h-full object-cover contrast-[1.08] transition-all duration-[2400ms] ease-out ${
               isRevealing ? 'opacity-80 brightness-[0.9]' : 'opacity-55 brightness-[0.82]'
             }`}
           />
@@ -302,7 +302,7 @@ export const Home = () => {
         {/* Top Header Strip (fades in after name reveal) */}
         <div
           className={`relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pt-5 sm:pt-6 flex items-center justify-between gap-3 hero-ui-fade ${uiStateClass}`}
-          style={{ transitionDelay: isRevealing ? '0ms' : '180ms' }}
+          style={{ transitionDelay: isRevealing ? '0ms' : '450ms' }}
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="w-[2px] h-5 sm:h-6 bg-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.65)]" />
@@ -342,7 +342,7 @@ export const Home = () => {
             <div
               className={`w-full max-w-[680px] grid grid-cols-2 sm:grid-cols-4 border border-white/15 bg-[#040806]/75 backdrop-blur-md hero-ui-fade ${uiStateClass}`}
               style={{
-                transitionDelay: isRevealing ? '0ms' : '260ms',
+                transitionDelay: isRevealing ? '0ms' : '700ms',
               }}
             >
               <div className="px-3 py-3 border-b border-r border-white/10 sm:border-b-0">
@@ -383,7 +383,7 @@ export const Home = () => {
             <div
               className={`mt-6 sm:mt-8 w-full max-w-[340px] sm:max-w-[420px] grid grid-cols-4 gap-2 sm:gap-4 hero-ui-fade ${uiStateClass}`}
               style={{
-                transitionDelay: isRevealing ? '0ms' : '380ms',
+                transitionDelay: isRevealing ? '0ms' : '1000ms',
               }}
             >
               {[
@@ -410,7 +410,7 @@ export const Home = () => {
             <div
               className={`mt-8 sm:mt-9 flex flex-wrap items-center justify-center gap-3.5 hero-ui-fade ${uiStateClass}`}
               style={{
-                transitionDelay: isRevealing ? '0ms' : '500ms',
+                transitionDelay: isRevealing ? '0ms' : '1300ms',
               }}
             >
               {isAuthenticated ? (
@@ -445,7 +445,7 @@ export const Home = () => {
         {/* Bottom Cinema Utility Bar */}
         <div
           className={`relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pb-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase hero-ui-fade ${uiStateClass}`}
-          style={{ transitionDelay: isRevealing ? '0ms' : '580ms' }}
+          style={{ transitionDelay: isRevealing ? '0ms' : '1500ms' }}
         >
           <a href="#rules" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
             <span className="w-4 h-px bg-emerald-500/70 inline-block" />
