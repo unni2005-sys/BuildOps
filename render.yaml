@@ -18,9 +18,13 @@ services:
       - key: SUPABASE_DB_URL
         sync: false
       - key: FRONTEND_URL
-        sync: false
+        value: https://buildops.co.in
       - key: BACKEND_URL
         sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://buildops.co.in,https://www.buildops.co.in
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://buildops.co.in,https://www.buildops.co.in
       - key: EMAIL_BACKEND
         value: django.core.mail.backends.smtp.EmailBackend
       - key: EMAIL_HOST
@@ -34,7 +38,7 @@ services:
       - key: EMAIL_HOST_PASSWORD
         sync: false
       - key: DEFAULT_FROM_EMAIL
-        value: "Build Ops <onboarding@resend.dev>"
+        value: "Build Ops <noreply@buildops.co.in>"
       - key: CASHFREE_ENV
         value: SANDBOX
       - key: CASHFREE_APP_ID
