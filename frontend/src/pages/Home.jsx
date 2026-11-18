@@ -223,35 +223,35 @@ export const Home = () => {
         </div>
 
         {/* Top Coordinates Strip */}
-        <div className="relative z-10 max-w-7xl w-full mx-auto px-5 sm:px-8 pt-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pt-5 sm:pt-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span className="w-[2px] h-5 sm:h-6 bg-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.65)]" />
             <span
-              className="font-imperial font-extrabold text-xs sm:text-sm md:text-[15px] tracking-[0.2em] text-[#eef2ee] uppercase leading-tight"
+              className="font-imperial font-extrabold text-[10px] sm:text-sm md:text-[15px] tracking-[0.12em] sm:tracking-[0.2em] text-[#eef2ee] uppercase leading-tight"
               style={{ textShadow: '0 2px 14px rgba(0, 0, 0, 0.9)' }}
             >
               Department of Computer Applications
             </span>
           </div>
-          <span className="hidden lg:inline font-mono-tech text-[10px] tracking-[0.24em] text-[#d4b46a]/85 uppercase">
+          <span className="hidden lg:inline font-mono-tech text-[10px] tracking-[0.24em] text-[#d4b46a]/85 uppercase shrink-0">
             10.1782° N, 76.4305° E
           </span>
           <img
             src="/tcs-logo.png"
             alt="Tata Consultancy Services"
-            className="h-6 sm:h-8 w-auto object-contain opacity-95 hover:opacity-100 transition-opacity select-none shrink-0"
+            className="h-5 sm:h-8 w-auto object-contain opacity-95 hover:opacity-100 transition-opacity select-none shrink-0"
           />
         </div>
 
         {/* Center 3D Layered Title Stage */}
-        <div className="relative z-10 max-w-5xl w-full mx-auto px-5 sm:px-8 py-10 flex flex-col items-center text-center">
+        <div className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-10 flex flex-col items-center text-center">
           <div
             ref={heroStageRef}
             className="w-full flex flex-col items-center will-change-transform [transform-style:preserve-3d]"
           >
             {/* Official Halftone Doomsday Poster Title */}
             <div
-              className="w-full max-w-[680px] mb-5 select-none"
+              className="w-full max-w-[680px] mb-6 select-none"
               style={{ transform: 'translateZ(42px)' }}
             >
               <img
@@ -261,23 +261,48 @@ export const Home = () => {
               />
             </div>
 
-            {/* Sharp Minimal Fact Hairline */}
+            {/* Structured 2x2 (Mobile) / 4-Col (Desktop) Architectural Spec Bar */}
             <div
-              className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono-tech text-[11px] sm:text-xs tracking-[0.22em] text-[#c8d4cb] uppercase border-y border-white/15 py-2.5 px-6 bg-[#030504]/55 backdrop-blur-sm"
+              className="w-full max-w-[680px] grid grid-cols-2 sm:grid-cols-4 border border-white/15 bg-[#040806]/75 backdrop-blur-md"
               style={{ transform: 'translateZ(20px)' }}
             >
-              <span>DEC 08 – 09, 2026</span>
-              <span className="text-emerald-500">/</span>
-              <span>5:00 PM – 9:00 PM</span>
-              <span className="text-emerald-500">/</span>
-              <span>TEAMS OF TWO</span>
-              <span className="text-emerald-500">/</span>
-              <span className="text-[#d4b46a]">₹500 PER TEAM</span>
+              <div className="px-3 py-3 border-b border-r border-white/10 sm:border-b-0">
+                <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
+                  Date
+                </span>
+                <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#eef2ee] mt-1">
+                  DEC 08 – 09, 2026
+                </span>
+              </div>
+              <div className="px-3 py-3 border-b border-white/10 sm:border-b-0 sm:border-r">
+                <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
+                  Time
+                </span>
+                <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#eef2ee] mt-1">
+                  5:00 PM – 9:00 PM
+                </span>
+              </div>
+              <div className="px-3 py-3 border-r border-white/10">
+                <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
+                  Format
+                </span>
+                <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-emerald-300 mt-1">
+                  TEAMS OF TWO
+                </span>
+              </div>
+              <div className="px-3 py-3">
+                <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
+                  Entry Fee
+                </span>
+                <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#d4b46a] mt-1">
+                  ₹500 / TEAM
+                </span>
+              </div>
             </div>
 
             {/* Mechanical Monospace Countdown */}
             <div
-              className="mt-8 grid grid-cols-4 gap-3 sm:gap-5"
+              className="mt-6 sm:mt-8 w-full max-w-[340px] sm:max-w-[420px] grid grid-cols-4 gap-2 sm:gap-4"
               style={{ transform: 'translateZ(30px)' }}
             >
               {[
@@ -288,12 +313,12 @@ export const Home = () => {
               ].map((unit) => (
                 <div
                   key={unit.label}
-                  className="w-[68px] sm:w-[92px] py-3 border border-white/[0.12] bg-[#040806]/80 backdrop-blur-md"
+                  className="py-3 border border-white/[0.12] bg-[#040806]/80 backdrop-blur-md"
                 >
                   <div className="font-mono-tech text-2xl sm:text-4xl font-bold tracking-tight text-[#eef2ee] tabular-nums leading-none">
                     {unit.val}
                   </div>
-                  <div className="font-mono-tech text-[9px] tracking-[0.24em] text-emerald-400/90 mt-1.5">
+                  <div className="font-mono-tech text-[9px] tracking-[0.22em] text-emerald-400/90 mt-1.5">
                     {unit.label}
                   </div>
                 </div>
