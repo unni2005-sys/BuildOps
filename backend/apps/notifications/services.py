@@ -1,4 +1,7 @@
+import os
+import base64
 import logging
+import requests
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.utils import timezone
@@ -7,9 +10,63 @@ from apps.notifications.models import EmailLog
 logger = logging.getLogger(__name__)
 
 
+def _send_via_resend_https(api_key, from_email, recipient_email, subject, text_content, html_content=None, attachments=None):
+    """
+    Sends email via Resend HTTPS REST API (port 443).
+    Works reliably on Render Free Tier and cloud hosts that block outbound SMTP port 587.
+    """
+    payload = {
+        "from": from_email,
+        "to": [recipient_email],
+        "subject": subject,
+        "text": text_content,
+    }
+    if html_content:
+        payload["html"] = html_content
+
+    if attachments:
+        encoded_attachments = []
+        for attachment in attachments:
+            if isinstance(attachment, (list, tuple)):
+                if len(attachment) == 3:
+                    filename, content_bytes, _ = attachment
+                    if isinstance(content_bytes, str):
+                        content_bytes = content_bytes.encode("utf-8")
+                    encoded_attachments.append({
+                        "filename": filename,
+                        "content": base64.b64encode(content_bytes).decode("ascii"),
+                    })
+                elif len(attachment) == 2:
+                    filename, filepath = attachment
+                    if filepath and os.path.exists(filepath):
+                        with open(filepath, "rb") as f:
+                            encoded_attachments.append({
+                                "filename": filename,
+                                "content": base64.b64encode(f.read()).decode("ascii"),
+                            })
+        if encoded_attachments:
+            payload["attachments"] = encoded_attachments
+
+    resp = requests.post(
+        "https://api.resend.com/emails",
+        json=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "BuildOps/1.0",
+        },
+        timeout=12,
+    )
+    if resp.status_code >= 400:
+        raise RuntimeError(f"Resend API error {resp.status_code}: {resp.text}")
+    return resp.json()
+
+
 def send_email_notification(recipient_email, email_type, subject, text_content, html_content=None, attachments=None):
     """
     Sends an email and records it in EmailLog.
+    Uses Resend HTTPS API automatically when a Resend API key (re_...) is configured,
+    avoiding outbound SMTP port 587 blocks on cloud hosts like Render.
     Never crashes the caller if email delivery fails.
     """
     email_log = EmailLog.objects.create(
@@ -21,25 +78,43 @@ def send_email_notification(recipient_email, email_type, subject, text_content, 
 
     try:
         from_email = settings.DEFAULT_FROM_EMAIL
-        msg = EmailMultiAlternatives(
-            subject=subject,
-            body=text_content,
-            from_email=from_email,
-            to=[recipient_email]
+        resend_key = os.getenv('RESEND_API_KEY') or (
+            settings.EMAIL_HOST_PASSWORD
+            if str(getattr(settings, 'EMAIL_HOST_PASSWORD', '')).startswith('re_')
+            else ''
         )
-        if html_content:
-            msg.attach_alternative(html_content, "text/html")
+        use_console = 'console' in str(getattr(settings, 'EMAIL_BACKEND', '')).lower()
 
-        if attachments:
-            for attachment in attachments:
-                # attachment: (filename, content_bytes, mimetype) or (filename, filepath)
-                if isinstance(attachment, (list, tuple)):
-                    if len(attachment) == 3:
-                        msg.attach(attachment[0], attachment[1], attachment[2])
-                    elif len(attachment) == 2:
-                        msg.attach_file(attachment[1])
+        if resend_key and not use_console:
+            _send_via_resend_https(
+                api_key=resend_key,
+                from_email=from_email,
+                recipient_email=recipient_email,
+                subject=subject,
+                text_content=text_content,
+                html_content=html_content,
+                attachments=attachments,
+            )
+        else:
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=from_email,
+                to=[recipient_email]
+            )
+            if html_content:
+                msg.attach_alternative(html_content, "text/html")
 
-        msg.send(fail_silently=False)
+            if attachments:
+                for attachment in attachments:
+                    # attachment: (filename, content_bytes, mimetype) or (filename, filepath)
+                    if isinstance(attachment, (list, tuple)):
+                        if len(attachment) == 3:
+                            msg.attach(attachment[0], attachment[1], attachment[2])
+                        elif len(attachment) == 2:
+                            msg.attach_file(attachment[1])
+
+            msg.send(fail_silently=False)
 
         email_log.status = 'SENT'
         email_log.sent_at = timezone.now()
