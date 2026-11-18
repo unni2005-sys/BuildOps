@@ -256,7 +256,7 @@ export const Home = () => {
          ===================================================================== */}
       <section
         onClick={isRevealing ? skipIntro : undefined}
-        className={`relative min-h-screen flex flex-col justify-between overflow-hidden border-b border-white/[0.08] ${
+        className={`relative min-h-[100dvh] flex flex-col justify-start sm:justify-between overflow-hidden border-b border-white/[0.08] ${
           isRevealing ? 'cursor-pointer' : ''
         }`}
       >
@@ -336,13 +336,13 @@ export const Home = () => {
         </div>
 
         {/* Center 3D Layered Title Stage */}
-        <div className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-10 flex flex-col items-center text-center">
+        <div className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-8 pt-6 pb-6 sm:py-10 flex flex-col items-center text-center">
           <div
             ref={heroStageRef}
             className="w-full flex flex-col items-center will-change-transform [transform-style:preserve-3d]"
           >
             {/* Official Halftone Doomsday Poster Title — Appears Huge Full-Screen First, Then Settles */}
-            <div className={`w-full max-w-[680px] mb-6 select-none title-reveal-stage phase-${introPhase}`}>
+            <div className={`w-full max-w-[680px] mb-4 sm:mb-6 select-none title-reveal-stage phase-${introPhase}`}>
               <img
                 src="/buildops_poster_title_2x.png?v=2"
                 alt="Build Ops"
@@ -456,7 +456,7 @@ export const Home = () => {
 
         {/* Bottom Cinema Utility Bar */}
         <div
-          className={`relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pb-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase hero-ui-fade ${uiStateClass}`}
+          className={`relative z-10 mt-auto sm:mt-0 max-w-7xl w-full mx-auto px-4 sm:px-8 pb-5 sm:pb-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase hero-ui-fade ${uiStateClass}`}
           style={{ transitionDelay: isRevealing ? '0ms' : '1500ms' }}
         >
           <a href="#rules" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
