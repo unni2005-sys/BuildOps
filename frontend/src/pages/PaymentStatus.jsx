@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { CheckCircle2, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle, RefreshCw, ArrowRight, MessageCircle, ExternalLink } from 'lucide-react';
 
 export const PaymentStatus = () => {
   const [searchParams] = useSearchParams();
@@ -23,9 +23,11 @@ export const PaymentStatus = () => {
       try {
         const res = await api.get(`/payments/verify/${orderId}/`);
         setResult(res.data);
-        setTimeout(() => {
-          navigate('/student/dashboard', { replace: true });
-        }, 2500);
+        if (!res.data?.whatsapp_group_link) {
+          setTimeout(() => {
+            navigate('/student/dashboard', { replace: true });
+          }, 2500);
+        }
       } catch (err) {
         console.error(err);
         setError(err.response?.data?.error || err.response?.data?.message || 'Payment verification failed.');
@@ -91,11 +93,24 @@ export const PaymentStatus = () => {
               </div>
             </div>
 
+            {result?.whatsapp_group_link && (
+              <a
+                href={result.whatsapp_group_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#16a34a] hover:bg-[#22c55e] text-[#030705] font-mono-tech text-xs font-bold tracking-wider uppercase py-2.5 px-4 mb-3 transition border border-emerald-400"
+              >
+                <MessageCircle size={14} />
+                <span>Join Official WhatsApp Group</span>
+                <ExternalLink size={12} />
+              </a>
+            )}
+
             <Link
               to="/student/dashboard"
-              className="w-full inline-flex items-center justify-center gap-1.5 doom-btn-primary font-display tracking-wider uppercase text-xs py-2.5 px-4 rounded-lg"
+              className="w-full inline-flex items-center justify-center gap-1.5 doom-btn-primary font-mono-tech tracking-wider uppercase text-xs py-2.5 px-4"
             >
-              Go to Dashboard & E-Ticket <ArrowRight size={14} />
+              Go to Dashboard &amp; Gate Pass <ArrowRight size={14} />
             </Link>
           </div>
         )}

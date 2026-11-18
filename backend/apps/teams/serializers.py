@@ -18,6 +18,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
     qr_token = serializers.SerializerMethodField()
     has_ticket = serializers.SerializerMethodField()
     fee_amount = serializers.SerializerMethodField()
+    whatsapp_group_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Team
@@ -36,6 +37,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             'qr_token',
             'has_ticket',
             'fee_amount',
+            'whatsapp_group_link',
         )
 
     def get_ticket_id(self, obj):
@@ -63,6 +65,12 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
     def get_fee_amount(self, obj):
         return settings.REGISTRATION_FEE_INR
+
+    def get_whatsapp_group_link(self, obj):
+        # Strictly gated: only reveal WhatsApp group invite link after payment is confirmed
+        if obj.payment_status == 'SUCCESS' and settings.WHATSAPP_GROUP_LINK:
+            return settings.WHATSAPP_GROUP_LINK
+        return None
 
 
 class TeamCreateSerializer(serializers.Serializer):

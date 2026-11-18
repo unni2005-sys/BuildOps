@@ -53,3 +53,5 @@ services:
         value: "December 8th, 5:00 PM – December 9th, 9:00 AM, 2026"
       - key: REGISTRATION_FEE_INR
         value: "500"
+      - key: WHATSAPP_GROUP_LINK
+        sync: false

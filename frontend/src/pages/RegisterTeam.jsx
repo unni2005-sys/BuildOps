@@ -9,7 +9,9 @@ import {
   CheckCircle2,
   ArrowRight,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  MessageCircle,
+  ExternalLink
 } from 'lucide-react';
 
 export const RegisterTeam = () => {
@@ -34,6 +36,7 @@ export const RegisterTeam = () => {
   // Payment flow steps: 'FORM' -> 'GATEWAY' -> 'SUCCESS'
   const [step, setStep] = useState('FORM');
   const [paymentOrder, setPaymentOrder] = useState(null);
+  const [whatsappLink, setWhatsappLink] = useState('');
 
   // Keep leader_phone synced with user profile
   useEffect(() => {
@@ -118,15 +121,19 @@ export const RegisterTeam = () => {
         setLoading(true);
         setError('');
         try {
-          await api.post('/payments/verify-razorpay/', {
+          const verRes = await api.post('/payments/verify-razorpay/', {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
           });
+          const waLink = verRes.data?.whatsapp_group_link || '';
+          setWhatsappLink(waLink);
           setStep('SUCCESS');
-          setTimeout(() => {
-            navigate('/student/dashboard', { replace: true });
-          }, 2500);
+          if (!waLink) {
+            setTimeout(() => {
+              navigate('/student/dashboard', { replace: true });
+            }, 2500);
+          }
         } catch (err) {
           console.error(err);
           setError(
@@ -262,12 +269,15 @@ export const RegisterTeam = () => {
     setLoading(true);
     setError('');
     try {
-      await api.post('/payments/simulate/', { order_id: paymentOrder.order_id });
+      const simRes = await api.post('/payments/simulate/', { order_id: paymentOrder.order_id });
+      const waLink = simRes.data?.whatsapp_group_link || '';
+      setWhatsappLink(waLink);
       setStep('SUCCESS');
-      // Automatically redirect to dashboard with E-Ticket preview after 2.5s
-      setTimeout(() => {
-        navigate('/student/dashboard', { replace: true });
-      }, 2500);
+      if (!waLink) {
+        setTimeout(() => {
+          navigate('/student/dashboard', { replace: true });
+        }, 2500);
+      }
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || 'Payment failed. Please try again.');
@@ -319,15 +329,30 @@ export const RegisterTeam = () => {
             </div>
           </div>
 
+          {whatsappLink && (
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 bg-[#16a34a] hover:bg-[#22c55e] text-[#030705] font-mono-tech text-xs font-bold tracking-wider uppercase py-3 px-4 mb-3 transition border border-emerald-400"
+            >
+              <MessageCircle size={15} />
+              <span>Join Official WhatsApp Group</span>
+              <ExternalLink size={13} />
+            </a>
+          )}
+
           <button
             onClick={() => navigate('/student/dashboard', { replace: true })}
-            className="w-full inline-flex items-center justify-center gap-2 doom-btn-primary text-xs font-display tracking-widest uppercase py-3 px-4 rounded-lg cursor-pointer"
+            className="w-full inline-flex items-center justify-center gap-2 doom-btn-primary text-xs font-mono-tech tracking-widest uppercase py-3 px-4 cursor-pointer"
           >
-            View My E-Ticket <ArrowRight size={14} />
+            View My Gate Pass <ArrowRight size={14} />
           </button>
-          <p className="text-[11px] text-emerald-200/50 mt-3">
-            Redirecting to your dashboard automatically...
-          </p>
+          {!whatsappLink && (
+            <p className="text-[11px] text-emerald-200/50 mt-3">
+              Redirecting to your dashboard automatically...
+            </p>
+          )}
         </div>
       </div>
     );

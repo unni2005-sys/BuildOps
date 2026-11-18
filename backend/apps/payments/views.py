@@ -108,6 +108,7 @@ class VerifyRazorpayPaymentView(APIView):
             'message': message,
             'payment': PaymentSerializer(payment).data,
             'team_status': payment.team.registration_status,
+            'whatsapp_group_link': settings.WHATSAPP_GROUP_LINK if (success and settings.WHATSAPP_GROUP_LINK) else None,
         }, status=status.HTTP_200_OK if success else status.HTTP_400_BAD_REQUEST)
 
 
@@ -127,6 +128,7 @@ class VerifyPaymentView(APIView):
             'message': message,
             'payment': PaymentSerializer(payment).data,
             'team_status': payment.team.registration_status,
+            'whatsapp_group_link': settings.WHATSAPP_GROUP_LINK if (success and settings.WHATSAPP_GROUP_LINK) else None,
         }, status=status.HTTP_200_OK if success else status.HTTP_400_BAD_REQUEST)
 
 
@@ -158,6 +160,7 @@ class SimulatePaymentView(APIView):
                 'message': message,
                 'payment': PaymentSerializer(payment).data,
                 'team_status': payment.team.registration_status,
+                'whatsapp_group_link': settings.WHATSAPP_GROUP_LINK or None,
             }, status=status.HTTP_200_OK)
         except Payment.DoesNotExist:
             return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)

@@ -174,6 +174,26 @@ def send_ticket_email(team, ticket, pdf_path=None):
 
     members = team.members.all()
     member_names = ", ".join([m.full_name for m in members])
+    whatsapp_link = getattr(settings, 'WHATSAPP_GROUP_LINK', '').strip()
+
+    whatsapp_text_block = (
+        f"\nJoin the Official {settings.EVENT_NAME} Participants WhatsApp Group for live announcements & updates:\n"
+        f"{whatsapp_link}\n"
+        if whatsapp_link
+        else ""
+    )
+
+    whatsapp_html_block = (
+        f"""
+        <div style="background-color: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; padding: 16px; margin: 22px 0; text-align: center;">
+            <p style="margin: 0 0 10px 0; color: #065f46; font-weight: bold;">Join the Official Participants WhatsApp Group</p>
+            <p style="margin: 0 0 14px 0; font-size: 13px; color: #047857;">All live event announcements, check-in alerts, and track briefings will be shared here.</p>
+            <a href="{whatsapp_link}" style="background-color: #16a34a; color: #ffffff; padding: 11px 22px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Join WhatsApp Group</a>
+        </div>
+        """
+        if whatsapp_link
+        else ""
+    )
 
     text_content = (
         f"Congratulations Team {team.team_name}!\n\n"
@@ -184,7 +204,8 @@ def send_ticket_email(team, ticket, pdf_path=None):
         f"Venue: {settings.EVENT_VENUE}\n"
         f"Date: {settings.EVENT_DATE}\n\n"
         f"Your shareable E-Ticket Pass (PNG) is attached to this email. You can also view or download it anytime from your dashboard:\n"
-        f"{portal_url}\n\n"
+        f"{portal_url}\n"
+        f"{whatsapp_text_block}\n"
         f"Direct Ticket Download: {download_url}\n\n"
         f"Save this pass to your phone gallery and present the QR code at the event check-in desk.\n\n"
         f"See you at {settings.EVENT_NAME}!\n"
@@ -206,6 +227,7 @@ def send_ticket_email(team, ticket, pdf_path=None):
         </div>
 
         <p>Your official <strong>Build Ops Gate Pass (PNG image)</strong> with check-in QR code is attached — save it to your gallery or share it with your teammate!</p>
+        {whatsapp_html_block}
         <div style="text-align: center; margin: 25px 0;">
             <a href="{portal_url}" style="background-color: #0d9488; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Open Team Portal</a>
         </div>

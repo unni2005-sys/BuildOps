@@ -23,6 +23,8 @@ import {
   ArrowRight,
   QrCode,
   Zap,
+  MessageCircle,
+  ExternalLink,
 } from 'lucide-react';
 
 export const StudentDashboard = () => {
@@ -314,23 +316,37 @@ export const StudentDashboard = () => {
             </div>
 
             {team.payment_status === 'SUCCESS' && team.has_ticket && (
-              <button
-                onClick={handleDownloadTicket}
-                disabled={downloading}
-                className="inline-flex items-center justify-center gap-2 doom-btn-primary font-mono-tech text-xs uppercase tracking-wider px-5 py-2.5 cursor-pointer disabled:opacity-50"
-              >
-                {downloading ? (
-                  <>
-                    <RefreshCw size={13} className="animate-spin" />
-                    <span>Preparing PNG</span>
-                  </>
-                ) : (
-                  <>
-                    <Download size={13} />
-                    <span>Download Pass (PNG)</span>
-                  </>
+              <div className="flex flex-wrap items-center gap-2.5">
+                {team.whatsapp_group_link && (
+                  <a
+                    href={team.whatsapp_group_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 bg-[#0b1f14] hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/55 font-mono-tech text-xs uppercase tracking-wider px-4 py-2.5 transition"
+                  >
+                    <MessageCircle size={13} className="text-emerald-400" />
+                    <span>Join WhatsApp Group</span>
+                    <ExternalLink size={11} />
+                  </a>
                 )}
-              </button>
+                <button
+                  onClick={handleDownloadTicket}
+                  disabled={downloading}
+                  className="inline-flex items-center justify-center gap-2 doom-btn-primary font-mono-tech text-xs uppercase tracking-wider px-5 py-2.5 cursor-pointer disabled:opacity-50"
+                >
+                  {downloading ? (
+                    <>
+                      <RefreshCw size={13} className="animate-spin" />
+                      <span>Preparing PNG</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download size={13} />
+                      <span>Download Pass (PNG)</span>
+                    </>
+                  )}
+                </button>
+              </div>
             )}
           </div>
 

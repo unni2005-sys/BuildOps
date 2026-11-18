@@ -206,5 +206,6 @@ EVENT_NAME = os.getenv('EVENT_NAME', 'Build Ops')
 EVENT_DATE = os.getenv('EVENT_DATE', 'December 8th, 5:00 PM – December 9th, 9:00 AM, 2026')
 EVENT_VENUE = os.getenv('EVENT_VENUE', 'Innovation & Technology Hub, Campus Main Hall')
 REGISTRATION_FEE_INR = int(os.getenv('REGISTRATION_FEE_INR', 500))
+WHATSAPP_GROUP_LINK = os.getenv('WHATSAPP_GROUP_LINK', '').strip()
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
