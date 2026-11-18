@@ -279,7 +279,7 @@ def _render_doomsday_concert_ticket_pdf(pdf_filepath, team, ticket, leader, memb
     c.setFont('Helvetica-Bold', 8.8)
     c.setFillColor(c_white)
     c.drawString(col1_x, 156, "DEC 08 – 09, 2026")
-    c.drawString(col2_x, 156, "5:00 PM – 9:00 PM IST")
+    c.drawString(col2_x, 156, "5:00 PM – 9:00 AM IST")
     venue_short = _truncate(settings.EVENT_VENUE or "Innovation Hub, ASIET", 26)
     c.drawString(col3_x, 156, venue_short)
 

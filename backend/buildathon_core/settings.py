@@ -203,7 +203,7 @@ BACKEND_URL = os.getenv('BACKEND_URL', 'http://127.0.0.1:8000')
 
 # Event Details
 EVENT_NAME = os.getenv('EVENT_NAME', 'Build Ops')
-EVENT_DATE = os.getenv('EVENT_DATE', 'December 8th, 5:00 PM – December 9th, 9:00 PM, 2026')
+EVENT_DATE = os.getenv('EVENT_DATE', 'December 8th, 5:00 PM – December 9th, 9:00 AM, 2026')
 EVENT_VENUE = os.getenv('EVENT_VENUE', 'Innovation & Technology Hub, Campus Main Hall')
 REGISTRATION_FEE_INR = int(os.getenv('REGISTRATION_FEE_INR', 500))
 

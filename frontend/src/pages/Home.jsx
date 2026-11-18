@@ -29,16 +29,16 @@ const SCHEDULE_ITEMS = [
   {
     index: '04',
     day: 'DEC 09',
-    time: '09:00',
-    title: 'Mentor Reviews & Checkpoints',
-    note: 'Technical architecture feedback and prototype stability checks.',
+    time: '02:00',
+    title: 'Midnight Mentor Checkpoint',
+    note: 'Architecture feedback and mid-sprint prototype stability reviews.',
   },
   {
     index: '05',
     day: 'DEC 09',
-    time: '19:00',
+    time: '07:30',
     title: 'Live Demos & Final Judging',
-    note: 'Working product presentations before the ASIET × TCS jury until 21:00.',
+    note: 'Working product presentations before the ASIET × TCS jury until 09:00 AM.',
   },
 ];
 
@@ -279,7 +279,7 @@ export const Home = () => {
                   Time
                 </span>
                 <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#eef2ee] mt-1">
-                  5:00 PM – 9:00 PM
+                  5:00 PM – 9:00 AM
                 </span>
               </div>
               <div className="px-3 py-3 border-r border-white/10">
@@ -430,7 +430,7 @@ export const Home = () => {
                 {
                   num: '02',
                   label: 'WINDOW',
-                  value: 'December 8, 5:00 PM through December 9, 9:00 PM, 2026.',
+                  value: 'December 8, 5:00 PM through December 9, 9:00 AM, 2026.',
                 },
                 {
                   num: '03',
@@ -587,7 +587,7 @@ export const Home = () => {
             </h2>
           </div>
           <span className="font-mono-tech text-xs tracking-[0.18em] text-[#8b9b90] uppercase">
-            DEC 08, 17:00 — DEC 09, 21:00 IST
+            DEC 08, 17:00 — DEC 09, 09:00 IST
           </span>
         </div>
 

@@ -145,7 +145,7 @@ export const StudentDashboard = () => {
               Team Registration
             </h1>
             <p className="font-mono-tech text-[11px] text-[#8b9b90] mt-1 tracking-wider uppercase">
-              DEC 08, 5:00 PM – DEC 09, 9:00 PM, 2026
+              DEC 08, 5:00 PM – DEC 09, 9:00 AM, 2026
             </p>
           </div>
 
@@ -413,7 +413,7 @@ export const StudentDashboard = () => {
                           Window
                         </span>
                         <span className="block text-xs font-bold text-white mt-0.5">
-                          5:00 PM – 9:00 PM
+                          5:00 PM – 9:00 AM
                         </span>
                       </div>
                       <div className="border-l border-emerald-500/20 pl-3">
