@@ -223,10 +223,14 @@ export const Home = () => {
         </div>
 
         {/* Top Coordinates Strip */}
-        <div className="relative z-10 max-w-7xl w-full mx-auto px-5 sm:px-8 pt-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.24em] text-[#8b9b90] uppercase">
+        <div className="relative z-10 max-w-7xl w-full mx-auto px-5 sm:px-8 pt-6 flex items-center justify-between gap-4 font-mono-tech text-[10px] tracking-[0.24em] text-[#8b9b90] uppercase">
           <span>DEPT. OF COMPUTER APPLICATIONS</span>
-          <span className="hidden sm:inline text-[#d4b46a]/85">10.1782° N, 76.4305° E</span>
-          <span>ASIET × TCS</span>
+          <span className="hidden md:inline text-[#d4b46a]/85">10.1782° N, 76.4305° E</span>
+          <img
+            src="/tcs-logo.png"
+            alt="Tata Consultancy Services"
+            className="h-6 sm:h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity select-none"
+          />
         </div>
 
         {/* Center 3D Layered Title Stage */}
