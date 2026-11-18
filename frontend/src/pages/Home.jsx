@@ -299,28 +299,40 @@ export const Home = () => {
           <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400/70 shadow-[0_0_12px_#10b981]" />
         </div>
 
-        {/* Top Header Strip (fades in after name reveal) */}
+        {/* Top Institutional Header Strip (fades in after name reveal) */}
         <div
-          className={`relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pt-5 sm:pt-6 flex items-center justify-between gap-3 hero-ui-fade ${uiStateClass}`}
+          className={`relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pt-4 sm:pt-6 hero-ui-fade ${uiStateClass}`}
           style={{ transitionDelay: isRevealing ? '0ms' : '450ms' }}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-[2px] h-5 sm:h-6 bg-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.65)]" />
-            <span
-              className="font-imperial font-extrabold text-[10px] sm:text-sm md:text-[15px] tracking-[0.12em] sm:tracking-[0.2em] text-[#eef2ee] uppercase leading-tight"
+          {/* Row 1: Full-width justified college title */}
+          <div className="w-full pb-2.5 sm:pb-3 border-b border-white/[0.1] flex items-center justify-center gap-3 sm:gap-5">
+            <span className="hidden sm:block flex-1 h-px bg-gradient-to-r from-transparent to-[#d4b46a]/45" />
+            <h2
+              className="font-imperial font-bold text-[clamp(9px,2.35vw,15px)] tracking-[0.12em] sm:tracking-[0.26em] text-[#d4b46a] uppercase text-center whitespace-nowrap"
               style={{ textShadow: '0 2px 14px rgba(0, 0, 0, 0.9)' }}
             >
-              Department of Computer Applications
-            </span>
+              Adi Shankara Institute of Engineering and Technology
+            </h2>
+            <span className="hidden sm:block flex-1 h-px bg-gradient-to-l from-transparent to-[#d4b46a]/45" />
           </div>
-          <span className="hidden lg:inline font-mono-tech text-[10px] tracking-[0.24em] text-[#d4b46a]/85 uppercase shrink-0">
-            10.1782° N, 76.4305° E
-          </span>
-          <img
-            src="/tcs-logo.png"
-            alt="Tata Consultancy Services"
-            className="h-5 sm:h-8 w-auto object-contain opacity-95 hover:opacity-100 transition-opacity select-none shrink-0"
-          />
+
+          {/* Row 2: Department of Computer Applications (Left) & TCS Logo (Right) */}
+          <div className="pt-2.5 sm:pt-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-[2px] h-5 sm:h-6 bg-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.65)]" />
+              <span
+                className="font-imperial font-extrabold text-[10px] sm:text-sm md:text-[15px] tracking-[0.12em] sm:tracking-[0.2em] text-[#eef2ee] uppercase leading-tight"
+                style={{ textShadow: '0 2px 14px rgba(0, 0, 0, 0.9)' }}
+              >
+                Department of Computer Applications
+              </span>
+            </div>
+            <img
+              src="/tcs-logo.png"
+              alt="Tata Consultancy Services"
+              className="h-5 sm:h-8 w-auto object-contain opacity-95 hover:opacity-100 transition-opacity select-none shrink-0"
+            />
+          </div>
         </div>
 
         {/* Center 3D Layered Title Stage */}
