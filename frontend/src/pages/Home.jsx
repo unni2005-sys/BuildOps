@@ -482,7 +482,9 @@ export const Home = () => {
               <Link to="/login" className="hover:text-[#eef2ee] transition-colors">Sign In</Link>
               <Link to="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">Register</Link>
             </div>
-            <span>© 2026 Adi Shankara Institute of Engineering &amp; Technology</span>
+            <span className="text-[clamp(8px,2.35vw,11px)] sm:text-[11px] whitespace-nowrap tracking-tight sm:tracking-normal text-center">
+              © 2026 Adi Shankara Institute of Engineering &amp; Technology
+            </span>
           </div>
 
           <div className="pt-4 border-t border-white/[0.06] text-center font-mono-tech text-[11px] text-[#8b9b90] tracking-wide">
