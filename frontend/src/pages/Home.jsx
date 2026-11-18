@@ -223,13 +223,23 @@ export const Home = () => {
         </div>
 
         {/* Top Coordinates Strip */}
-        <div className="relative z-10 max-w-7xl w-full mx-auto px-5 sm:px-8 pt-6 flex items-center justify-between gap-4 font-mono-tech text-[10px] tracking-[0.24em] text-[#8b9b90] uppercase">
-          <span>DEPT. OF COMPUTER APPLICATIONS</span>
-          <span className="hidden md:inline text-[#d4b46a]/85">10.1782° N, 76.4305° E</span>
+        <div className="relative z-10 max-w-7xl w-full mx-auto px-5 sm:px-8 pt-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="w-[2px] h-5 sm:h-6 bg-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.65)]" />
+            <span
+              className="font-imperial font-extrabold text-xs sm:text-sm md:text-[15px] tracking-[0.2em] text-[#eef2ee] uppercase leading-tight"
+              style={{ textShadow: '0 2px 14px rgba(0, 0, 0, 0.9)' }}
+            >
+              Department of Computer Applications
+            </span>
+          </div>
+          <span className="hidden lg:inline font-mono-tech text-[10px] tracking-[0.24em] text-[#d4b46a]/85 uppercase">
+            10.1782° N, 76.4305° E
+          </span>
           <img
             src="/tcs-logo.png"
             alt="Tata Consultancy Services"
-            className="h-6 sm:h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity select-none"
+            className="h-6 sm:h-8 w-auto object-contain opacity-95 hover:opacity-100 transition-opacity select-none shrink-0"
           />
         </div>
 
