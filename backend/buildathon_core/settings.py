@@ -190,17 +190,12 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Build Ops <noreply@buildops.co.in>')
 
-# Cashfree Payment Gateway Settings
-CASHFREE_APP_ID = os.getenv('CASHFREE_APP_ID', '')
-CASHFREE_SECRET_KEY = os.getenv('CASHFREE_SECRET_KEY', '')
-CASHFREE_ENV = os.getenv('CASHFREE_ENV', 'SANDBOX').upper()
-CASHFREE_API_VERSION = os.getenv('CASHFREE_API_VERSION', '2023-08-01')
-CASHFREE_WEBHOOK_SECRET = os.getenv('CASHFREE_WEBHOOK_SECRET', '')
-
-if CASHFREE_ENV == 'PRODUCTION':
-    CASHFREE_BASE_URL = 'https://api.cashfree.com/pg'
-else:
-    CASHFREE_BASE_URL = 'https://sandbox.cashfree.com/pg'
+# Razorpay Payment Gateway Settings
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', '').strip()
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '').strip()
+RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', '').strip()
+RAZORPAY_API_BASE_URL = 'https://api.razorpay.com/v1'
+RAZORPAY_ENV = 'LIVE' if RAZORPAY_KEY_ID.startswith('rzp_live_') else os.getenv('RAZORPAY_ENV', 'TEST').upper()
 
 # Frontend & Backend URLs
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')

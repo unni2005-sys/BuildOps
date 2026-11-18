@@ -39,14 +39,14 @@ services:
         sync: false
       - key: DEFAULT_FROM_EMAIL
         value: "Build Ops <noreply@buildops.co.in>"
-      - key: CASHFREE_ENV
-        value: SANDBOX
-      - key: CASHFREE_APP_ID
+      - key: RAZORPAY_KEY_ID
         sync: false
-      - key: CASHFREE_SECRET_KEY
+      - key: RAZORPAY_KEY_SECRET
         sync: false
-      - key: CASHFREE_WEBHOOK_SECRET
+      - key: RAZORPAY_WEBHOOK_SECRET
         sync: false
+      - key: RAZORPAY_ENV
+        value: TEST
       - key: EVENT_NAME
         value: "Build Ops"
       - key: EVENT_DATE

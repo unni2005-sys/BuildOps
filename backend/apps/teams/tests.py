@@ -112,7 +112,8 @@ class BuildathonSystemIntegrationTests(TestCase):
         order_res = self.client.post('/api/payments/create-order/', {}, format='json')
         self.assertEqual(order_res.status_code, status.HTTP_201_CREATED)
         order_id = order_res.data['order_id']
-        self.assertIn('payment_session_id', order_res.data)
+        self.assertEqual(order_res.data['gateway'], 'RAZORPAY')
+        self.assertIn('amount_paise', order_res.data)
 
         # 5. Simulate / Verify Payment
         sim_res = self.client.post('/api/payments/simulate/', {'order_id': order_id}, format='json')

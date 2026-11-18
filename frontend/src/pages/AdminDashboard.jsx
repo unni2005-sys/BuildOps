@@ -528,7 +528,7 @@ export const AdminDashboard = () => {
         {activeTab === 'payments' && (
           <div className="doom-card rounded-xl p-6 space-y-4">
             <h3 className="font-display text-xs font-bold uppercase tracking-widest text-amber-200">
-              Cashfree Transactions Log
+              Razorpay Transactions Log
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -633,7 +633,7 @@ export const AdminDashboard = () => {
                   </div>
                   <h4 className="text-sm font-bold text-emerald-50 mb-1">Payments Audit Report</h4>
                   <p className="text-[11px] text-emerald-200/65">
-                    All Cashfree order IDs, gateway reference codes, timestamps, and amounts.
+                    All Razorpay order IDs, gateway reference codes, timestamps, and amounts.
                   </p>
                 </div>
                 <span className="inline-flex items-center gap-1.5 text-xs text-amber-200 group-hover:text-emerald-300 font-semibold mt-4 transition">

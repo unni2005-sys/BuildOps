@@ -75,11 +75,93 @@ export const RegisterTeam = () => {
     }
   };
 
-  const initiateCashfreeOrder = async () => {
-    const returnUrl = `${window.location.origin}/payment-status`;
-    const orderRes = await api.post('/payments/create-order/', { return_url: returnUrl });
-    setPaymentOrder(orderRes.data);
-    setStep('GATEWAY');
+  const loadRazorpayScript = () => {
+    if (window.Razorpay) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const openRazorpayCheckout = async (order) => {
+    const loaded = await loadRazorpayScript();
+    if (!loaded || !window.Razorpay) {
+      setError('Could not load Razorpay Checkout SDK. Please check your internet connection or disable ad-blockers and try again.');
+      return;
+    }
+
+    const options = {
+      key: order.key_id,
+      amount: order.amount_paise,
+      currency: order.currency || 'INR',
+      name: 'Build Ops',
+      description: `Team ${order.team?.team_name || ''} (${order.team?.registration_id || ''})`,
+      order_id: order.order_id,
+      prefill: {
+        name: order.prefill?.name || user?.full_name || '',
+        email: order.prefill?.email || user?.email || '',
+        contact: order.prefill?.contact || user?.mobile_number || '',
+      },
+      notes: {
+        registration_id: order.team?.registration_id || '',
+        team_name: order.team?.team_name || '',
+      },
+      theme: {
+        color: '#10b981',
+      },
+      handler: async (response) => {
+        setLoading(true);
+        setError('');
+        try {
+          await api.post('/payments/verify-razorpay/', {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+          setStep('SUCCESS');
+          setTimeout(() => {
+            navigate('/student/dashboard', { replace: true });
+          }, 2500);
+        } catch (err) {
+          console.error(err);
+          setError(
+            err.response?.data?.error ||
+              'Payment verification failed. If money was debited, contact admin with your Razorpay Payment ID.'
+          );
+          setStep('FORM');
+        } finally {
+          setLoading(false);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          setError('Payment window was closed. Click Confirm & Pay to try again.');
+        },
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', (resp) => {
+      setError(resp?.error?.description || 'Payment failed. Please try again.');
+    });
+    rzp.open();
+  };
+
+  const initiateRazorpayOrder = async () => {
+    const orderRes = await api.post('/payments/create-order/', {});
+    const order = orderRes.data;
+    setPaymentOrder(order);
+
+    if (!order.is_mock && order.key_id) {
+      await openRazorpayCheckout(order);
+    } else {
+      // Fallback test checkout screen when Razorpay keys are not yet configured
+      setStep('GATEWAY');
+    }
   };
 
   const handleConfirmAndPay = async (e) => {
@@ -143,8 +225,8 @@ export const RegisterTeam = () => {
       });
       setExistingPendingTeam(regRes.data.team);
 
-      // 2. Immediately create Cashfree order & open gateway
-      await initiateCashfreeOrder();
+      // 2. Immediately create Razorpay order & open checkout
+      await initiateRazorpayOrder();
     } catch (err) {
       console.error(err);
       if (err.response?.data) {
@@ -164,10 +246,10 @@ export const RegisterTeam = () => {
     setError('');
     setLoading(true);
     try {
-      await initiateCashfreeOrder();
+      await initiateRazorpayOrder();
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Could not launch Cashfree payment gateway.');
+      setError(err.response?.data?.error || 'Could not launch Razorpay payment gateway.');
     } finally {
       setLoading(false);
     }
@@ -249,7 +331,7 @@ export const RegisterTeam = () => {
     );
   }
 
-  // STEP 2: CASHFREE PAYMENT GATEWAY CHECKOUT
+  // STEP 2: RAZORPAY TEST CHECKOUT FALLBACK (when keys are not yet configured)
   if (step === 'GATEWAY' && paymentOrder) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 relative overflow-hidden">
@@ -263,10 +345,10 @@ export const RegisterTeam = () => {
               </div>
               <div>
                 <h2 className="font-display text-sm font-bold tracking-wider text-emerald-50 uppercase">
-                  Cashfree Checkout
+                  Razorpay Checkout
                 </h2>
                 <p className="text-[11px] text-amber-200/75 font-mono-tech uppercase">
-                  Secure Gateway ({paymentOrder.environment})
+                  Test Mode ({paymentOrder.environment})
                 </p>
               </div>
             </div>
@@ -367,7 +449,7 @@ export const RegisterTeam = () => {
             className="w-full doom-btn-primary py-3 px-4 rounded-lg text-xs font-display tracking-[0.14em] uppercase disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
           >
             <CreditCard size={16} />
-            {loading ? 'Opening Cashfree...' : `Confirm & Pay ₹${existingPendingTeam.fee_amount || 500}`}
+            {loading ? 'Opening Razorpay...' : `Confirm & Pay ₹${existingPendingTeam.fee_amount || 500}`}
           </button>
         </div>
       </div>

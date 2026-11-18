@@ -10,10 +10,13 @@ from apps.teams.models import Team, TeamMember
 from apps.payments.models import Payment
 from apps.payments.serializers import PaymentSerializer
 from apps.payments.services import (
-    create_cashfree_order,
+    is_razorpay_configured,
+    is_razorpay_live,
+    create_razorpay_order,
+    verify_and_confirm_razorpay_payment,
     verify_payment_with_gateway,
-    verify_cashfree_signature,
-    simulate_sandbox_payment
+    verify_razorpay_webhook_signature,
+    simulate_sandbox_payment,
 )
 
 logger = logging.getLogger(__name__)
@@ -21,16 +24,17 @@ logger = logging.getLogger(__name__)
 
 class CreateOrderView(APIView):
     """
-    Creates a Cashfree payment order for the student's pending team.
+    Creates a Razorpay payment order for the student's pending team.
     """
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         user = request.user
-        # Find user's team
-        member = TeamMember.objects.filter(user=user).exclude(team__registration_status='CANCELLED').first()
+        member = TeamMember.objects.filter(
+            Q(user=user) | Q(email=user.email.lower())
+        ).exclude(team__registration_status='CANCELLED').select_related('team').first()
+
         if not member:
-            # Check led_teams
             team = Team.objects.filter(team_leader=user).exclude(registration_status='CANCELLED').first()
         else:
             team = member.team
@@ -41,30 +45,69 @@ class CreateOrderView(APIView):
         if team.payment_status == 'SUCCESS':
             return Response({'error': 'Team has already completed payment.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return_url = request.data.get('return_url')
+        leader = team.members.filter(member_role='LEADER').first() or team.members.first()
 
         try:
-            payment = create_cashfree_order(team, return_url=return_url)
+            payment = create_razorpay_order(team)
+            configured = is_razorpay_configured()
             return Response({
+                'gateway': 'RAZORPAY',
                 'order_id': payment.order_id,
-                'payment_session_id': payment.payment_session_id,
+                'key_id': settings.RAZORPAY_KEY_ID if configured else '',
                 'amount': float(payment.amount),
+                'amount_paise': int(float(payment.amount) * 100),
                 'currency': payment.currency,
-                'environment': settings.CASHFREE_ENV,
-                'is_mock': "mock" in str(payment.payment_session_id),
+                'environment': settings.RAZORPAY_ENV,
+                'is_mock': not configured,
+                'prefill': {
+                    'name': leader.full_name if leader else user.full_name,
+                    'email': leader.email if leader else user.email,
+                    'contact': leader.mobile_number if leader else getattr(user, 'mobile_number', ''),
+                },
                 'team': {
                     'id': team.id,
                     'registration_id': team.registration_id,
                     'team_name': team.team_name,
-                }
+                },
             }, status=status.HTTP_201_CREATED)
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class VerifyRazorpayPaymentView(APIView):
+    """
+    Verifies Razorpay Checkout callback signature and confirms actual capture via Razorpay API.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        razorpay_order_id = request.data.get('razorpay_order_id', '').strip()
+        razorpay_payment_id = request.data.get('razorpay_payment_id', '').strip()
+        razorpay_signature = request.data.get('razorpay_signature', '').strip()
+
+        if not (razorpay_order_id and razorpay_payment_id and razorpay_signature):
+            return Response(
+                {'error': 'Missing Razorpay verification fields (order_id, payment_id, signature).'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        success, message, payment = verify_and_confirm_razorpay_payment(
+            razorpay_order_id, razorpay_payment_id, razorpay_signature
+        )
+        if not payment:
+            return Response({'error': message}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({
+            'success': success,
+            'message': message,
+            'payment': PaymentSerializer(payment).data,
+            'team_status': payment.team.registration_status,
+        }, status=status.HTTP_200_OK if success else status.HTTP_400_BAD_REQUEST)
+
+
 class VerifyPaymentView(APIView):
     """
-    Verifies the payment with Cashfree and confirms registration.
+    Verifies order status directly against Razorpay server-side API.
     """
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -83,15 +126,15 @@ class VerifyPaymentView(APIView):
 
 class SimulatePaymentView(APIView):
     """
-    Allows simulating a successful payment in development/sandbox mode.
+    Allows simulating a successful payment ONLY when Razorpay is not in LIVE mode.
     """
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        if settings.CASHFREE_ENV == 'PRODUCTION':
+        if is_razorpay_live():
             return Response(
-                {'error': 'Payment simulation is disabled in production mode.'},
-                status=status.HTTP_403_FORBIDDEN
+                {'error': 'Payment simulation is disabled in LIVE mode.'},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         order_id = request.data.get('order_id')
@@ -108,29 +151,27 @@ class SimulatePaymentView(APIView):
                 'success': True,
                 'message': message,
                 'payment': PaymentSerializer(payment).data,
-                'team_status': payment.team.registration_status
+                'team_status': payment.team.registration_status,
             }, status=status.HTTP_200_OK)
         except Payment.DoesNotExist:
             return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class CashfreeWebhookView(APIView):
+class RazorpayWebhookView(APIView):
     """
-    Receives Cashfree server-side payment confirmation webhooks.
-    Verifies signature and idempotently confirms team registration.
+    Receives Razorpay server-to-server payment confirmation webhooks.
+    Verifies X-Razorpay-Signature and idempotently confirms team registration.
     """
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        signature = request.headers.get('x-webhook-signature')
-        timestamp = request.headers.get('x-webhook-timestamp')
+        signature = request.headers.get('X-Razorpay-Signature') or request.headers.get('x-razorpay-signature')
         raw_body = request.body
 
-        # Verify signature if configured
-        if settings.CASHFREE_WEBHOOK_SECRET and signature and timestamp:
-            is_valid = verify_cashfree_signature(raw_body, timestamp, signature)
-            if not is_valid:
-                logger.warning("Rejected webhook due to invalid signature")
+        # Enforce webhook signature verification whenever secret is configured
+        if settings.RAZORPAY_WEBHOOK_SECRET:
+            if not verify_razorpay_webhook_signature(raw_body, signature):
+                logger.warning("Rejected Razorpay webhook due to invalid signature")
                 return Response({'error': 'Invalid webhook signature'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -138,17 +179,15 @@ class CashfreeWebhookView(APIView):
         except Exception:
             return Response({'error': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
 
-        event_type = payload.get('type')
-        data = payload.get('data', {})
-        order_info = data.get('order', {})
-        payment_info = data.get('payment', {})
+        event = payload.get('event')
+        payment_entity = payload.get('payload', {}).get('payment', {}).get('entity', {})
+        order_entity = payload.get('payload', {}).get('order', {}).get('entity', {})
 
-        order_id = order_info.get('order_id')
+        order_id = payment_entity.get('order_id') or order_entity.get('id')
         if not order_id:
-            return Response({'error': 'No order_id in webhook'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'ignored', 'reason': 'No order_id in payload'}, status=status.HTTP_200_OK)
 
-        # Process payment success
-        if event_type == 'PAYMENT_SUCCESS_WEBHOOK' or payment_info.get('payment_status') == 'SUCCESS':
+        if event in ('payment.captured', 'order.paid'):
             verify_payment_with_gateway(order_id)
 
         return Response({'status': 'received'}, status=status.HTTP_200_OK)
