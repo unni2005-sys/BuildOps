@@ -1,11 +1,17 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, ShieldCheck, Ticket, QrCode, ArrowUpRight } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Hide navbar on the Home page for a full-bleed cinema poster hero
+  if (location.pathname === '/') {
+    return null;
+  }
 
   const handleLogout = () => {
     logout();

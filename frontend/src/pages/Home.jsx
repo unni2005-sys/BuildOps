@@ -186,7 +186,7 @@ export const Home = () => {
       {/* =====================================================================
           HERO — FULL-VIEWPORT 3D CINEMA STAGE
          ===================================================================== */}
-      <section className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-hidden border-b border-white/[0.08]">
+      <section className="relative min-h-screen flex flex-col justify-between overflow-hidden border-b border-white/[0.08]">
         {/* Fullscreen 3D Parallax Video Backdrop */}
         <div
           ref={heroBgRef}
