@@ -34,16 +34,16 @@ const RootEntry = () => {
 };
 
 export function App() {
-  // Keep backend warm on load and every 10 minutes while any user/admin tab is open
-  useEffect(() => {
-    const pingHealth = () => {
-      fetch(`${API_BASE_URL}/health/`, { method: 'GET', keepalive: true }).catch(() => {});
-    };
-
-    pingHealth();
-    const intervalId = setInterval(pingHealth, 10 * 60 * 1000);
-    return () => clearInterval(intervalId);
-  }, []);
+  // Keep-alive 10-minute ping temporarily paused until public launch (saves Render free-tier hours).
+  // Uncomment below when sharing the live link with users:
+  // useEffect(() => {
+  //   const pingHealth = () => {
+  //     fetch(`${API_BASE_URL}/health/`, { method: 'GET', keepalive: true }).catch(() => {});
+  //   };
+  //   pingHealth();
+  //   const intervalId = setInterval(pingHealth, 10 * 60 * 1000);
+  //   return () => clearInterval(intervalId);
+  // }, []);
 
   return (
     <AuthProvider>
