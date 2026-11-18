@@ -1,268 +1,243 @@
 @import "tailwindcss";
 
+/* Official Poster Slab-Serif Display Typeface */
+@font-face {
+  font-family: 'PosterTitle';
+  src: url('/fonts/Arvo-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   body {
-    background-color: #040806;
-    color: #e8f5ee;
+    background-color: #06080e;
+    color: #f1f5f9;
     -webkit-font-smoothing: antialiased;
-    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   ::selection {
-    background-color: rgba(34, 255, 102, 0.28);
-    color: #fef3c7;
+    background-color: rgba(16, 185, 129, 0.35);
+    color: #ffffff;
   }
 }
 
-/* Poster-Matched Typography */
-.font-display {
-  font-family: 'Orbitron', sans-serif;
+/* Authentic Halftone Dot-Matrix Title (Matching Official Poster) */
+.poster-title-halftone {
+  font-family: 'PosterTitle', 'Arvo', 'Space Grotesk', serif;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  color: #ffffff;
+  background-image: 
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 1.2px, transparent 1.6px),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 25%, #cbd5e1 55%, #64748b 85%, #334155 100%);
+  background-size: 4px 4px, 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 35px rgba(16, 185, 129, 0.3));
 }
 
-.font-imperial {
-  font-family: 'Cinzel', serif;
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .poster-title-halftone {
+    color: #ffffff;
+  }
+}
+
+/* Modern Typography */
+.font-display {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.025em;
 }
 
 .font-mono-tech {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-/* Deep Obsidian + Emerald Mist + Stained-Glass Gold Atmospheric Backdrop */
-.bg-doom-canvas {
-  background-color: #040806;
+/* 3D Transform Utilities */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+/* Subtle Modern Dark Canvas */
+.bg-modern-dark {
+  background-color: #06080e;
   background-image:
-    radial-gradient(ellipse 75% 45% at 50% -8%, rgba(212, 175, 55, 0.12), transparent 65%),
-    radial-gradient(ellipse 70% 50% at 50% 108%, rgba(22, 163, 74, 0.22), transparent 70%),
-    radial-gradient(circle at 15% 40%, rgba(16, 185, 129, 0.08), transparent 45%),
-    radial-gradient(circle at 85% 60%, rgba(202, 168, 72, 0.06), transparent 45%),
-    linear-gradient(180deg, #050a07 0%, #07120c 48%, #040806 100%);
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(16, 185, 129, 0.08), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(59, 130, 246, 0.05), transparent 70%),
+    linear-gradient(180deg, #06080e 0%, #080b12 50%, #06080e 100%);
   background-attachment: fixed;
 }
 
-/* Subtle Arcane Grid Overlay */
-.bg-arcane-grid {
-  background-size: 48px 48px;
-  background-image:
-    linear-gradient(to right, rgba(34, 255, 102, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(34, 255, 102, 0.035) 1px, transparent 1px);
+/* Clean Modern Card */
+.clean-card {
+  background: rgba(13, 17, 24, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Metallic Silver-Chrome + Emerald Glow Title ("BUILD OPS") */
-.text-buildops {
-  background: linear-gradient(180deg, #ffffff 0%, #dbe7e0 48%, #9fb5a8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 0 18px rgba(34, 255, 102, 0.32));
+.clean-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6);
 }
 
-/* Radiant Pale-Gold Glow (Inspired by Poster "COMING SOON" & Stained Glass) */
-.text-arcane-gold {
-  color: #fef3c7;
-  text-shadow:
-    0 0 10px rgba(254, 243, 199, 0.5),
-    0 0 24px rgba(212, 175, 55, 0.35),
-    0 0 40px rgba(34, 255, 102, 0.18);
+/* Primary Button */
+.btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid rgba(110, 231, 183, 0.4);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.text-emerald-glow {
-  color: #4ade80;
-  text-shadow: 0 0 14px rgba(34, 255, 102, 0.45);
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
 }
 
-/* Obsidian-Emerald Glass Card with Top Energy Edge */
-.doom-card {
-  position: relative;
-  background: linear-gradient(165deg, rgba(10, 22, 16, 0.9) 0%, rgba(5, 12, 9, 0.94) 100%);
-  border: 1px solid rgba(52, 211, 153, 0.22);
-  box-shadow:
-    0 12px 40px -10px rgba(0, 0, 0, 0.85),
-    0 0 28px -8px rgba(16, 185, 129, 0.16),
-    inset 0 1px 0 rgba(254, 243, 199, 0.08);
-  backdrop-filter: blur(12px);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
-.doom-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 12%;
-  right: 12%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.7), rgba(254, 243, 199, 0.65), rgba(74, 222, 128, 0.7), transparent);
-  pointer-events: none;
+/* Secondary Button */
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
 }
 
-.doom-card:hover {
-  border-color: rgba(74, 222, 128, 0.38);
-  box-shadow:
-    0 14px 44px -10px rgba(0, 0, 0, 0.9),
-    0 0 34px -6px rgba(34, 255, 102, 0.22),
-    inset 0 1px 0 rgba(254, 243, 199, 0.12);
-}
-
-/* Inner Sub-Panel */
-.doom-panel {
-  background: rgba(5, 13, 9, 0.78);
-  border: 1px solid rgba(52, 211, 153, 0.18);
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
 }
 
 /* Inputs */
-.doom-input {
-  background-color: rgba(4, 10, 7, 0.9);
-  border: 1px solid rgba(52, 211, 153, 0.25);
-  color: #ecfdf5;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+.clean-input {
+  background-color: rgba(10, 14, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  transition: all 0.2s ease;
 }
 
-.doom-input::placeholder {
-  color: #5c7a69;
+.clean-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Legacy & Component Aliases */
+.doom-card {
+  background: rgba(13, 17, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.doom-card:hover {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.8), 0 0 25px rgba(16, 185, 129, 0.15);
+}
+
+.doom-panel {
+  background: rgba(6, 10, 16, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.doom-input {
+  background-color: rgba(6, 10, 16, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  transition: all 0.2s ease;
 }
 
 .doom-input:focus {
   outline: none;
-  border-color: #34d399;
-  box-shadow: 0 0 0 2px rgba(34, 255, 102, 0.16), 0 0 16px rgba(16, 185, 129, 0.18);
-  background-color: rgba(6, 15, 10, 0.98);
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
-.doom-input:disabled {
-  background-color: rgba(12, 24, 18, 0.65);
-  border-color: rgba(52, 211, 153, 0.14);
-  color: #9bb5a6;
-}
-
-/* Primary Glowing Emerald Button with Light Sweep */
 .doom-btn-primary {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #059669 0%, #10b981 55%, #16a34a 100%);
-  color: #031108;
-  font-weight: 700;
-  border: 1px solid rgba(110, 231, 183, 0.55);
-  box-shadow:
-    0 0 18px rgba(16, 185, 129, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  transition: all 0.25s ease;
-}
-
-.doom-btn-primary::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(254, 243, 199, 0.35), transparent);
-  transform: skewX(-22deg);
-  transition: left 0.55s ease;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid rgba(110, 231, 183, 0.4);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .doom-btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #10b981 0%, #22c55e 55%, #34d399 100%);
-  box-shadow:
-    0 0 26px rgba(34, 255, 102, 0.52),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
   transform: translateY(-1px);
 }
 
-.doom-btn-primary:hover:not(:disabled)::after {
-  left: 140%;
-}
-
-.doom-btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-/* Secondary Obsidian Button */
 .doom-btn-secondary {
-  background: rgba(11, 26, 18, 0.85);
-  color: #d1fae5;
-  border: 1px solid rgba(52, 211, 153, 0.28);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .doom-btn-secondary:hover:not(:disabled) {
-  background: rgba(16, 40, 27, 0.95);
-  border-color: rgba(74, 222, 128, 0.55);
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
 }
 
-/* Glowing Emerald Laser Rift Divider */
 .laser-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(34, 255, 102, 0.55), rgba(254, 243, 199, 0.45), rgba(34, 255, 102, 0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.4), rgba(255, 255, 255, 0.2), rgba(16, 185, 129, 0.4), transparent);
 }
 
-/* Subtle Glitch Shimmer Animation for Poster Display Text */
-@keyframes glitchShimmer {
-  0%, 92%, 100% {
-    text-shadow: 0 0 14px rgba(254, 243, 199, 0.45), 0 0 28px rgba(34, 255, 102, 0.2);
-    transform: translateX(0);
-  }
-  94% {
-    text-shadow: -2px 0 rgba(34, 255, 102, 0.7), 2px 0 rgba(254, 243, 199, 0.8);
-    transform: translateX(0.5px);
-  }
-  96% {
-    text-shadow: 2px 0 rgba(34, 255, 102, 0.7), -2px 0 rgba(212, 175, 55, 0.8);
-    transform: translateX(-0.5px);
-  }
-  98% {
-    text-shadow: 0 0 18px rgba(254, 243, 199, 0.6), 0 0 32px rgba(34, 255, 102, 0.35);
-    transform: translateX(0);
-  }
-}
-
-.animate-glitch-gold {
-  animation: glitchShimmer 5.5s infinite ease-in-out;
-}
-
-@keyframes pulseAura {
+/* Smooth 3D Idle Levitation */
+@keyframes levitate3D {
   0%, 100% {
-    opacity: 0.55;
-    transform: scale(1);
+    transform: perspective(1200px) rotateX(5deg) rotateY(0deg) translateY(0px);
   }
   50% {
-    opacity: 0.9;
-    transform: scale(1.03);
+    transform: perspective(1200px) rotateX(2deg) rotateY(1deg) translateY(-8px);
   }
 }
 
-.animate-pulse-aura {
-  animation: pulseAura 4s infinite ease-in-out;
+.animate-levitate-3d {
+  animation: levitate3D 6s ease-in-out infinite;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Custom Dark Scrollbar */
+/* Custom Clean Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #040907;
+  background: #06080e;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(52, 211, 153, 0.25);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(74, 222, 128, 0.45);
+  background: rgba(16, 185, 129, 0.5);
 }
 
 /* Prevent double view / split screen in html5-qrcode scanner */
@@ -283,7 +258,6 @@
   margin: 0 auto !important;
 }
 
-/* CRITICAL: Hide internal canvas so it does not render alongside the video as a split-screen */
 #html5-qr-video-reader canvas {
   display: none !important;
   visibility: hidden !important;
@@ -291,7 +265,6 @@
   height: 0 !important;
 }
 
-/* CRITICAL: If React StrictMode mounts duplicate video elements, display only the first one */
 #html5-qr-video-reader video ~ video {
   display: none !important;
   visibility: hidden !important;
@@ -299,10 +272,7 @@
   height: 0 !important;
 }
 
-#html5-qr-video-reader img[alt="Info icon"] {
-  display: none !important;
-}
-
+#html5-qr-video-reader img[alt="Info icon"],
 #html5-qr-video-reader__dashboard_section_csr span,
 #html5-qr-video-reader__dashboard_section_swaplink {
   display: none !important;
