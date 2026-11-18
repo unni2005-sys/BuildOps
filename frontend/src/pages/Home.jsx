@@ -533,8 +533,6 @@ export const Home = () => {
 
           <div className="text-[11px] text-zinc-400 text-center md:text-right">
             <span>© 2026 BuildOps. Adi Shankara Institute of Engineering & Technology.</span>
-            <br />
-            <span className="text-zinc-500">Django REST + Supabase + React Tailwind</span>
           </div>
         </div>
       </footer>
