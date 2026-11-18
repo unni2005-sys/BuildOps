@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import { Tilt3D } from '../components/Tilt3D';
 import {
   AlertCircle,
-  ArrowRight,
+  ArrowUpRight,
   Mail,
-  User,
-  Phone,
-  Lock,
   RefreshCw,
-  Code2,
-  CheckCircle2,
 } from 'lucide-react';
 
 export const Register = () => {
@@ -29,7 +25,6 @@ export const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'mobileNumber') {
-      // Allow digits only, max 10 characters
       const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
       setFormData({ ...formData, [name]: digitsOnly });
     } else {
@@ -82,33 +77,34 @@ export const Register = () => {
 
   if (successData) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#06080e] relative text-zinc-100 selection:bg-emerald-500/30 selection:text-white">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.08] blur-[140px]" />
-        </div>
-        <div className="max-w-md w-full clean-card p-8 sm:p-10 rounded-3xl border border-white/[0.1] text-center relative z-10 backdrop-blur-2xl bg-[#090d16]/90 shadow-2xl">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-center mx-auto mb-4 shadow-[0_0_24px_rgba(16,185,129,0.25)]">
-            <Mail size={26} />
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 bg-[#030504] relative">
+        <div className="max-w-md w-full doom-surface p-8 border border-white/[0.12] relative z-10 animate-fade-in-up">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-emerald-500" />
+          <div className="w-11 h-11 border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-5">
+            <Mail size={20} />
           </div>
-          <h2 className="font-display text-2xl font-bold tracking-tight text-white mb-2">
+          <span className="font-mono-tech text-[10px] tracking-[0.22em] text-emerald-400 uppercase block mb-1.5">
+            Step 01 Complete
+          </span>
+          <h2 className="font-poster text-2xl text-[#eef2ee] tracking-tight mb-2">
             Verify Your Email
           </h2>
-          <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-            We sent a verification link to <strong className="text-emerald-300">{formData.email}</strong>.
-            Once verified, your Team Registration window will open automatically.
+          <p className="text-xs text-[#8b9b90] leading-relaxed mb-6">
+            A verification link was sent to <strong className="text-[#eef2ee]">{formData.email}</strong>.
+            Once confirmed, team registration opens automatically.
           </p>
 
           {successData.dev_verification_token && (
-            <div className="bg-amber-500/10 border border-amber-400/30 p-4 rounded-2xl text-left mb-6">
-              <p className="text-[10px] font-mono-tech font-bold text-amber-300 uppercase tracking-widest mb-1.5">
-                Quick Verify (Dev Mode)
+            <div className="bg-[#0b1510] border border-[#d4b46a]/40 p-4 mb-5">
+              <p className="font-mono-tech text-[10px] text-[#d4b46a] uppercase tracking-widest mb-2">
+                Dev Mode Quick Verify
               </p>
               <button
                 onClick={() => navigate(`/verify-email?token=${successData.dev_verification_token}`)}
-                className="w-full mt-2 bg-amber-400 hover:bg-amber-300 text-black text-xs font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md"
+                className="w-full doom-btn-primary py-2.5 px-3 font-mono-tech text-[11px] uppercase tracking-wider gap-1.5 cursor-pointer"
               >
-                <span>Verify Email & Register Team</span>
-                <ArrowRight size={14} />
+                <span>Verify &amp; Continue</span>
+                <ArrowUpRight size={13} />
               </button>
             </div>
           )}
@@ -116,13 +112,13 @@ export const Register = () => {
           <div className="space-y-3">
             <Link
               to={`/verify-email?email=${encodeURIComponent(formData.email)}`}
-              className="w-full inline-flex items-center justify-center gap-2 btn-primary py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider"
+              className="w-full doom-btn-primary py-3 px-4 font-mono-tech text-xs uppercase tracking-[0.16em] gap-2"
             >
-              <span>Enter Verification Code</span>
-              <ArrowRight size={14} />
+              <span>Enter Verification Token</span>
+              <ArrowUpRight size={14} />
             </Link>
-            <div>
-              <Link to="/login" className="text-xs text-zinc-400 hover:text-white transition">
+            <div className="text-center pt-1">
+              <Link to="/login" className="font-mono-tech text-[11px] text-[#8b9b90] hover:text-[#eef2ee] uppercase tracking-wider">
                 ← Back to Sign In
               </Link>
             </div>
@@ -133,190 +129,155 @@ export const Register = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-[#06080e] relative text-zinc-100 selection:bg-emerald-500/30 selection:text-white">
-      {/* Ambient Lighting Orbs */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] rounded-full bg-emerald-500/[0.07] blur-[140px]" />
-        <div className="absolute top-1/4 right-1/4 w-[350px] h-[350px] rounded-full bg-blue-500/[0.04] blur-[120px]" />
-      </div>
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-10 px-4 sm:px-6 bg-[#030504] relative">
+      <div className="max-w-md w-full relative z-10 animate-fade-in-up">
+        <Tilt3D maxTilt={4} perspective={1200}>
+          <div className="doom-surface p-7 sm:p-9 border border-white/[0.12] relative">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500/80 via-[#d4b46a]/50 to-transparent" />
 
-      {/* Main Standard Register Card */}
-      <div className="max-w-md w-full clean-card p-8 sm:p-10 rounded-3xl border border-white/[0.1] shadow-2xl relative z-10 backdrop-blur-2xl bg-[#090d16]/90">
-        {/* Top Accent Light Edge */}
-        <div className="absolute top-0 left-12 right-12 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
-
-        {/* Card Header & Brand */}
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 flex items-center justify-center mx-auto mb-3 shadow-[0_0_20px_rgba(16,185,129,0.25)]">
-            <Code2 size={24} />
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold mb-2">
-            <span>ASIET × TCS</span>
-            <span className="text-zinc-500">•</span>
-            <span>12h Buildathon</span>
-          </div>
-
-          <h1 className="font-display text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Create Account
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Register as Team Leader to unlock squad registration
-          </p>
-        </div>
-
-        {/* Standard Segmented Tab Switcher */}
-        <div className="grid grid-cols-2 p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] mb-6 text-xs font-semibold">
-          <Link
-            to="/login"
-            className="py-2.5 rounded-lg text-zinc-400 hover:text-white text-center transition hover:bg-white/[0.03]"
-          >
-            Sign In
-          </Link>
-          <div className="py-2.5 rounded-lg bg-emerald-500 text-black font-bold text-center shadow-md shadow-emerald-500/20 cursor-default">
-            Sign Up
-          </div>
-        </div>
-
-        {error && (
-          <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3.5 rounded-2xl text-xs mb-5 shadow-lg flex items-center gap-2.5">
-            <AlertCircle size={16} className="shrink-0 text-rose-400" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-              Full Name
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
-                <User size={16} />
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase mb-3">
+                <span>BUILD OPS 2026</span>
+                <span className="text-[#d4b46a]">₹500 / TEAM</span>
               </div>
-              <input
-                type="text"
-                name="fullName"
-                required
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="e.g. Rohan Verma"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#04060a] border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition"
-              />
+              <h1 className="font-poster text-2xl sm:text-3xl text-[#eef2ee] tracking-tight">
+                Create Account
+              </h1>
+              <p className="text-xs text-[#8b9b90] mt-1">
+                Sign up as Team Leader to register your team of two.
+              </p>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-              Email Address
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
-                <Mail size={16} />
-              </div>
-              <input
-                type="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="you@college.edu"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#04060a] border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-              Mobile Number (10 digits)
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
-                <Phone size={16} />
-              </div>
-              <input
-                type="tel"
-                name="mobileNumber"
-                required
-                maxLength={10}
-                value={formData.mobileNumber}
-                onChange={handleChange}
-                placeholder="9876543210"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#04060a] border border-white/10 text-white placeholder-zinc-500 text-sm font-mono-tech focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
-                  <Lock size={15} />
-                </div>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Min 6 chars"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#04060a] border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition"
-                />
+            {/* Sharp Tab Switcher */}
+            <div className="grid grid-cols-2 border border-white/[0.12] mb-6 font-mono-tech text-[11px] uppercase tracking-[0.16em]">
+              <Link
+                to="/login"
+                className="py-2.5 text-[#8b9b90] hover:text-[#eef2ee] text-center transition bg-[#040705]"
+              >
+                Sign In
+              </Link>
+              <div className="py-2.5 bg-emerald-500 text-[#030705] font-bold text-center">
+                Sign Up
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
-                  <Lock size={15} />
-                </div>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Repeat password"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#04060a] border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition"
-                />
+            {error && (
+              <div className="bg-rose-950/50 border border-rose-500/40 text-rose-200 p-3.5 text-xs mb-5 flex items-center gap-2.5">
+                <AlertCircle size={15} className="shrink-0 text-rose-400" />
+                <span>{error}</span>
               </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-xl font-semibold text-xs uppercase tracking-wider btn-primary shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 mt-2"
-          >
-            {loading ? (
-              <>
-                <RefreshCw size={14} className="animate-spin" />
-                <span>Creating Account...</span>
-              </>
-            ) : (
-              <>
-                <span>Sign Up & Verify Email</span>
-                <ArrowRight size={14} />
-              </>
             )}
-          </button>
-        </form>
 
-        <div className="mt-6 pt-5 border-t border-white/[0.08] text-center text-xs text-zinc-400">
-          <span>Already registered? </span>
-          <Link
-            to="/login"
-            className="text-emerald-400 font-semibold hover:text-emerald-300 transition underline underline-offset-4 decoration-emerald-500/30 hover:decoration-emerald-400"
-          >
-            Sign In here
-          </Link>
-        </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  required
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  placeholder="Team leader full name"
+                  className="w-full px-3.5 py-2.5 text-sm doom-input"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="you@college.edu"
+                  className="w-full px-3.5 py-2.5 text-sm doom-input"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
+                  Mobile Number (10 Digits)
+                </label>
+                <input
+                  type="tel"
+                  name="mobileNumber"
+                  required
+                  maxLength={10}
+                  value={formData.mobileNumber}
+                  onChange={handleChange}
+                  placeholder="9876543210"
+                  className="w-full px-3.5 py-2.5 text-sm font-mono-tech doom-input"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Min 6 chars"
+                    className="w-full px-3.5 py-2.5 text-sm doom-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
+                    Confirm
+                  </label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Repeat password"
+                    className="w-full px-3.5 py-2.5 text-sm doom-input"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full doom-btn-primary py-3 px-4 font-mono-tech text-xs uppercase tracking-[0.18em] gap-2 disabled:opacity-50 cursor-pointer mt-2"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw size={13} className="animate-spin" />
+                    <span>Creating Account</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Sign Up &amp; Verify Email</span>
+                    <ArrowUpRight size={14} />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-6 pt-5 border-t border-white/[0.08] flex items-center justify-between font-mono-tech text-[11px] text-[#8b9b90]">
+              <span>Already registered?</span>
+              <Link
+                to="/login"
+                className="text-emerald-400 hover:text-emerald-300 uppercase tracking-wider"
+              >
+                Sign In →
+              </Link>
+            </div>
+          </div>
+        </Tilt3D>
       </div>
     </div>
   );

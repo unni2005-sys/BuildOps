@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { API_BASE_URL } from './api/client';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { DoomsdayAtmosphere } from './components/DoomsdayAtmosphere';
 
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -49,7 +50,8 @@ export function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen flex flex-col bg-doom-canvas bg-arcane-grid text-emerald-50 relative">
+        <div className="min-h-screen flex flex-col bg-[#030504] text-[#eef2ee] relative">
+          <DoomsdayAtmosphere />
           <Navbar />
           <div className="flex-1 relative z-10">
             <Routes>

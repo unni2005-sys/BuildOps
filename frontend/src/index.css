@@ -10,11 +10,19 @@
 }
 
 @layer base {
+  html {
+    background-color: #030504;
+    color: #eef2ee;
+    scroll-behavior: smooth;
+  }
+
   body {
-    background-color: #06080e;
-    color: #f1f5f9;
+    background-color: #030504;
+    color: #eef2ee;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
   }
 
   ::selection {
@@ -23,221 +31,257 @@
   }
 }
 
-/* Authentic Halftone Dot-Matrix Title (Matching Official Poster) */
-.poster-title-halftone {
-  font-family: 'PosterTitle', 'Arvo', 'Space Grotesk', serif;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  line-height: 1.05;
-  color: #ffffff;
-  background-image: 
-    radial-gradient(circle, rgba(255, 255, 255, 0.95) 1.2px, transparent 1.6px),
-    linear-gradient(180deg, #ffffff 0%, #f8fafc 25%, #cbd5e1 55%, #64748b 85%, #334155 100%);
-  background-size: 4px 4px, 100% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 35px rgba(16, 185, 129, 0.3));
+/* =========================================================================
+   TYPOGRAPHY
+   ========================================================================= */
+.font-poster {
+  font-family: 'PosterTitle', 'Arvo', Georgia, serif;
 }
 
-@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
-  .poster-title-halftone {
-    color: #ffffff;
-  }
-}
-
-/* Modern Typography */
 .font-display {
-  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.025em;
+}
+
+.font-imperial {
+  font-family: 'Cinzel', Georgia, serif;
 }
 
 .font-mono-tech {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-/* 3D Transform Utilities */
-.preserve-3d {
-  transform-style: preserve-3d;
+/* =========================================================================
+   CINEMA FILM GRAIN & ATMOSPHERE
+   ========================================================================= */
+.doomsday-grain {
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
 }
 
-.perspective-1200 {
-  perspective: 1200px;
-}
-
-/* Subtle Modern Dark Canvas */
-.bg-modern-dark {
-  background-color: #06080e;
+.bg-doom-canvas {
+  background-color: #030504;
   background-image:
-    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(16, 185, 129, 0.08), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(59, 130, 246, 0.05), transparent 70%),
-    linear-gradient(180deg, #06080e 0%, #080b12 50%, #06080e 100%);
-  background-attachment: fixed;
+    radial-gradient(ellipse 65% 40% at 50% 0%, rgba(16, 185, 129, 0.075), transparent 70%),
+    linear-gradient(180deg, #030504 0%, #050907 55%, #030504 100%);
 }
 
-/* Clean Modern Card */
+.bg-arcane-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.024) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* =========================================================================
+   ARCHITECTURAL SURFACES & BUTTONS (Sharp Forged-Iron Doomsday System)
+   ========================================================================= */
+.doom-surface,
+.doom-card,
 .clean-card {
-  background: rgba(13, 17, 24, 0.7);
+  background: rgba(7, 12, 9, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.doom-surface:hover,
+.doom-card:hover {
+  border-color: rgba(16, 185, 129, 0.32);
+  box-shadow: 0 24px 48px -18px rgba(0, 0, 0, 0.85);
+}
+
+.doom-panel {
+  background: rgba(4, 8, 6, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.clean-card:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6);
+.doom-input,
+.clean-input {
+  background-color: #040705;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #eef2ee;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-/* Primary Button */
+.doom-input::placeholder,
+.clean-input::placeholder {
+  color: #56665b;
+}
+
+.doom-input:focus,
+.clean-input:focus {
+  outline: none;
+  border-color: #10b981;
+  background-color: #060b08;
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35);
+}
+
+.doom-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Primary Forged Emerald Action Button with Metallic Sheen Sweep */
+.doom-btn-primary,
 .btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #ffffff;
-  font-weight: 600;
-  border: 1px solid rgba(110, 231, 183, 0.4);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  background-color: #10b981;
+  color: #030705;
+  font-weight: 700;
+  border: 1px solid #34d399;
+  transition: background-color 0.2s ease, box-shadow 0.25s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.doom-btn-primary::after,
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.35) 50%, transparent 75%);
+  transform: translateX(-120%);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.doom-btn-primary:hover:not(:disabled),
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+  background-color: #22c55e;
+  box-shadow: 0 0 28px rgba(16, 185, 129, 0.32);
   transform: translateY(-1px);
 }
 
+.doom-btn-primary:hover:not(:disabled)::after,
+.btn-primary:hover:not(:disabled)::after {
+  transform: translateX(120%);
+}
+
+.doom-btn-primary:active:not(:disabled),
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
 
-/* Secondary Button */
+/* Secondary Hairline Steel Button */
+.doom-btn-secondary,
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: #f1f5f9;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
+  background: transparent;
+  color: #eef2ee;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.doom-btn-secondary:hover:not(:disabled),
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
-}
-
-/* Inputs */
-.clean-input {
-  background-color: rgba(10, 14, 20, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f8fafc;
-  transition: all 0.2s ease;
-}
-
-.clean-input:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-}
-
-/* Legacy & Component Aliases */
-.doom-card {
-  background: rgba(13, 17, 24, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.doom-card:hover {
-  border-color: rgba(16, 185, 129, 0.35);
-  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.8), 0 0 25px rgba(16, 185, 129, 0.15);
-}
-
-.doom-panel {
-  background: rgba(6, 10, 16, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.doom-input {
-  background-color: rgba(6, 10, 16, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f8fafc;
-  transition: all 0.2s ease;
-}
-
-.doom-input:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-}
-
-.doom-btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #ffffff;
-  font-weight: 600;
-  border: 1px solid rgba(110, 231, 183, 0.4);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.doom-btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
-  transform: translateY(-1px);
-}
-
-.doom-btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: #f1f5f9;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.doom-btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.55);
   color: #ffffff;
 }
 
 .laser-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.4), rgba(255, 255, 255, 0.2), rgba(16, 185, 129, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.45), rgba(200, 181, 124, 0.25), rgba(16, 185, 129, 0.45), transparent);
 }
 
-/* Smooth 3D Idle Levitation */
-@keyframes levitate3D {
-  0%, 100% {
-    transform: perspective(1200px) rotateX(5deg) rotateY(0deg) translateY(0px);
+/* Legacy text color utilities kept clean for Admin/RegisterTeam compatibility */
+.text-buildops {
+  color: #eef2ee;
+}
+
+.text-arcane-gold {
+  color: #d4b46a;
+}
+
+.text-emerald-glow {
+  color: #34d399;
+}
+
+/* =========================================================================
+   KINETIC MOTION & 3D CHOREOGRAPHY
+   ========================================================================= */
+@keyframes doomsdayMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
   }
-  50% {
-    transform: perspective(1200px) rotateX(2deg) rotateY(1deg) translateY(-8px);
+  100% {
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
-.animate-levitate-3d {
-  animation: levitate3D 6s ease-in-out infinite;
+.animate-doomsday-marquee {
+  display: flex;
+  width: max-content;
+  animation: doomsdayMarquee 36s linear infinite;
 }
 
-/* Custom Clean Scrollbar */
+.animate-doomsday-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes orbitSlow {
+  0% {
+    transform: translate(-50%, -50%) perspective(900px) rotateX(70deg) rotateZ(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) perspective(900px) rotateX(70deg) rotateZ(360deg);
+  }
+}
+
+.animate-orbit-3d {
+  animation: orbitSlow 44s linear infinite;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Scroll Reveal Utility */
+.reveal-block {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-block.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Custom Minimal Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #06080e;
+  background: #030504;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.14);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.55);
 }
 
 /* Prevent double view / split screen in html5-qrcode scanner */
@@ -254,7 +298,7 @@
   width: 100% !important;
   max-height: 230px !important;
   object-fit: cover !important;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   margin: 0 auto !important;
 }
 

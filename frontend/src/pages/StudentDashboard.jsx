@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { API_BASE_URL } from '../api/client';
+import { Tilt3D } from '../components/Tilt3D';
 import {
   Ticket,
   CreditCard,
@@ -124,77 +125,65 @@ export const StudentDashboard = () => {
   if (!team) return null;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-[#06080e] relative text-zinc-100 selection:bg-emerald-500/30 selection:text-white">
-      {/* Ambient Lighting Accents */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-emerald-500/[0.06] blur-[140px] rounded-full" />
-        <div className="absolute top-1/3 -right-40 w-[500px] h-[300px] bg-blue-500/[0.04] blur-[140px] rounded-full" />
-      </div>
-
-      <div className="max-w-4xl mx-auto space-y-6 relative z-10">
+    <div className="min-h-[calc(100vh-4rem)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-[#030504] relative text-[#eef2ee]">
+      <div className="max-w-4xl mx-auto space-y-6 relative z-10 animate-fade-in-up">
         {/* Error Notification */}
         {error && (
-          <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-4 rounded-2xl text-xs flex items-center gap-3 shadow-lg">
+          <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-4 text-xs flex items-center gap-3">
             <AlertCircle size={16} className="shrink-0 text-rose-400" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Dashboard Welcome Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+        {/* Dashboard Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-white/[0.08]">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Participant Command Center</span>
-            </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Squad Portal
+            <span className="font-mono-tech text-[10px] tracking-[0.24em] text-emerald-400 uppercase block mb-2">
+              BUILD OPS 2026 // ASIET × TCS
+            </span>
+            <h1 className="font-poster text-2xl sm:text-3xl text-[#eef2ee] tracking-tight">
+              Team Registration
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-1 flex items-center gap-2 flex-wrap">
-              <span>Build Ops 2026</span>
-              <span className="text-zinc-600">•</span>
-              <span>12-Hour Buildathon</span>
-              <span className="text-zinc-600">•</span>
-              <span className="text-emerald-400/90 font-medium">ASIET × TCS</span>
+            <p className="font-mono-tech text-[11px] text-[#8b9b90] mt-1 tracking-wider uppercase">
+              DEC 08, 5:00 PM – DEC 09, 9:00 PM, 2026
             </p>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
             {team.payment_status === 'SUCCESS' ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs font-semibold shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 font-mono-tech text-[11px] tracking-wider uppercase">
                 <CheckCircle2 size={13} className="text-emerald-400" />
-                <span>Admission Confirmed</span>
+                <span>Confirmed</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-semibold">
-                <Clock size={13} className="text-amber-400" />
-                <span>Pending Payment</span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0b1510] border border-[#d4b46a]/40 text-[#d4b46a] font-mono-tech text-[11px] tracking-wider uppercase">
+                <Clock size={13} />
+                <span>Payment Pending</span>
               </span>
             )}
           </div>
         </div>
 
-        {/* Card 1: Team & Registration Profile */}
-        <div className="clean-card rounded-3xl p-6 sm:p-8 border border-white/[0.08] shadow-2xl relative overflow-hidden bg-gradient-to-b from-white/[0.02] to-transparent">
-          {/* Subtle Top Accent Glow */}
-          <div className="absolute top-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
+        {/* Card 1: Team & Members */}
+        <div className="doom-surface p-6 sm:p-8 border border-white/[0.1] relative">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500/70 via-[#d4b46a]/40 to-transparent" />
 
           {/* Team Info Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-6 border-b border-white/[0.08]">
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-mono-tech font-bold text-amber-300 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20 tracking-wider">
+                <span className="text-xs font-mono-tech font-bold text-[#d4b46a] bg-[#0b1510] px-2.5 py-1 border border-[#d4b46a]/35 tracking-wider">
                   {team.registration_id}
                 </span>
                 <button
                   onClick={() => copyToClipboard(team.registration_id, 'regId')}
-                  className="text-zinc-400 hover:text-white p-1 rounded-md hover:bg-white/5 transition text-xs flex items-center gap-1 cursor-pointer"
+                  className="text-[#8b9b90] hover:text-white p-1 transition text-xs flex items-center gap-1 cursor-pointer"
                   title="Copy Registration ID"
                 >
                   {copiedRegId ? (
                     <>
                       <Check size={13} className="text-emerald-400" />
-                      <span className="text-[11px] text-emerald-400">Copied</span>
+                      <span className="font-mono-tech text-[10px] text-emerald-400 uppercase">Copied</span>
                     </>
                   ) : (
                     <Copy size={13} />
@@ -202,37 +191,37 @@ export const StudentDashboard = () => {
                 </button>
               </div>
 
-              <h2 className="font-display text-2xl sm:text-3xl font-black text-white tracking-tight">
+              <h2 className="font-poster text-2xl sm:text-3xl text-[#eef2ee] tracking-tight">
                 {team.team_name}
               </h2>
 
-              <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+              <div className="flex items-center gap-1.5 text-xs text-[#8b9b90]">
                 <Building2 size={13} className="text-emerald-400 shrink-0" />
-                <span className="font-medium text-zinc-300">{team.college_name}</span>
+                <span>{team.college_name}</span>
               </div>
             </div>
 
             {/* Payment Status Block */}
-            <div className="flex flex-col sm:items-end gap-2 bg-white/[0.02] sm:bg-transparent p-4 sm:p-0 rounded-2xl border border-white/[0.06] sm:border-0">
-              <span className="text-[10px] font-mono-tech uppercase tracking-widest text-zinc-400 font-semibold">
-                Payment Verification
+            <div className="flex flex-col sm:items-end gap-2 bg-[#040705] sm:bg-transparent p-4 sm:p-0 border border-white/[0.08] sm:border-0">
+              <span className="text-[10px] font-mono-tech uppercase tracking-widest text-[#8b9b90]">
+                Payment Status
               </span>
               <span
-                className={`inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full border ${
+                className={`inline-flex items-center gap-1.5 font-mono-tech text-xs font-bold px-3 py-1.5 border ${
                   team.payment_status === 'SUCCESS'
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30 shadow-[0_0_16px_rgba(16,185,129,0.2)]'
-                    : 'bg-amber-500/15 text-amber-200 border-amber-400/30'
+                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40'
+                    : 'bg-[#0b1510] text-[#d4b46a] border-[#d4b46a]/40'
                 }`}
               >
                 {team.payment_status === 'SUCCESS' ? (
                   <>
                     <CheckCircle2 size={14} className="text-emerald-400" />
-                    <span>PAID (₹{team.fee_amount || 500})</span>
+                    <span>PAID • ₹{team.fee_amount || 500}</span>
                   </>
                 ) : (
                   <>
-                    <Clock size={14} className="text-amber-400" />
-                    <span>PAYMENT PENDING</span>
+                    <Clock size={14} />
+                    <span>PENDING • ₹{team.fee_amount || 500}</span>
                   </>
                 )}
               </span>
@@ -240,24 +229,24 @@ export const StudentDashboard = () => {
               {team.payment_status !== 'SUCCESS' && (
                 <button
                   onClick={() => navigate('/student/register-team')}
-                  className="mt-2 inline-flex items-center gap-2 btn-primary text-xs font-semibold px-4 py-2 rounded-xl cursor-pointer"
+                  className="mt-2 inline-flex items-center gap-2 doom-btn-primary font-mono-tech text-xs uppercase tracking-wider px-4 py-2 cursor-pointer"
                 >
                   <CreditCard size={14} />
-                  <span>Complete Payment ₹{team.fee_amount || 500}</span>
+                  <span>Pay ₹{team.fee_amount || 500}</span>
                 </button>
               )}
             </div>
           </div>
 
-          {/* Squad Members Section */}
+          {/* Team Members Section */}
           <div className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-display font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-                <Users size={14} className="text-emerald-400" />
-                <span>Squad Operatives (2 Members)</span>
+              <h3 className="font-mono-tech text-[11px] font-bold uppercase tracking-[0.18em] text-[#8b9b90] flex items-center gap-2">
+                <Users size={13} className="text-emerald-400" />
+                <span>Team Members (2)</span>
               </h3>
-              <span className="text-[11px] text-zinc-400 font-mono-tech">
-                Physical IDs Required
+              <span className="text-[10px] text-[#5a685e] font-mono-tech uppercase tracking-wider">
+                College ID Mandatory
               </span>
             </div>
 
@@ -265,22 +254,21 @@ export const StudentDashboard = () => {
               {team.members.map((member) => (
                 <div
                   key={member.id}
-                  className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.07] hover:border-emerald-500/30 transition-all duration-300 flex items-start gap-3.5"
+                  className="p-4 bg-[#040705] border border-white/[0.08] hover:border-emerald-500/35 transition-colors flex items-start gap-3.5"
                 >
-                  {/* Member Avatar */}
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-sm shadow-sm">
+                  <div className="w-10 h-10 bg-[#0b1510] border border-emerald-500/35 text-emerald-300 font-mono-tech font-bold flex items-center justify-center shrink-0 text-xs">
                     {getInitials(member.full_name)}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="font-semibold text-white text-sm truncate">
+                      <span className="font-semibold text-[#eef2ee] text-sm truncate">
                         {member.full_name}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border shrink-0 ${
+                        className={`font-mono-tech text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider border shrink-0 ${
                           member.member_role === 'LEADER'
-                            ? 'bg-amber-400/10 text-amber-300 border-amber-400/30'
+                            ? 'bg-[#0b1510] text-[#d4b46a] border-[#d4b46a]/40'
                             : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                         }`}
                       >
@@ -288,13 +276,13 @@ export const StudentDashboard = () => {
                       </span>
                     </div>
 
-                    <div className="space-y-0.5 text-xs text-zinc-400">
+                    <div className="space-y-0.5 text-xs text-[#8b9b90]">
                       <p className="flex items-center gap-1.5 truncate">
-                        <Mail size={12} className="text-zinc-400 shrink-0" />
+                        <Mail size={12} className="shrink-0 text-[#5a685e]" />
                         <span className="truncate">{member.email}</span>
                       </p>
-                      <p className="flex items-center gap-1.5 font-mono-tech text-[11px] text-zinc-400">
-                        <Phone size={12} className="text-zinc-400 shrink-0" />
+                      <p className="flex items-center gap-1.5 font-mono-tech text-[11px] text-emerald-300/80">
+                        <Phone size={12} className="shrink-0 text-[#5a685e]" />
                         <span>{member.mobile_number}</span>
                       </p>
                     </div>
@@ -305,23 +293,22 @@ export const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* Card 2: Official E-Ticket & Gate Check-In Pass */}
-        <div className="clean-card rounded-3xl p-6 sm:p-8 border border-white/[0.08] shadow-2xl relative overflow-hidden bg-gradient-to-b from-white/[0.02] to-transparent">
-          {/* Subtle Top Accent Glow */}
-          <div className="absolute top-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
+        {/* Card 2: Official Doomsday Concert Gate Pass */}
+        <div className="doom-surface p-6 sm:p-8 border border-white/[0.1] relative">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500/70 via-[#d4b46a]/40 to-transparent" />
 
           {/* Ticket Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                <Ticket size={22} />
+              <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/35 text-emerald-400 flex items-center justify-center">
+                <Ticket size={19} />
               </div>
               <div>
-                <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-white">
-                  Official Gate Pass & E-Ticket
+                <h2 className="font-poster text-lg sm:text-xl text-[#eef2ee] tracking-tight">
+                  Official Gate Pass
                 </h2>
-                <p className="text-xs text-zinc-400">
-                  Single verified QR pass valid for both squad members at check-in
+                <p className="font-mono-tech text-[11px] text-[#8b9b90]">
+                  Single QR pass valid for both team members at entry
                 </p>
               </div>
             </div>
@@ -330,27 +317,28 @@ export const StudentDashboard = () => {
               <button
                 onClick={handleDownloadTicket}
                 disabled={downloading}
-                className="inline-flex items-center justify-center gap-2 btn-primary text-xs font-semibold px-5 py-2.5 rounded-xl cursor-pointer shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 doom-btn-primary font-mono-tech text-xs uppercase tracking-wider px-5 py-2.5 cursor-pointer disabled:opacity-50"
               >
                 {downloading ? (
                   <>
-                    <RefreshCw size={14} className="animate-spin" />
-                    <span>Preparing PDF...</span>
+                    <RefreshCw size={13} className="animate-spin" />
+                    <span>Preparing PDF</span>
                   </>
                 ) : (
                   <>
-                    <Download size={14} />
-                    <span>Download Ticket (PDF)</span>
+                    <Download size={13} />
+                    <span>Download PDF Pass</span>
                   </>
                 )}
               </button>
             )}
           </div>
 
-          {/* Ticket Body — Doomsday Collector's Concert Pass */}
+          {/* Ticket Body — Doomsday Collector's Concert Pass (3D Interactive) */}
           <div className="mt-6">
             {team.payment_status === 'SUCCESS' && team.ticket_id ? (
-              <div className="relative bg-[#040806] border border-emerald-500/50 shadow-[0_24px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(16,185,129,0.12)] overflow-hidden">
+              <Tilt3D maxTilt={5} perspective={1200}>
+                <div className="relative bg-[#040806] border border-emerald-500/50 shadow-[0_24px_60px_rgba(0,0,0,0.85)] overflow-hidden">
                 {/* Inner fine metallic gold hairline */}
                 <div className="pointer-events-none absolute inset-[3px] border border-[#d4b46a]/40 z-20" />
 
@@ -588,22 +576,23 @@ export const StudentDashboard = () => {
                   </div>
                 </div>
               </div>
+              </Tilt3D>
             ) : (
-              <div className="py-12 px-4 text-center rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
-                  <Ticket size={24} />
+              <div className="py-12 px-4 text-center bg-[#040705] border border-white/[0.08] space-y-4">
+                <div className="w-11 h-11 bg-[#0b1510] border border-[#d4b46a]/40 text-[#d4b46a] flex items-center justify-center mx-auto">
+                  <Ticket size={20} />
                 </div>
                 <div className="max-w-md mx-auto space-y-1">
-                  <h3 className="font-display font-bold text-white text-base">
-                    E-Ticket Locked
+                  <h3 className="font-poster text-[#eef2ee] text-base">
+                    Gate Pass Locked
                   </h3>
-                  <p className="text-xs text-zinc-400">
-                    Your official E-Ticket and QR clearance pass will generate immediately once your registration fee of ₹{team.fee_amount || 500} is confirmed.
+                  <p className="text-xs text-[#8b9b90]">
+                    Your official QR gate pass will unlock immediately after completing the ₹{team.fee_amount || 500} registration fee.
                   </p>
                 </div>
                 <button
                   onClick={() => navigate('/student/register-team')}
-                  className="inline-flex items-center gap-2 btn-primary text-xs font-semibold px-5 py-2.5 rounded-xl cursor-pointer"
+                  className="inline-flex items-center gap-2 doom-btn-primary font-mono-tech text-xs uppercase tracking-wider px-5 py-2.5 cursor-pointer"
                 >
                   <CreditCard size={14} />
                   <span>Complete Payment ₹{team.fee_amount || 500}</span>

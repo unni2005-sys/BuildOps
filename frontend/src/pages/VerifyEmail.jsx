@@ -30,7 +30,7 @@ export const VerifyEmail = () => {
 
     try {
       const res = await api.post('/accounts/verify-email/', { token: t });
-      setStatusMsg({ type: 'success', text: 'Email verified! Opening Team Registration...' });
+      setStatusMsg({ type: 'success', text: 'Email verified. Opening Team Registration...' });
       setAuthData(res.data);
       setTimeout(() => {
         navigate('/student/register-team', { replace: true });
@@ -72,34 +72,34 @@ export const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full bg-emerald-500/10 blur-[120px]" />
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 bg-[#030504] relative">
+      <div className="max-w-md w-full doom-surface p-8 border border-white/[0.12] relative z-10 animate-fade-in-up">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500/80 via-[#d4b46a]/50 to-transparent" />
 
-      <div className="max-w-md w-full doom-card p-8 rounded-xl relative z-10 animate-fade-in-up">
-        <div className="text-center mb-6">
-          <p className="font-imperial text-[10px] tracking-[0.28em] text-amber-200/75 uppercase">
-            Build Ops Identity Check
-          </p>
-          <h2 className="font-display text-xl font-bold tracking-wider text-buildops uppercase mt-1">
+        <div className="mb-6">
+          <span className="font-mono-tech text-[10px] tracking-[0.22em] text-[#d4b46a] uppercase block mb-2">
+            BUILD OPS // VERIFICATION
+          </span>
+          <h2 className="font-poster text-2xl text-[#eef2ee] tracking-tight">
             Email Verification
           </h2>
-          <p className="text-xs text-emerald-200/65 mt-1">
-            Confirm your email to unlock Team Registration
+          <p className="text-xs text-[#8b9b90] mt-1">
+            Confirm your email address to unlock team registration.
           </p>
         </div>
 
         {statusMsg.text && (
           <div
-            className={`p-3 rounded-lg text-xs flex items-center gap-2 mb-4 border ${
+            className={`p-3.5 text-xs flex items-center gap-2.5 mb-5 border ${
               statusMsg.type === 'success'
-                ? 'bg-emerald-950/70 border-emerald-400/40 text-emerald-200'
-                : 'bg-rose-950/60 border-rose-500/40 text-rose-200'
+                ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-200'
+                : 'bg-rose-950/50 border-rose-500/40 text-rose-200'
             }`}
           >
             {statusMsg.type === 'success' ? (
-              <CheckCircle2 size={16} className="shrink-0 text-emerald-400" />
+              <CheckCircle2 size={15} className="shrink-0 text-emerald-400" />
             ) : (
-              <AlertCircle size={16} className="shrink-0 text-rose-400" />
+              <AlertCircle size={15} className="shrink-0 text-rose-400" />
             )}
             <span>{statusMsg.text}</span>
           </div>
@@ -107,7 +107,7 @@ export const VerifyEmail = () => {
 
         <form onSubmit={(e) => { e.preventDefault(); handleVerify(); }} className="space-y-4">
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1.5">
+            <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
               Verification Token
             </label>
             <input
@@ -115,25 +115,25 @@ export const VerifyEmail = () => {
               required
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              placeholder="Paste verification token here"
-              className="w-full rounded-lg px-3 py-2.5 text-sm font-mono-tech doom-input"
+              placeholder="Paste token from email"
+              className="w-full px-3.5 py-2.5 text-sm font-mono-tech doom-input"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full doom-btn-primary py-2.5 px-4 rounded-lg text-xs font-display tracking-[0.14em] uppercase disabled:opacity-50 cursor-pointer"
+            className="w-full doom-btn-primary py-3 px-4 font-mono-tech text-xs uppercase tracking-[0.16em] disabled:opacity-50 cursor-pointer"
           >
             {loading ? 'Verifying Token...' : 'Verify Email & Proceed'}
           </button>
         </form>
 
-        <div className="laser-divider my-6 opacity-50" />
+        <div className="my-6 border-t border-white/[0.08]" />
 
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-200/75 mb-2">
-            Need a new verification link?
+          <p className="font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-2">
+            Resend Verification Link
           </p>
           <div className="flex gap-2">
             <input
@@ -141,24 +141,24 @@ export const VerifyEmail = () => {
               value={emailForResend}
               onChange={(e) => setEmailForResend(e.target.value)}
               placeholder="Enter registered email"
-              className="flex-1 rounded-lg px-3 py-1.5 text-xs doom-input"
+              className="flex-1 px-3 py-2 text-xs doom-input"
             />
             <button
               onClick={handleResend}
               disabled={resending}
-              className="doom-btn-secondary text-xs px-3.5 py-1.5 rounded-lg font-semibold disabled:opacity-50 cursor-pointer"
+              className="doom-btn-secondary font-mono-tech text-[11px] uppercase tracking-wider px-4 py-2 disabled:opacity-50 cursor-pointer"
             >
-              {resending ? 'Sending...' : 'Resend'}
+              {resending ? 'Sending' : 'Resend'}
             </button>
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-emerald-200/60">
-          Already verified?{' '}
-          <Link to="/login" className="text-amber-200 font-semibold hover:underline">
-            Sign In
+        <div className="mt-6 pt-4 border-t border-white/[0.08] flex items-center justify-between font-mono-tech text-[11px] text-[#8b9b90]">
+          <span>Already verified?</span>
+          <Link to="/login" className="text-emerald-400 hover:text-emerald-300 uppercase tracking-wider">
+            Sign In →
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
