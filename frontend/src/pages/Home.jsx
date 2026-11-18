@@ -472,16 +472,31 @@ export const Home = () => {
           MINIMALIST FOOTER
          ===================================================================== */}
       <footer className="bg-[#020403] py-8 px-5 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono-tech text-[11px] text-[#5a685e]">
-          <span className="text-[#8b9b90] tracking-wider uppercase">
-            BUILD OPS 2026 — ASIET × TCS
-          </span>
-          <div className="flex items-center gap-6 uppercase tracking-wider">
-            <a href="#rules" className="hover:text-[#eef2ee] transition-colors">Rules</a>
-            <Link to="/login" className="hover:text-[#eef2ee] transition-colors">Sign In</Link>
-            <Link to="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">Register</Link>
+        <div className="max-w-7xl mx-auto space-y-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono-tech text-[11px] text-[#5a685e]">
+            <span className="text-[#8b9b90] tracking-wider uppercase">
+              BUILD OPS 2026 — ASIET × TCS
+            </span>
+            <div className="flex items-center gap-6 uppercase tracking-wider">
+              <a href="#rules" className="hover:text-[#eef2ee] transition-colors">Rules</a>
+              <Link to="/login" className="hover:text-[#eef2ee] transition-colors">Sign In</Link>
+              <Link to="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">Register</Link>
+            </div>
+            <span>© 2026 Adi Shankara Institute of Engineering &amp; Technology</span>
           </div>
-          <span>© 2026 Adi Shankara Institute of Engineering &amp; Technology</span>
+
+          <div className="pt-4 border-t border-white/[0.06] text-center font-mono-tech text-[11px] text-[#8b9b90] tracking-wide">
+            <span>For technical support, contact: </span>
+            <a
+              href="tel:+919497290648"
+              className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
+            >
+              9497290648
+            </a>
+            <span className="text-white/25 mx-2">•</span>
+            <span className="text-[#eef2ee]">Unnikrishnan M</span>
+            <span className="text-[#d4b46a]"> (Tech Lead)</span>
+          </div>
         </div>
       </footer>
     </div>
