@@ -437,7 +437,7 @@ export const StudentDashboard = () => {
                           Venue
                         </span>
                         <span className="block text-xs font-bold text-white mt-0.5">
-                          ASIET Campus
+                          {team.event_venue || 'AI Lab'}
                         </span>
                       </div>
                     </div>
@@ -544,7 +544,7 @@ export const StudentDashboard = () => {
                       <span className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#d4b46a]" />
                       <div className="bg-white p-2 border border-emerald-500">
                         <img
-                          src={`${API_BASE_URL}/tickets/${team.ticket_id}/qr/`}
+                          src={`${API_BASE_URL}/tickets/${team.ticket_id}/qr/?qr_token=${encodeURIComponent(team.qr_token || '')}`}
                           alt={`QR Pass for ${team.registration_id}`}
                           className="w-36 h-36 object-contain"
                         />

@@ -164,7 +164,7 @@ export const AdminScanner = () => {
                   handleValidate(code);
                 }
               }}
-              isScanningActive={!scanResult}
+              isScanningActive={!scanResult && !loading && !checkinLoading}
             />
 
             {/* Manual Lookup Row */}

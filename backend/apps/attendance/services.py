@@ -62,25 +62,35 @@ def validate_team_for_checkin(token_or_reg_id):
 
 def perform_team_check_in(team, admin_user, action_details="QR Camera Scan"):
     """
-    Performs arrival check-in for the entire team and logs attendance.
+    Atomically performs arrival check-in for the entire team using a row-level lock
+    to prevent concurrent double check-ins across multiple gate scanners.
     """
-    if team.attendance_status == 'ARRIVED':
-        arrival_str = team.arrival_timestamp.strftime('%Y-%m-%d %H:%M:%S') if team.arrival_timestamp else 'Earlier'
-        return False, f"Team {team.team_name} is already marked as arrived at {arrival_str}."
-
-    if team.payment_status != 'SUCCESS':
-        return False, f"Cannot check in team with payment status: {team.payment_status}"
-
     with transaction.atomic():
+        locked_team = Team.objects.select_for_update().get(pk=team.pk)
+
+        if locked_team.attendance_status == 'ARRIVED':
+            arrival_str = (
+                locked_team.arrival_timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                if locked_team.arrival_timestamp
+                else 'Earlier'
+            )
+            return False, f"Team {locked_team.team_name} is already marked as arrived at {arrival_str}."
+
+        if locked_team.payment_status != 'SUCCESS':
+            return False, f"Cannot check in team with payment status: {locked_team.payment_status}"
+
         now = timezone.now()
-        team.attendance_status = 'ARRIVED'
-        team.arrival_timestamp = now
-        team.save(update_fields=['attendance_status', 'arrival_timestamp'])
+        locked_team.attendance_status = 'ARRIVED'
+        locked_team.arrival_timestamp = now
+        locked_team.save(update_fields=['attendance_status', 'arrival_timestamp'])
 
         AttendanceLog.objects.create(
-            team=team,
+            team=locked_team,
             admin=admin_user if (admin_user and admin_user.is_authenticated) else None,
             action_details=action_details
         )
 
-    return True, f"Team '{team.team_name}' [{team.registration_id}] successfully marked as ARRIVED!"
+    # Keep caller's instance synced
+    team.attendance_status = locked_team.attendance_status
+    team.arrival_timestamp = locked_team.arrival_timestamp
+    return True, f"Team '{locked_team.team_name}' [{locked_team.registration_id}] successfully marked as ARRIVED!"

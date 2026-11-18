@@ -6,11 +6,17 @@ export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
   const [cameraError, setCameraError] = useState(null);
   const scannerRef = useRef(null);
   const activeRef = useRef(isScanningActive);
+  const onScanRef = useRef(onScanSuccess);
+  const lastScanRef = useRef({ code: '', time: 0 });
 
-  // Keep latest prop value in ref so scanner callback reads fresh state
+  // Keep latest props in refs so scanner callback never uses stale closures
   useEffect(() => {
     activeRef.current = isScanningActive;
   }, [isScanningActive]);
+
+  useEffect(() => {
+    onScanRef.current = onScanSuccess;
+  }, [onScanSuccess]);
 
   useEffect(() => {
     const elementId = "html5-qr-video-reader";
@@ -37,8 +43,16 @@ export const QRScanner = ({ onScanSuccess, isScanningActive = true }) => {
             aspectRatio: 1.33,
           },
           (decodedText) => {
-            if (isMounted && activeRef.current && decodedText) {
-              onScanSuccess(decodedText.trim());
+            if (!isMounted || !activeRef.current || !decodedText) return;
+            const code = decodedText.trim();
+            const now = Date.now();
+            // Debounce duplicate frames while camera stays pointed at the same QR code
+            if (code === lastScanRef.current.code && now - lastScanRef.current.time < 2000) {
+              return;
+            }
+            lastScanRef.current = { code, time: now };
+            if (onScanRef.current) {
+              onScanRef.current(code);
             }
           },
           () => {}

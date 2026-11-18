@@ -139,11 +139,11 @@ export const AdminDashboard = () => {
     if (!ticketId) return;
     try {
       const res = await api.get(`/tickets/${ticketId}/download/`, { responseType: 'blob' });
-      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const blob = new Blob([res.data], { type: 'image/png' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Ticket_${regId || ticketId}.pdf`);
+      link.setAttribute('download', `BuildOps_Pass_${regId || ticketId}.png`);
       document.body.appendChild(link);
       link.click();
       link.remove();

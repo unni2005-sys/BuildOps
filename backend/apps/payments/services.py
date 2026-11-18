@@ -41,29 +41,35 @@ def get_razorpay_client():
 
 def _mark_payment_success(payment, payment_reference, gateway_data=None):
     """
-    Idempotently confirms payment and team registration, then generates & emails the E-Ticket.
+    Idempotently confirms payment and team registration using a row-level DB lock,
+    then generates & emails the PNG E-Ticket AFTER the DB transaction commits
+    (prevents duplicate emails on concurrent webhook + callback and avoids holding
+    Supabase pooler connections open during external Resend HTTPS calls).
     """
-    team = payment.team
-    if payment.payment_status == 'SUCCESS' and team.payment_status == 'SUCCESS':
-        generate_ticket_for_team(team, send_email=False)
-        return payment
+    should_send_email = False
 
     with transaction.atomic():
-        payment.payment_status = 'SUCCESS'
-        payment.payment_reference = payment_reference or payment.payment_reference or f"RZP_{payment.order_id}"
-        payment.payment_timestamp = timezone.now()
-        if gateway_data:
-            payment.gateway_response = gateway_data
-        payment.save()
+        locked_payment = Payment.objects.select_for_update().select_related('team').get(pk=payment.pk)
+        team = locked_payment.team
 
-        team.payment_status = 'SUCCESS'
-        team.registration_status = 'CONFIRMED'
-        team.save(update_fields=['payment_status', 'registration_status'])
+        if locked_payment.payment_status != 'SUCCESS' or team.payment_status != 'SUCCESS':
+            locked_payment.payment_status = 'SUCCESS'
+            locked_payment.payment_reference = (
+                payment_reference or locked_payment.payment_reference or f"RZP_{locked_payment.order_id}"
+            )
+            locked_payment.payment_timestamp = timezone.now()
+            if gateway_data:
+                locked_payment.gateway_response = gateway_data
+            locked_payment.save()
 
-        # Generate E-Ticket PDF + QR and email both members
-        generate_ticket_for_team(team, send_email=True)
+            team.payment_status = 'SUCCESS'
+            team.registration_status = 'CONFIRMED'
+            team.save(update_fields=['payment_status', 'registration_status'])
+            should_send_email = True
 
-    return payment
+    # Generate PNG ticket and dispatch confirmation emails outside the DB transaction
+    generate_ticket_for_team(team, send_email=should_send_email)
+    return locked_payment
 
 
 def create_razorpay_order(team):

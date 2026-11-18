@@ -180,10 +180,11 @@ class AdminUserDeleteView(APIView):
         user_name = target_user.full_name
 
         with transaction.atomic():
-            # 1. Clean up any team memberships where this user was a member
+            # 1. If user was Member 2 on someone else's team, unlink user FK cleanly
+            #    instead of deleting the TeamMember row and leaving an orphaned 1-member team.
             TeamMember.objects.filter(
                 models.Q(user=target_user) | models.Q(email=user_email.lower())
-            ).delete()
+            ).exclude(team__team_leader=target_user).update(user=None)
 
             # 2. Delete verification tokens
             EmailVerificationToken.objects.filter(user=target_user).delete()

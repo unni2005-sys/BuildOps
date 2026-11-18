@@ -24,6 +24,16 @@ from apps.payments.services import (
 logger = logging.getLogger(__name__)
 
 
+def _user_can_access_team(user, team):
+    if not user or not user.is_authenticated:
+        return False
+    if user.role == 'ADMIN' or user.is_staff or user.is_superuser:
+        return True
+    if team.team_leader_id == user.id:
+        return True
+    return team.members.filter(Q(user=user) | Q(email=user.email.lower())).exists()
+
+
 class CreateOrderView(APIView):
     """
     Creates a Razorpay payment order for the student's pending team.
@@ -97,6 +107,12 @@ class VerifyRazorpayPaymentView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        payment_obj = Payment.objects.select_related('team').filter(order_id=razorpay_order_id).first()
+        if not payment_obj:
+            return Response({'error': 'Payment order not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not _user_can_access_team(request.user, payment_obj.team):
+            return Response({'error': 'You are not authorized to verify this order.'}, status=status.HTTP_403_FORBIDDEN)
+
         success, message, payment = verify_and_confirm_razorpay_payment(
             razorpay_order_id, razorpay_payment_id, razorpay_signature
         )
@@ -119,6 +135,12 @@ class VerifyPaymentView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, order_id):
+        payment_obj = Payment.objects.select_related('team').filter(order_id=order_id).first()
+        if not payment_obj:
+            return Response({'error': 'Payment order not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not _user_can_access_team(request.user, payment_obj.team):
+            return Response({'error': 'You are not authorized to access this order.'}, status=status.HTTP_403_FORBIDDEN)
+
         success, message, payment = verify_payment_with_gateway(order_id)
         if not payment:
             return Response({'error': message}, status=status.HTTP_404_NOT_FOUND)
@@ -148,6 +170,12 @@ class SimulatePaymentView(APIView):
         order_id = request.data.get('order_id')
         if not order_id:
             return Response({'error': 'order_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        payment_obj = Payment.objects.select_related('team').filter(order_id=order_id).first()
+        if not payment_obj:
+            return Response({'error': 'Payment order not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not _user_can_access_team(request.user, payment_obj.team):
+            return Response({'error': 'You are not authorized to access this order.'}, status=status.HTTP_403_FORBIDDEN)
 
         success, message = simulate_sandbox_payment(order_id)
         if not success:

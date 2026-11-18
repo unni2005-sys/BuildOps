@@ -6,7 +6,13 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user_info');
-    return saved ? JSON.parse(saved) : null;
+    if (!saved) return null;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      localStorage.removeItem('user_info');
+      return null;
+    }
   });
   const [token, setToken] = useState(() => localStorage.getItem('access_token'));
   const [loading, setLoading] = useState(true);
@@ -20,10 +26,12 @@ export const AuthProvider = ({ children }) => {
           setUser(res.data);
           localStorage.setItem('user_info', JSON.stringify(res.data));
         } catch (err) {
-          // Token expired or invalid
+          // Token expired or invalid — clear all auth storage cleanly
           setUser(null);
+          setToken(null);
           localStorage.removeItem('user_info');
           localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
         }
       }
       setLoading(false);

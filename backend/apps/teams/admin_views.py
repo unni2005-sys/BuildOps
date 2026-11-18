@@ -12,6 +12,16 @@ from apps.payments.models import Payment
 from apps.attendance.models import AttendanceLog
 
 
+def _safe_csv_cell(value):
+    """Prevents Excel/Sheets CSV formula injection on user-supplied text fields."""
+    if value is None:
+        return ''
+    text = str(value)
+    if text and text[0] in ('=', '+', '-', '@', '\t', '\r'):
+        return "'" + text
+    return text
+
+
 def get_authenticated_admin(request):
     """
     Authenticates admin from either Authorization header or ?token=<jwt> query parameter.
@@ -105,17 +115,17 @@ class ExportTeamsCSVView(APIView):
 
             writer.writerow([
                 team.registration_id,
-                team.team_name,
-                team.college_name,
+                _safe_csv_cell(team.team_name),
+                _safe_csv_cell(team.college_name),
                 team.payment_status,
                 team.registration_status,
                 team.attendance_status,
-                m1.full_name if m1 else '',
-                m1.email if m1 else '',
-                m1.mobile_number if m1 else '',
-                m2.full_name if m2 else '',
-                m2.email if m2 else '',
-                m2.mobile_number if m2 else '',
+                _safe_csv_cell(m1.full_name) if m1 else '',
+                _safe_csv_cell(m1.email) if m1 else '',
+                _safe_csv_cell(m1.mobile_number) if m1 else '',
+                _safe_csv_cell(m2.full_name) if m2 else '',
+                _safe_csv_cell(m2.email) if m2 else '',
+                _safe_csv_cell(m2.mobile_number) if m2 else '',
                 team.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 team.arrival_timestamp.strftime('%Y-%m-%d %H:%M:%S') if team.arrival_timestamp else ''
             ])
@@ -153,13 +163,13 @@ class ExportParticipantsCSVView(APIView):
         members = TeamMember.objects.select_related('team').order_by('team__team_name', 'member_role')
         for m in members:
             writer.writerow([
-                m.full_name,
-                m.email,
-                m.mobile_number,
+                _safe_csv_cell(m.full_name),
+                _safe_csv_cell(m.email),
+                _safe_csv_cell(m.mobile_number),
                 m.member_role,
-                m.team.team_name,
+                _safe_csv_cell(m.team.team_name),
                 m.team.registration_id,
-                m.team.college_name,
+                _safe_csv_cell(m.team.college_name),
                 m.team.attendance_status
             ])
 
@@ -198,12 +208,12 @@ class ExportPaymentsCSVView(APIView):
         for p in payments:
             writer.writerow([
                 p.order_id,
-                p.team.team_name,
+                _safe_csv_cell(p.team.team_name),
                 p.team.registration_id,
                 p.amount,
                 p.currency,
                 p.payment_status,
-                p.payment_reference or '',
+                _safe_csv_cell(p.payment_reference or ''),
                 p.payment_timestamp.strftime('%Y-%m-%d %H:%M:%S') if p.payment_timestamp else '',
                 p.created_at.strftime('%Y-%m-%d %H:%M:%S')
             ])
@@ -241,10 +251,10 @@ class ExportAttendanceCSVView(APIView):
         for l in logs:
             writer.writerow([
                 l.id,
-                l.team.team_name,
+                _safe_csv_cell(l.team.team_name),
                 l.team.registration_id,
-                l.team.college_name,
-                l.action_details,
+                _safe_csv_cell(l.team.college_name),
+                _safe_csv_cell(l.action_details),
                 l.admin.email if l.admin else 'System',
                 l.checkin_timestamp.strftime('%Y-%m-%d %H:%M:%S')
             ])

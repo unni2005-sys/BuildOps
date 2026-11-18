@@ -64,6 +64,7 @@ class MyTicketView(APIView):
 class TicketQRImageView(APIView):
     """
     Renders the QR code PNG image for a team ticket.
+    Protected by Authorization header, ?token=<jwt>, or matching ?qr_token=<secret>.
     """
     permission_classes = (permissions.AllowAny,)
 
@@ -72,6 +73,33 @@ class TicketQRImageView(APIView):
             ticket = Ticket.objects.select_related('team').get(pk=pk)
         except Ticket.DoesNotExist:
             raise Http404("Ticket not found.")
+
+        # Authenticate via header, ?token=<jwt>, or exact ?qr_token=<ticket.qr_token>
+        authorized = False
+        qr_token_param = request.query_params.get('qr_token', '').strip()
+        if qr_token_param and qr_token_param == ticket.qr_token:
+            authorized = True
+        else:
+            user = request.user
+            if not user or not user.is_authenticated:
+                token_str = request.query_params.get('token')
+                if token_str:
+                    try:
+                        decoded = AccessToken(token_str)
+                        user = User.objects.get(id=decoded.get('user_id'))
+                    except Exception:
+                        user = None
+
+            if user and user.is_authenticated:
+                is_admin = user.role == 'ADMIN' or user.is_staff or user.is_superuser
+                is_leader = (ticket.team.team_leader_id == user.id)
+                is_member = ticket.team.members.filter(
+                    Q(user=user) | Q(email=user.email.lower())
+                ).exists()
+                authorized = is_admin or is_leader or is_member
+
+        if not authorized:
+            return Response({'error': 'Authentication required to view this QR pass.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         qr = qrcode.QRCode(
             version=1,

@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { API_BASE_URL } from './api/client';
+import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { DoomsdayAtmosphere } from './components/DoomsdayAtmosphere';
@@ -16,37 +15,8 @@ import { PaymentStatus } from './pages/PaymentStatus';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminScanner } from './pages/AdminScanner';
 
-const RootEntry = () => {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-doom-canvas">
-        <p className="text-emerald-300 text-sm font-display tracking-widest uppercase animate-pulse">Initializing...</p>
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
-    return <Navigate to={isAdmin ? '/admin/dashboard' : '/student/dashboard'} replace />;
-  }
-
-  // Directly open the Sign In / Sign Up window (intro video will precede this later)
-  return <Navigate to="/login" replace />;
-};
-
 export function App() {
   // Keep-alive 10-minute ping temporarily paused until public launch (saves Render free-tier hours).
-  // Uncomment below when sharing the live link with users:
-  // useEffect(() => {
-  //   const pingHealth = () => {
-  //     fetch(`${API_BASE_URL}/health/`, { method: 'GET', keepalive: true }).catch(() => {});
-  //   };
-  //   pingHealth();
-  //   const intervalId = setInterval(pingHealth, 10 * 60 * 1000);
-  //   return () => clearInterval(intervalId);
-  // }, []);
-
   return (
     <AuthProvider>
       <Router>
