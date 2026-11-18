@@ -344,7 +344,7 @@ export const Home = () => {
             {/* Official Halftone Doomsday Poster Title — Appears Huge Full-Screen First, Then Settles */}
             <div className={`w-full max-w-[680px] mb-6 select-none title-reveal-stage phase-${introPhase}`}>
               <img
-                src="/buildops_poster_title_2x.png"
+                src="/buildops_poster_title_2x.png?v=2"
                 alt="Build Ops"
                 className="w-full h-auto object-contain mx-auto"
               />
