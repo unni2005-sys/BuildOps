@@ -336,7 +336,7 @@ export const Home = () => {
         </div>
 
         {/* Center 3D Layered Title Stage */}
-        <div className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-8 pt-6 pb-6 sm:py-10 flex flex-col items-center text-center">
+        <div className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-8 pt-14 pb-8 sm:py-10 flex flex-col items-center text-center">
           <div
             ref={heroStageRef}
             className="w-full flex flex-col items-center will-change-transform [transform-style:preserve-3d]"
