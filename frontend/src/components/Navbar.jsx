@@ -1,13 +1,11 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, ShieldCheck, Ticket, QrCode, ArrowUpRight } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const isHome = location.pathname === '/';
 
   const handleLogout = () => {
     logout();
@@ -17,37 +15,13 @@ export const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 bg-[#030504]/85 backdrop-blur-xl border-b border-white/[0.08]">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Left: Monolithic Brand Mark */}
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-3 group">
-            <span className="w-7 h-7 border border-emerald-500/60 bg-emerald-500/10 flex items-center justify-center relative">
-              <span className="w-2 h-2 bg-emerald-400 group-hover:scale-125 transition-transform duration-300" />
-            </span>
-            <div className="flex items-baseline gap-2.5">
-              <span className="font-poster text-sm sm:text-base tracking-wide text-[#eef2ee] group-hover:text-emerald-400 transition-colors">
-                BUILD OPS
-              </span>
-              <span className="hidden sm:inline-block font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] border-l border-white/15 pl-2.5 uppercase">
-                ASIET × TCS
-              </span>
-            </div>
-          </Link>
-
-          {/* Home Section Anchors (Desktop) */}
-          {isHome && (
-            <nav className="hidden md:flex items-center gap-6 ml-4 font-mono-tech text-[11px] tracking-[0.16em] uppercase text-[#8b9b90]">
-              <a href="#overview" className="hover:text-[#eef2ee] transition-colors">
-                Overview
-              </a>
-              <a href="#schedule" className="hover:text-[#eef2ee] transition-colors">
-                Schedule
-              </a>
-              <a href="#rules" className="hover:text-[#eef2ee] transition-colors">
-                Rules
-              </a>
-            </nav>
-          )}
-        </div>
+        {/* Left: Minimal Brand Wordmark */}
+        <Link
+          to="/"
+          className="font-poster text-base sm:text-lg tracking-wider text-[#eef2ee] hover:text-emerald-400 transition-colors"
+        >
+          BUILD OPS
+        </Link>
 
         {/* Right: Auth / Portal Controls */}
         <div className="flex items-center gap-3">
