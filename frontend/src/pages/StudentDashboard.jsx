@@ -68,11 +68,11 @@ export const StudentDashboard = () => {
       const response = await api.get(`/tickets/${team.ticket_id}/download/`, {
         responseType: 'blob',
       });
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const blob = new Blob([response.data], { type: 'image/png' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Ticket_${team.registration_id}.pdf`);
+      link.setAttribute('download', `BuildOps_Pass_${team.registration_id}.png`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -322,12 +322,12 @@ export const StudentDashboard = () => {
                 {downloading ? (
                   <>
                     <RefreshCw size={13} className="animate-spin" />
-                    <span>Preparing PDF</span>
+                    <span>Preparing PNG</span>
                   </>
                 ) : (
                   <>
                     <Download size={13} />
-                    <span>Download PDF Pass</span>
+                    <span>Download Pass (PNG)</span>
                   </>
                 )}
               </button>

@@ -127,17 +127,17 @@ class DownloadTicketView(APIView):
         if not (is_admin or is_leader or is_member):
             return Response({'error': 'You are not authorized to download this ticket.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Check if PDF exists on disk; regenerate silently if missing (e.g. after container restart)
+        # Ensure shareable PNG ticket exists on disk; regenerate if missing or legacy PDF
         full_path = os.path.join(settings.MEDIA_ROOT, ticket.pdf_path) if ticket.pdf_path else None
-        if not full_path or not os.path.exists(full_path):
+        if not full_path or not full_path.lower().endswith('.png') or not os.path.exists(full_path):
             ticket = generate_ticket_for_team(ticket.team, send_email=False)
             full_path = os.path.join(settings.MEDIA_ROOT, ticket.pdf_path)
 
         if not os.path.exists(full_path):
-            return Response({'error': 'Ticket PDF could not be found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Ticket image could not be found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        filename = f"Ticket_{ticket.team.registration_id}.pdf"
-        response = FileResponse(open(full_path, 'rb'), content_type='application/pdf')
+        filename = f"BuildOps_Pass_{ticket.team.registration_id}.png"
+        response = FileResponse(open(full_path, 'rb'), content_type='image/png')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
@@ -155,7 +155,7 @@ class AdminResendTicketEmailView(APIView):
             return Response({'error': 'Ticket not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         full_path = os.path.join(settings.MEDIA_ROOT, ticket.pdf_path) if ticket.pdf_path else None
-        if not full_path or not os.path.exists(full_path):
+        if not full_path or not full_path.lower().endswith('.png') or not os.path.exists(full_path):
             ticket = generate_ticket_for_team(ticket.team, send_email=False)
             full_path = os.path.join(settings.MEDIA_ROOT, ticket.pdf_path)
 

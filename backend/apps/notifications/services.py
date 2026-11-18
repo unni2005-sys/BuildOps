@@ -183,16 +183,16 @@ def send_ticket_email(team, ticket, pdf_path=None):
         f"Members: {member_names}\n"
         f"Venue: {settings.EVENT_VENUE}\n"
         f"Date: {settings.EVENT_DATE}\n\n"
-        f"Your E-Ticket PDF is attached to this email. You can also view or download it anytime from your dashboard:\n"
+        f"Your shareable E-Ticket Pass (PNG) is attached to this email. You can also view or download it anytime from your dashboard:\n"
         f"{portal_url}\n\n"
         f"Direct Ticket Download: {download_url}\n\n"
-        f"Please carry this E-Ticket on the day of the event for QR check-in.\n\n"
+        f"Save this pass to your phone gallery and present the QR code at the event check-in desk.\n\n"
         f"See you at {settings.EVENT_NAME}!\n"
     )
 
     html_content = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #0f766e; margin-top: 0;">Registration Confirmed! 🎉</h2>
+        <h2 style="color: #0f766e; margin-top: 0;">Registration Confirmed!</h2>
         <p>Dear Team <strong>{team.team_name}</strong>,</p>
         <p>Your payment has been successfully verified and your registration for <strong>{settings.EVENT_NAME}</strong> is confirmed.</p>
         
@@ -205,17 +205,18 @@ def send_ticket_email(team, ticket, pdf_path=None):
             <p style="margin: 4px 0;"><strong>Venue:</strong> {settings.EVENT_VENUE}</p>
         </div>
 
-        <p>Your official E-Ticket with check-in QR code is attached to this email.</p>
+        <p>Your official <strong>Build Ops Gate Pass (PNG image)</strong> with check-in QR code is attached — save it to your gallery or share it with your teammate!</p>
         <div style="text-align: center; margin: 25px 0;">
-            <a href="{portal_url}" style="background-color: #0d9488; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Open Student Dashboard</a>
+            <a href="{portal_url}" style="background-color: #0d9488; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Open Team Portal</a>
         </div>
-        <p style="font-size: 13px; color: #64748b;">Direct PDF link: <a href="{download_url}">{download_url}</a></p>
+        <p style="font-size: 13px; color: #64748b;">Direct PNG pass link: <a href="{download_url}">{download_url}</a></p>
     </div>
     """
 
     attachments = []
     if pdf_path:
-        attachments.append((f"Ticket_{team.registration_id}.pdf", pdf_path))
+        ext = os.path.splitext(pdf_path)[1].lower() or '.png'
+        attachments.append((f"BuildOps_Pass_{team.registration_id}{ext}", pdf_path))
 
     results = []
     for member in members:

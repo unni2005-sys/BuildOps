@@ -1,35 +1,25 @@
 import os
-import io
 import hashlib
 import qrcode
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from django.conf import settings
-from reportlab.lib import colors
-from reportlab.lib.units import inch
-from reportlab.lib.utils import ImageReader
-from reportlab.pdfgen import canvas as pdf_canvas
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from apps.tickets.models import Ticket, generate_qr_token
 from apps.notifications.services import send_ticket_email
 
 
-_FONT_REGISTERED = False
+BASE_DIR = os.path.dirname(__file__)
+FONTS_DIR = os.path.join(BASE_DIR, 'fonts')
+ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
 
-def _ensure_poster_font():
-    """Registers Arvo-Bold slab-serif poster font if bundled, falling back cleanly to Helvetica-Bold."""
-    global _FONT_REGISTERED
-    if _FONT_REGISTERED:
-        return 'ArvoBold'
-    font_path = os.path.join(os.path.dirname(__file__), 'fonts', 'Arvo-Bold.ttf')
-    if os.path.exists(font_path):
+def _load_font(filename, size):
+    path = os.path.join(FONTS_DIR, filename)
+    if os.path.exists(path):
         try:
-            pdfmetrics.registerFont(TTFont('ArvoBold', font_path))
-            _FONT_REGISTERED = True
-            return 'ArvoBold'
+            return ImageFont.truetype(path, size)
         except Exception:
             pass
-    return 'Helvetica-Bold'
+    return ImageFont.load_default()
 
 
 def _truncate(text, max_len):
@@ -39,281 +29,228 @@ def _truncate(text, max_len):
     return text[: max_len - 1].rstrip() + '…'
 
 
-def _draw_corner_brackets(c, x, y, w, h, length=8, color=colors.HexColor('#10b981'), line_width=1.2):
-    c.saveState()
-    c.setStrokeColor(color)
-    c.setLineWidth(line_width)
-    # Bottom-left
-    c.line(x, y, x + length, y)
-    c.line(x, y, x, y + length)
-    # Bottom-right
-    c.line(x + w, y, x + w - length, y)
-    c.line(x + w, y, x + w, y + length)
+def _draw_dashed_vline(draw, x, y1, y2, dash=12, gap=10, color=(212, 180, 106, 200), width=3):
+    y = y1
+    while y < y2:
+        draw.line([(x, y), (x, min(y + dash, y2))], fill=color, width=width)
+        y += dash + gap
+
+
+def _draw_corner_brackets(draw, x, y, w, h, length=24, color=(212, 180, 106, 255), width=3):
     # Top-left
-    c.line(x, y + h, x + length, y + h)
-    c.line(x, y + h, x, y + h - length)
+    draw.line([(x, y), (x + length, y)], fill=color, width=width)
+    draw.line([(x, y), (x, y + length)], fill=color, width=width)
     # Top-right
-    c.line(x + w, y + h, x + w - length, y + h)
-    c.line(x + w, y + h, x + w, y + h - length)
-    c.restoreState()
+    draw.line([(x + w, y), (x + w - length, y)], fill=color, width=width)
+    draw.line([(x + w, y), (x + w, y + length)], fill=color, width=width)
+    # Bottom-left
+    draw.line([(x, y + h), (x + length, y + h)], fill=color, width=width)
+    draw.line([(x, y + h), (x, y + h - length)], fill=color, width=width)
+    # Bottom-right
+    draw.line([(x + w, y + h), (x + w - length, y + h)], fill=color, width=width)
+    draw.line([(x + w, y + h), (x + w, y + h - length)], fill=color, width=width)
 
 
-def _draw_decorative_barcode(c, cx, y, width, height, seed_text):
-    """Draws a crisp deterministic concert-ticket barcode strip seeded from the ticket token."""
+def _draw_barcode(draw, cx, y, width, height, seed_text):
     digest = hashlib.sha256(seed_text.encode('utf-8')).hexdigest()
     bits = bin(int(digest, 16))[2:].zfill(256)
-    num_bars = 58
-    bar_unit = width / float(num_bars)
+    num_bars = 56
+    unit = width / float(num_bars)
     start_x = cx - width / 2.0
 
-    c.saveState()
     for i in range(num_bars):
-        bit = bits[i % len(bits)]
-        bit2 = bits[(i * 3 + 7) % len(bits)]
-        if bit == '1':
-            bar_w = bar_unit * (0.78 if bit2 == '1' else 0.45)
-            # Subtle emerald accent on every 11th bar, brushed silver on the rest
-            if i % 11 == 0:
-                c.setFillColor(colors.HexColor('#34d399'))
-            else:
-                c.setFillColor(colors.HexColor('#94a3b8'))
-            c.rect(start_x + i * bar_unit, y, bar_w, height, stroke=0, fill=1)
-    c.restoreState()
+        b1 = bits[i % len(bits)]
+        b2 = bits[(i * 3 + 7) % len(bits)]
+        if b1 == '1':
+            bw = max(2, int(unit * (0.76 if b2 == '1' else 0.42)))
+            bx = int(start_x + i * unit)
+            col = (52, 211, 153, 235) if i % 11 == 0 else (155, 172, 162, 210)
+            draw.rectangle([bx, y, bx + bw, y + height], fill=col)
 
 
-def _render_doomsday_concert_ticket_pdf(pdf_filepath, team, ticket, leader, member2, qr_buffer):
+def _render_doomsday_concert_ticket_png(png_filepath, team, ticket, leader, member2):
     """
-    Renders a horizontal collector's concert-style VIP ticket matching the
-    Build Ops / Doomsday aesthetic (obsidian void, arcane emerald, brushed gold,
-    notched perforation stub, high-contrast QR pass, and vector barcode).
+    Renders a shareable, retina-sharp (1800x770 px) Avengers: Doomsday
+    collector concert ticket PNG with official Build Ops halftone title,
+    TCS logo, notched tear-off QR stub, and unique barcode.
     """
-    display_font = _ensure_poster_font()
-
-    # Landscape concert ticket dimensions: 9.0 in x 3.85 in
-    W = 9.0 * inch   # 648 pt
-    H = 3.85 * inch  # 277.2 pt
-
-    c = pdf_canvas.Canvas(pdf_filepath, pagesize=(W, H))
-    c.setTitle(f"{settings.EVENT_NAME} — VIP Squad Pass ({team.registration_id})")
-    c.setAuthor(f"{settings.EVENT_NAME} — ASIET x TCS")
-
-    # Palette
-    c_outer_bg = colors.HexColor('#030605')
-    c_body_bg = colors.HexColor('#070d0a')
-    c_stub_bg = colors.HexColor('#050a08')
-    c_spine_bg = colors.HexColor('#0a1d14')
-    c_panel_bg = colors.HexColor('#0b1510')
-    c_grid = colors.HexColor('#0f2118')
-    c_emerald = colors.HexColor('#10b981')
-    c_emerald_bright = colors.HexColor('#34d399')
-    c_emerald_dark = colors.HexColor('#064e3b')
-    c_gold = colors.HexColor('#d4b46a')
-    c_gold_bright = colors.HexColor('#f3d58d')
-    c_white = colors.HexColor('#f8fafc')
-    c_muted = colors.HexColor('#94a3b8')
-    c_dim = colors.HexColor('#64748b')
-
-    # Ticket bounds
-    pad = 10
+    W, H = 1800, 770
+    pad = 26
     tx, ty = pad, pad
     tw, th = W - 2 * pad, H - 2 * pad
-    top = ty + th
-    bot = ty
-    spine_w = 26
-    stub_x = 456  # Perforation tear-off line
+    right = tx + tw
+    bottom = ty + th
+    spine_w = 72
+    stub_x = 1264  # Perforation line separating main pass and QR stub
 
-    # 1. Outer matte void canvas
-    c.setFillColor(c_outer_bg)
-    c.rect(0, 0, W, H, stroke=0, fill=1)
+    # Palette (Strictly Monochromatic Doomsday: Obsidian + Emerald + Brushed Gold)
+    c_outer = (3, 6, 5, 255)
+    c_body = (7, 13, 10, 255)
+    c_stub = (5, 10, 8, 255)
+    c_spine = (10, 29, 20, 255)
+    c_panel = (11, 21, 16, 255)
+    c_grid = (16, 36, 26, 255)
+    c_hatch = (12, 27, 20, 255)
+    c_emerald = (16, 185, 129, 255)
+    c_emerald_bright = (52, 211, 153, 255)
+    c_emerald_dark = (6, 78, 59, 255)
+    c_gold = (212, 180, 106, 255)
+    c_gold_bright = (243, 213, 141, 255)
+    c_white = (244, 248, 245, 255)
+    c_muted = (148, 165, 155, 255)
+    c_dim = (96, 114, 104, 255)
 
-    # 2. Ticket body & stub base fills
-    c.setFillColor(c_body_bg)
-    c.rect(tx, ty, stub_x - tx, th, stroke=0, fill=1)
-    c.setFillColor(c_stub_bg)
-    c.rect(stub_x, ty, (tx + tw) - stub_x, th, stroke=0, fill=1)
+    img = Image.new('RGBA', (W, H), c_outer)
+    draw = ImageDraw.Draw(img)
 
-    # 3. Subtle architectural blueprint grid across main body
-    c.saveState()
-    c.setStrokeColor(c_grid)
-    c.setLineWidth(0.35)
-    gx = tx + spine_w
-    while gx < stub_x:
-        c.line(gx, bot, gx, top)
-        gx += 22
-    gy = bot
-    while gy < top:
-        c.line(tx + spine_w, gy, stub_x, gy)
-        gy += 22
+    # 1. Main body + stub fills
+    draw.rectangle([tx, ty, stub_x, bottom], fill=c_body)
+    draw.rectangle([stub_x, ty, right, bottom], fill=c_stub)
 
-    # Subtle diagonal tactical hatch lines inside the stub
-    c.setStrokeColor(colors.HexColor('#0b1a13'))
-    c.setLineWidth(0.4)
-    for offset in range(-280, 320, 14):
-        x1 = stub_x + offset
-        y1 = bot
-        x2 = stub_x + offset + 120
-        y2 = top
-        # Clip manually to stub rectangle
-        c.saveState()
-        p = c.beginPath()
-        p.rect(stub_x, bot, (tx + tw) - stub_x, th)
-        c.clipPath(p, stroke=0, fill=0)
-        c.line(x1, y1, x2, y2)
-        c.restoreState()
-    c.restoreState()
+    # 2. Subtle atmospheric emerald radial aura behind title area
+    glow = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    gdraw = ImageDraw.Draw(glow)
+    gdraw.ellipse([160, 40, 860, 460], fill=(16, 185, 129, 34))
+    gdraw.ellipse([stub_x + 70, 120, right - 50, 540], fill=(16, 185, 129, 24))
+    glow = glow.filter(ImageFilter.GaussianBlur(radius=75))
+    img = Image.alpha_composite(img, glow)
+    draw = ImageDraw.Draw(img)
 
-    # 4. Left vertical collector's spine strip
-    c.setFillColor(c_spine_bg)
-    c.rect(tx, bot, spine_w, th, stroke=0, fill=1)
-    c.setStrokeColor(c_emerald_dark)
-    c.setLineWidth(0.8)
-    c.line(tx + spine_w, bot, tx + spine_w, top)
+    # 3. Blueprint architectural grid inside main body
+    for gx in range(tx + spine_w, stub_x, 54):
+        draw.line([(gx, ty), (gx, bottom)], fill=c_grid, width=1)
+    for gy in range(ty, bottom, 54):
+        draw.line([(tx + spine_w, gy), (stub_x, gy)], fill=c_grid, width=1)
 
-    # Vertical rotated serial text inside spine
-    c.saveState()
-    c.translate(tx + 16, ty + th / 2.0)
-    c.rotate(90)
-    c.setFont('Courier-Bold', 6.8)
-    c.setFillColor(c_gold)
-    c.drawCentredString(0, 0, f"BUILD OPS 2026  //  ASIET x TCS  //  {team.registration_id}")
-    c.restoreState()
+    # Diagonal tactical hatch lines clipped inside stub
+    stub_overlay = Image.new('RGBA', (right - stub_x, th), (0, 0, 0, 0))
+    sdraw = ImageDraw.Draw(stub_overlay)
+    for off in range(-th, (right - stub_x) + th, 32):
+        sdraw.line([(off, th), (off + 260, 0)], fill=c_hatch, width=2)
+    img.alpha_composite(stub_overlay, (stub_x, ty))
+    draw = ImageDraw.Draw(img)
 
-    # 5. Double metallic frame (outer emerald + inner gold hairline)
-    c.setStrokeColor(c_emerald)
-    c.setLineWidth(1.1)
-    c.rect(tx, bot, tw, th, stroke=1, fill=0)
+    # 4. Left vertical collector spine
+    draw.rectangle([tx, ty, tx + spine_w, bottom], fill=c_spine)
+    draw.line([(tx + spine_w, ty), (tx + spine_w, bottom)], fill=c_emerald_dark, width=2)
 
-    c.setStrokeColor(c_gold)
-    c.setLineWidth(0.45)
-    c.rect(tx + 3, bot + 3, tw - 6, th - 6, stroke=1, fill=0)
+    # Load fonts
+    f_poster_lg = _load_font('Arvo-Bold.ttf', 40)
+    f_poster_xl = _load_font('Arvo-Bold.ttf', 84)
+    f_bold_24 = _load_font('VeraBd.ttf', 25)
+    f_bold_22 = _load_font('VeraBd.ttf', 22)
+    f_bold_20 = _load_font('VeraBd.ttf', 20)
+    f_bold_18 = _load_font('VeraBd.ttf', 18)
+    f_bold_16 = _load_font('VeraBd.ttf', 16)
+    f_bold_15 = _load_font('VeraBd.ttf', 15)
+    f_reg_19 = _load_font('Vera.ttf', 19)
+    f_reg_17 = _load_font('Vera.ttf', 17)
+    f_reg_15 = _load_font('Vera.ttf', 15)
+    f_reg_14 = _load_font('Vera.ttf', 14)
 
-    # 6. Top & bottom perforation punch notches + side ticket bites
-    notch_r = 10.5
-    c.setFillColor(c_outer_bg)
-    c.setStrokeColor(c_emerald)
-    c.setLineWidth(1.0)
-    # Top perforation notch
-    c.circle(stub_x, top, notch_r, stroke=1, fill=1)
-    # Bottom perforation notch
-    c.circle(stub_x, bot, notch_r, stroke=1, fill=1)
-    # Left & Right center concert-ticket semicircular notches
-    side_r = 7.5
-    c.circle(tx, ty + th / 2.0, side_r, stroke=1, fill=1)
-    c.circle(tx + tw, ty + th / 2.0, side_r, stroke=1, fill=1)
+    # Rotated vertical spine serial text
+    spine_txt = f"BUILD OPS 2026  //  ASIET x TCS  //  {team.registration_id}"
+    sp_img = Image.new('RGBA', (th, spine_w), (0, 0, 0, 0))
+    sp_draw = ImageDraw.Draw(sp_img)
+    tb = sp_draw.textbbox((0, 0), spine_txt, font=f_bold_16)
+    tw_txt, th_txt = tb[2] - tb[0], tb[3] - tb[1]
+    sp_draw.text(((th - tw_txt) // 2, (spine_w - th_txt) // 2 - 2), spine_txt, font=f_bold_16, fill=c_gold)
+    sp_rot = sp_img.rotate(90, expand=True)
+    img.alpha_composite(sp_rot, (tx, ty))
+    draw = ImageDraw.Draw(img)
 
-    # Clean outer bleed masks so notch circles don't poke outside ticket border
-    c.setFillColor(c_outer_bg)
-    c.rect(0, top + 0.6, W, H - top, stroke=0, fill=1)
-    c.rect(0, 0, W, bot - 0.6, stroke=0, fill=1)
-    c.rect(0, 0, tx - 0.6, H, stroke=0, fill=1)
-    c.rect(tx + tw + 0.6, 0, W - (tx + tw), H, stroke=0, fill=1)
+    # 5. Double metallic ticket frame (emerald outer + gold inner)
+    draw.rectangle([tx, ty, right, bottom], outline=c_emerald, width=3)
+    draw.rectangle([tx + 8, ty + 8, right - 8, bottom - 8], outline=c_gold, width=1)
 
-    # Vertical dashed tear-off perforation line
-    c.saveState()
-    c.setStrokeColor(c_gold)
-    c.setLineWidth(0.9)
-    c.setDash(3.5, 3.5)
-    c.line(stub_x, bot + notch_r + 3, stub_x, top - notch_r - 3)
-    c.restoreState()
+    # 6. Main ticket body content (x = 136 .. 1226)
+    mx_l = tx + spine_w + 38   # 136
+    mx_r = stub_x - 38         # 1226
+    m_w = mx_r - mx_l          # 1090
 
-    # =========================================================================
-    # LEFT MAIN TICKET BODY (x = 50 .. 442)
-    # =========================================================================
-    mx_left = tx + spine_w + 14  # 50
-    mx_right = stub_x - 14       # 442
-    m_width = mx_right - mx_left # 392
+    # Top row: Institution & Department (left) + Official TCS Logo (right)
+    draw.text((mx_l, 62), "ADI SHANKARA INSTITUTE OF ENGINEERING & TECHNOLOGY", font=f_bold_16, fill=c_gold)
+    draw.text((mx_l, 86), "DEPARTMENT OF COMPUTER APPLICATIONS", font=f_bold_15, fill=c_muted)
 
-    # Top eyebrow metadata
-    c.setFont('Helvetica-Bold', 6.8)
-    c.setFillColor(c_gold)
-    c.drawString(mx_left, 248, "DEPT. OF COMPUTER APPLICATIONS   •   ASIET × TCS")
+    tcs_path = os.path.join(ASSETS_DIR, 'tcs-logo.png')
+    if os.path.exists(tcs_path):
+        try:
+            tcs_im = Image.open(tcs_path).convert('RGBA')
+            tcs_h = 44
+            tcs_w = int(tcs_im.width * (tcs_h / float(tcs_im.height)))
+            tcs_im = tcs_im.resize((tcs_w, tcs_h), Image.Resampling.LANCZOS)
+            img.alpha_composite(tcs_im, (mx_r - tcs_w, 60))
+            draw = ImageDraw.Draw(img)
+        except Exception:
+            draw.text((mx_r - 120, 66), "ASIET x TCS", font=f_bold_18, fill=c_white)
 
-    # Tactical rectangular VIP stamp badge (top-right of main body)
-    badge_w, badge_h = 114, 15
-    badge_x, badge_y = mx_right - badge_w, 243
-    c.setFillColor(colors.HexColor('#082317'))
-    c.setStrokeColor(c_emerald)
-    c.setLineWidth(0.8)
-    c.rect(badge_x, badge_y, badge_w, badge_h, stroke=1, fill=1)
-    c.setFillColor(c_emerald_bright)
-    c.circle(badge_x + 8, badge_y + badge_h / 2.0, 2.2, stroke=0, fill=1)
-    c.setFont('Courier-Bold', 6.8)
-    c.drawString(badge_x + 15, badge_y + 4.8, "VIP PASS • ADMIT 02")
+    # Official halftone Build Ops poster title + VIP Stamp
+    title_path = os.path.join(ASSETS_DIR, 'buildops_poster_title_2x.png')
+    if os.path.exists(title_path):
+        try:
+            title_im = Image.open(title_path).convert('RGBA')
+            target_h = 114
+            target_w = int(title_im.width * (target_h / float(title_im.height)))
+            title_im = title_im.resize((target_w, target_h), Image.Resampling.LANCZOS)
+            img.alpha_composite(title_im, (mx_l - 8, 126))
+            draw = ImageDraw.Draw(img)
+        except Exception:
+            draw.text((mx_l + 3, 143), "BUILD OPS", font=f_poster_xl, fill=c_emerald_dark)
+            draw.text((mx_l, 140), "BUILD OPS", font=f_poster_xl, fill=c_white)
+    else:
+        draw.text((mx_l + 3, 143), "BUILD OPS", font=f_poster_xl, fill=c_emerald_dark)
+        draw.text((mx_l, 140), "BUILD OPS", font=f_poster_xl, fill=c_white)
 
-    # Monumental Doomsday Poster Title
-    title_text = str(settings.EVENT_NAME or 'BUILD OPS').upper()
-    c.setFont(display_font, 32)
-    c.setFillColor(c_emerald_dark)
-    c.drawString(mx_left + 1.4, 204.6, title_text)
-    c.setFillColor(c_white)
-    c.drawString(mx_left, 206, title_text)
+    # VIP Pass stamp badge + Fee Paid right-aligned beside title
+    badge_w, badge_h = 286, 40
+    bx, by = mx_r - badge_w, 138
+    draw.rectangle([bx, by, bx + badge_w, by + badge_h], fill=(8, 35, 23, 255), outline=c_emerald, width=2)
+    draw.ellipse([bx + 18, by + 15, bx + 28, by + 25], fill=c_emerald_bright)
+    draw.text((bx + 40, by + 11), "VIP PASS  •  ADMIT 02", font=f_bold_16, fill=c_emerald_bright)
 
-    # Edition subtitle + right-aligned price/tier
-    c.setFont('Courier-Bold', 7.8)
-    c.setFillColor(c_emerald_bright)
-    c.drawString(mx_left, 191, "OFFICIAL 12-HOUR BUILDATHON ENTRY PASS")
+    fee_txt = f"FEE PAID: INR {settings.REGISTRATION_FEE_INR}"
+    fb = draw.textbbox((0, 0), fee_txt, font=f_bold_18)
+    draw.text((mx_r - (fb[2] - fb[0]), 194), fee_txt, font=f_bold_18, fill=c_gold_bright)
 
-    c.setFont('Courier-Bold', 8)
-    c.setFillColor(c_gold_bright)
-    c.drawRightString(mx_right, 191, f"FEE PAID: INR {settings.REGISTRATION_FEE_INR}")
+    draw.text((mx_l, 240), "OFFICIAL OVERNIGHT BUILDATHON GATE PASS", font=f_bold_16, fill=c_emerald_bright)
 
-    # Glowing emerald + gold horizontal accent rule
-    c.setStrokeColor(c_emerald)
-    c.setLineWidth(1.3)
-    c.line(mx_left, 183, mx_left + 265, 183)
-    c.setStrokeColor(c_gold)
-    c.setLineWidth(0.7)
-    c.line(mx_left + 269, 183, mx_right, 183)
+    # Dual emerald + gold energy rule
+    rule_y = 272
+    draw.line([(mx_l, rule_y), (mx_l + 720, rule_y)], fill=c_emerald, width=3)
+    draw.line([(mx_l + 732, rule_y), (mx_r, rule_y)], fill=c_gold, width=2)
 
-    # Event Info Strip (3 sharp editorial columns)
-    col1_x = mx_left
-    col2_x = mx_left + 118
-    col3_x = mx_left + 252
+    # Event Metadata Strip (3 clean hairline columns)
+    c1, c2, c3 = mx_l, mx_l + 335, mx_l + 720
+    draw.text((c1, 290), "EVENT DATE", font=f_bold_15, fill=c_gold)
+    draw.text((c2, 290), "WINDOW", font=f_bold_15, fill=c_gold)
+    draw.text((c3, 290), "VENUE", font=f_bold_15, fill=c_gold)
 
-    c.setFont('Courier-Bold', 6.2)
-    c.setFillColor(c_gold)
-    c.drawString(col1_x, 169, "EVENT DATE")
-    c.drawString(col2_x, 169, "DURATION / WINDOW")
-    c.drawString(col3_x, 169, "VENUE")
+    draw.text((c1, 315), "DEC 08 – 09, 2026", font=f_bold_22, fill=c_white)
+    draw.text((c2, 315), "5:00 PM – 9:00 AM IST", font=f_bold_22, fill=c_white)
+    draw.text((c3, 315), _truncate(settings.EVENT_VENUE or "AI Lab, ASIET", 24), font=f_bold_22, fill=c_white)
 
-    c.setFont('Helvetica-Bold', 8.8)
-    c.setFillColor(c_white)
-    c.drawString(col1_x, 156, "DEC 08 – 09, 2026")
-    c.drawString(col2_x, 156, "5:00 PM – 9:00 AM IST")
-    venue_short = _truncate(settings.EVENT_VENUE or "Innovation Hub, ASIET", 26)
-    c.drawString(col3_x, 156, venue_short)
-
-    # Subtle vertical dividers between metadata columns
-    c.setStrokeColor(colors.HexColor('#1b3629'))
-    c.setLineWidth(0.6)
-    c.line(col2_x - 10, 152, col2_x - 10, 175)
-    c.line(col3_x - 10, 152, col3_x - 10, 175)
-    c.line(mx_left, 145, mx_right, 145)
+    draw.line([(c2 - 24, 290), (c2 - 24, 348)], fill=(28, 56, 42, 255), width=2)
+    draw.line([(c3 - 24, 290), (c3 - 24, 348)], fill=(28, 56, 42, 255), width=2)
+    draw.line([(mx_l, 362), (mx_r, 362)], fill=(28, 56, 42, 255), width=2)
 
     # Squad Identity Row
-    c.setFont('Courier-Bold', 6.4)
-    c.setFillColor(c_emerald_bright)
-    c.drawString(mx_left, 134, "REGISTERED SQUAD")
-    c.setFillColor(c_gold)
-    c.drawRightString(mx_right, 134, "REGISTRATION ID")
+    draw.text((mx_l, 378), "REGISTERED SQUAD", font=f_bold_15, fill=c_emerald_bright)
+    reg_lbl = "REGISTRATION ID"
+    rlb = draw.textbbox((0, 0), reg_lbl, font=f_bold_15)
+    draw.text((mx_r - (rlb[2] - rlb[0]), 378), reg_lbl, font=f_bold_15, fill=c_gold)
 
-    c.setFont(display_font, 14.5)
-    c.setFillColor(c_white)
-    c.drawString(mx_left, 117, _truncate(team.team_name.upper(), 24))
+    draw.text((mx_l, 401), _truncate(team.team_name.upper(), 24), font=f_poster_lg, fill=c_white)
+    reg_val = str(team.registration_id)
+    rvb = draw.textbbox((0, 0), reg_val, font=f_bold_24)
+    draw.text((mx_r - (rvb[2] - rvb[0]), 408), reg_val, font=f_bold_24, fill=c_gold_bright)
 
-    c.setFont('Courier-Bold', 12)
-    c.setFillColor(c_gold_bright)
-    c.drawRightString(mx_right, 119, team.registration_id)
+    draw.text((mx_l, 454), _truncate(team.college_name, 58), font=f_reg_19, fill=c_muted)
 
-    c.setFont('Helvetica', 7.6)
-    c.setFillColor(c_muted)
-    c.drawString(mx_left, 105, _truncate(team.college_name, 54))
-
-    # Two Side-by-Side Operative Panels
-    box_y = 43
-    box_h = 54
-    gap = 10
-    box_w = (m_width - gap) / 2.0
+    # Two Side-by-Side Team Member Panels
+    box_y = 496
+    box_h = 166
+    gap = 28
+    box_w = (m_w - gap) // 2
 
     leader_name = _truncate(leader.full_name if leader else 'N/A', 26)
     leader_email = _truncate(leader.email if leader else 'N/A', 30)
@@ -323,141 +260,122 @@ def _render_doomsday_concert_ticket_pdf(pdf_filepath, team, ticket, leader, memb
     member2_email = _truncate(member2.email if member2 else 'N/A', 30)
     member2_phone = _truncate(member2.mobile_number if member2 else 'N/A', 18)
 
-    operatives = [
-        (mx_left, "01 // TEAM LEADER", c_gold_bright, c_emerald, leader_name, leader_email, leader_phone),
-        (mx_left + box_w + gap, "02 // TEAM MEMBER", c_emerald_bright, c_gold, member2_name, member2_email, member2_phone),
+    members_spec = [
+        (mx_l, "01 // TEAM LEADER", c_gold_bright, c_emerald, leader_name, leader_email, leader_phone),
+        (mx_l + box_w + gap, "02 // TEAM MEMBER", c_emerald_bright, c_gold, member2_name, member2_email, member2_phone),
     ]
 
-    for bx, role_label, label_color, bar_color, name, email, phone in operatives:
-        c.setFillColor(c_panel_bg)
-        c.setStrokeColor(colors.HexColor('#183326'))
-        c.setLineWidth(0.6)
-        c.rect(bx, box_y, box_w, box_h, stroke=1, fill=1)
+    for px_x, role_lbl, lbl_col, bar_col, m_name, m_email, m_phone in members_spec:
+        draw.rectangle([px_x, box_y, px_x + box_w, box_y + box_h], fill=c_panel, outline=(24, 52, 38, 255), width=2)
+        draw.rectangle([px_x, box_y, px_x + 7, box_y + box_h], fill=bar_col)
+        draw.text((px_x + 24, box_y + 18), role_lbl, font=f_bold_15, fill=lbl_col)
+        draw.text((px_x + 24, box_y + 48), m_name, font=f_bold_24, fill=c_white)
+        draw.text((px_x + 24, box_y + 88), m_email, font=f_reg_17, fill=c_muted)
+        draw.text((px_x + 24, box_y + 120), m_phone, font=f_bold_18, fill=c_emerald_bright)
 
-        # Left accent bar
-        c.setFillColor(bar_color)
-        c.rect(bx, box_y, 2.4, box_h, stroke=0, fill=1)
+    # Bottom status line
+    draw.rectangle([mx_l, 686, mx_l + 14, 700], fill=c_emerald_bright)
+    draw.text((mx_l + 24, 684), "STATUS: CONFIRMED & PAID", font=f_bold_18, fill=c_emerald_bright)
 
-        c.setFont('Courier-Bold', 6.3)
-        c.setFillColor(label_color)
-        c.drawString(bx + 9, box_y + 42, role_label)
-
-        c.setFont('Helvetica-Bold', 9.2)
-        c.setFillColor(c_white)
-        c.drawString(bx + 9, box_y + 29, name)
-
-        c.setFont('Helvetica', 6.9)
-        c.setFillColor(c_muted)
-        c.drawString(bx + 9, box_y + 18, email)
-
-        c.setFont('Courier', 6.9)
-        c.setFillColor(c_emerald_bright)
-        c.drawString(bx + 9, box_y + 8, phone)
-
-    # Bottom verification & instructions strip
-    c.setFillColor(c_emerald_bright)
-    c.rect(mx_left, 23.5, 5, 5, stroke=0, fill=1)
-    c.setFont('Courier-Bold', 7.2)
-    c.drawString(mx_left + 9, 23.5, "STATUS: CONFIRMED & PAID")
-
-    c.setFont('Helvetica-Bold', 6.4)
-    c.setFillColor(c_dim)
-    c.drawRightString(mx_right, 23.5, "CARRY VALID COLLEGE PHOTO ID • ONE PASS PER SQUAD")
+    note_txt = "CARRY VALID COLLEGE PHOTO ID • ONE PASS PER SQUAD"
+    nb = draw.textbbox((0, 0), note_txt, font=f_bold_15)
+    draw.text((mx_r - (nb[2] - nb[0]), 686), note_txt, font=f_bold_15, fill=c_dim)
 
     # =========================================================================
-    # RIGHT TEAR-OFF QR STUB (x = 456 .. 638)
+    # RIGHT TEAR-OFF QR STUB (x = 1264 .. 1774)
     # =========================================================================
-    stub_cx = (stub_x + (tx + tw)) / 2.0  # 547
+    stub_cx = (stub_x + right) // 2
 
-    c.setFont('Courier-Bold', 7.2)
-    c.setFillColor(c_gold)
-    c.drawCentredString(stub_cx, 248, "GATE SCAN STUB")
+    hdr1 = "GATE SCAN STUB"
+    h1b = draw.textbbox((0, 0), hdr1, font=f_bold_20)
+    draw.text((stub_cx - (h1b[2] - h1b[0]) // 2, 64), hdr1, font=f_bold_20, fill=c_gold)
 
-    c.setFont('Helvetica', 6.0)
-    c.setFillColor(c_emerald_bright)
-    c.drawCentredString(stub_cx, 238, "PRESENT AT REGISTRATION DESK")
+    hdr2 = "PRESENT AT ENTRY DESK"
+    h2b = draw.textbbox((0, 0), hdr2, font=f_bold_15)
+    draw.text((stub_cx - (h2b[2] - h2b[0]) // 2, 95), hdr2, font=f_bold_15, fill=c_emerald_bright)
 
-    # Crisp White High-Contrast QR Container with Tactical Corner Brackets
-    qr_frame_size = 116
-    qr_fx = stub_cx - qr_frame_size / 2.0
-    qr_fy = 112
+    # Crisp White QR Frame + Tactical Gold Corner Brackets
+    qr_box = 326
+    qr_x = stub_cx - qr_box // 2
+    qr_y = 140
 
-    c.setFillColor(colors.white)
-    c.setStrokeColor(c_emerald)
-    c.setLineWidth(1.0)
-    c.rect(qr_fx, qr_fy, qr_frame_size, qr_frame_size, stroke=1, fill=1)
+    draw.rectangle([qr_x, qr_y, qr_x + qr_box, qr_y + qr_box], fill=(255, 255, 255, 255), outline=c_emerald, width=3)
+    _draw_corner_brackets(draw, qr_x - 12, qr_y - 12, qr_box + 24, qr_box + 24, length=26, color=c_gold, width=3)
 
-    _draw_corner_brackets(c, qr_fx - 4, qr_fy - 4, qr_frame_size + 8, qr_frame_size + 8, length=9, color=c_gold, line_width=1.1)
-
-    qr_buffer.seek(0)
-    qr_reader = ImageReader(qr_buffer)
-    qr_inner_pad = 5
-    c.drawImage(
-        qr_reader,
-        qr_fx + qr_inner_pad,
-        qr_fy + qr_inner_pad,
-        width=qr_frame_size - 2 * qr_inner_pad,
-        height=qr_frame_size - 2 * qr_inner_pad,
-        preserveAspectRatio=True,
-        mask='auto',
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=12,
+        border=2,
     )
+    qr.add_data(ticket.qr_token)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color="#040806", back_color="white").convert('RGBA')
+    qr_inner = qr_box - 22
+    qr_img = qr_img.resize((qr_inner, qr_inner), Image.Resampling.NEAREST)
+    img.alpha_composite(qr_img, (qr_x + 11, qr_y + 11))
+    draw = ImageDraw.Draw(img)
 
-    # Registration ID + Full QR Token
-    c.setFont('Courier-Bold', 9.8)
-    c.setFillColor(c_white)
-    c.drawCentredString(stub_cx, 93, team.registration_id)
+    # Registration ID & Token
+    rid_b = draw.textbbox((0, 0), reg_val, font=f_bold_24)
+    draw.text((stub_cx - (rid_b[2] - rid_b[0]) // 2, 492), reg_val, font=f_bold_24, fill=c_white)
 
-    token_str = str(ticket.qr_token)
-    c.setFont('Courier', 5.8)
-    c.setFillColor(c_emerald_bright)
-    if len(token_str) > 26:
-        c.drawCentredString(stub_cx, 82, token_str[:26])
-        c.drawCentredString(stub_cx, 74, token_str[26:])
+    tok = str(ticket.qr_token)
+    if len(tok) > 24:
+        t1, t2 = tok[:24], tok[24:]
+        t1b = draw.textbbox((0, 0), t1, font=f_reg_14)
+        t2b = draw.textbbox((0, 0), t2, font=f_reg_14)
+        draw.text((stub_cx - (t1b[2] - t1b[0]) // 2, 528), t1, font=f_reg_14, fill=c_emerald_bright)
+        draw.text((stub_cx - (t2b[2] - t2b[0]) // 2, 548), t2, font=f_reg_14, fill=c_emerald_bright)
     else:
-        c.drawCentredString(stub_cx, 80, token_str)
+        tb = draw.textbbox((0, 0), tok, font=f_reg_15)
+        draw.text((stub_cx - (tb[2] - tb[0]) // 2, 532), tok, font=f_reg_15, fill=c_emerald_bright)
 
-    # Decorative Concert Barcode Strip
-    _draw_decorative_barcode(c, stub_cx, 38, 134, 24, f"{team.registration_id}:{token_str}")
+    # Unique Concert Barcode Strip
+    _draw_barcode(draw, stub_cx, 592, 360, 68, f"{team.registration_id}:{tok}")
 
-    c.setFont('Courier-Bold', 6.2)
-    c.setFillColor(c_gold)
-    c.drawCentredString(stub_cx, 23.5, "ADMIT TWO  •  DEC 08-09 2026")
+    foot_txt = "ADMIT TWO  •  DEC 08–09 2026"
+    ftb = draw.textbbox((0, 0), foot_txt, font=f_bold_15)
+    draw.text((stub_cx - (ftb[2] - ftb[0]) // 2, 684), foot_txt, font=f_bold_15, fill=c_gold)
 
-    c.showPage()
-    c.save()
+    # 7. Semicircular Concert Ticket Cutouts + Perforation Line
+    notch_r = 30
+    draw.ellipse([stub_x - notch_r, ty - notch_r, stub_x + notch_r, ty + notch_r], fill=c_outer, outline=c_emerald, width=3)
+    draw.ellipse([stub_x - notch_r, bottom - notch_r, stub_x + notch_r, bottom + notch_r], fill=c_outer, outline=c_emerald, width=3)
+
+    side_r = 22
+    mid_y = ty + th // 2
+    draw.ellipse([tx - side_r, mid_y - side_r, tx + side_r, mid_y + side_r], fill=c_outer, outline=c_emerald, width=3)
+    draw.ellipse([right - side_r, mid_y - side_r, right + side_r, mid_y + side_r], fill=c_outer, outline=c_emerald, width=3)
+
+    # Mask outer bleed cleanly so notch circles stay crisp semicircular bites
+    draw.rectangle([0, 0, W, ty - 2], fill=c_outer)
+    draw.rectangle([0, bottom + 2, W, H], fill=c_outer)
+    draw.rectangle([0, 0, tx - 2, H], fill=c_outer)
+    draw.rectangle([right + 2, 0, W, H], fill=c_outer)
+
+    # Dashed gold perforation tear-off line
+    _draw_dashed_vline(draw, stub_x, ty + notch_r + 10, bottom - notch_r - 10, dash=12, gap=10, color=c_gold, width=3)
+
+    # Save crisp high-res shareable PNG
+    img.convert('RGB').save(png_filepath, format='PNG', optimize=True)
 
 
 def generate_ticket_for_team(team, send_email=True):
     """
-    Idempotently creates a Ticket record and generates a Doomsday concert-style
-    PDF ticket with scannable QR code for a confirmed team.
+    Idempotently creates a Ticket record and generates a shareable Doomsday
+    concert-style PNG ticket with scannable QR code for a confirmed team.
     """
     ticket, created = Ticket.objects.get_or_create(
         team=team,
         defaults={'qr_token': generate_qr_token(), 'ticket_status': 'ACTIVE'}
     )
 
-    # Ensure media directory exists
     tickets_dir = os.path.join(settings.MEDIA_ROOT, 'tickets')
     os.makedirs(tickets_dir, exist_ok=True)
 
-    pdf_filename = f"ticket_{team.registration_id}.pdf"
-    pdf_filepath = os.path.join(tickets_dir, pdf_filename)
-
-    # Generate high-contrast QR Code PNG in-memory
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_M,
-        box_size=10,
-        border=2,
-    )
-    qr.add_data(ticket.qr_token)
-    qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="#040806", back_color="white")
-
-    qr_buffer = io.BytesIO()
-    qr_img.save(qr_buffer, format='PNG')
-    qr_buffer.seek(0)
+    png_filename = f"ticket_{team.registration_id}.png"
+    png_filepath = os.path.join(tickets_dir, png_filename)
 
     # Explicitly identify LEADER (registered user) vs MEMBER
     members = list(team.members.all())
@@ -470,22 +388,21 @@ def generate_ticket_for_team(team, send_email=True):
         None
     )
 
-    _render_doomsday_concert_ticket_pdf(
-        pdf_filepath=pdf_filepath,
+    _render_doomsday_concert_ticket_png(
+        png_filepath=png_filepath,
         team=team,
         ticket=ticket,
         leader=leader,
         member2=member2,
-        qr_buffer=qr_buffer,
     )
 
-    # Save relative path
-    relative_path = os.path.relpath(pdf_filepath, settings.MEDIA_ROOT)
+    # Save relative path (reuses pdf_path column cleanly with zero DB migration)
+    relative_path = os.path.relpath(png_filepath, settings.MEDIA_ROOT)
     ticket.pdf_path = relative_path
     ticket.save(update_fields=['pdf_path'])
 
-    # Deliver emails to both team members
+    # Deliver emails to both team members with the PNG ticket attached
     if send_email:
-        send_ticket_email(team, ticket, pdf_path=pdf_filepath)
+        send_ticket_email(team, ticket, pdf_path=png_filepath)
 
     return ticket
