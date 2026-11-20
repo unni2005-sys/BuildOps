@@ -549,10 +549,10 @@ export const Home = () => {
          ===================================================================== */}
       <section
         id="prizes"
-        className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 border-b border-white/[0.08] relative"
+        className="max-w-7xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-12 sm:pb-16 border-b border-white/[0.08] relative"
       >
-        <div className="reveal-block mb-12 sm:mb-16">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-white/[0.08] pb-8">
+        <div className="reveal-block mb-10 sm:mb-14">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-white/[0.08] pb-6 sm:pb-8">
             <div>
               <span className="font-mono-tech text-[10px] tracking-[0.28em] text-[#d4b46a] uppercase block mb-3 font-semibold flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-[#d4b46a] inline-block shadow-[0_0_8px_#d4b46a]" />
@@ -580,25 +580,22 @@ export const Home = () => {
         </div>
 
         {/* 2-Column Podium Showcase (First & Second Prize) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Card 1: 1st Prize — ₹5,000 */}
           <div className="reveal-block">
             <Tilt3D maxTilt={5} perspective={1200} className="h-full">
-              <div className="h-full bg-[#070c09]/90 border border-[#d4b46a]/40 p-7 sm:p-9 relative flex flex-col justify-between shadow-[0_0_35px_rgba(212,180,106,0.12)] group hover:border-[#d4b46a]/70 transition-all">
+              <div className="h-full bg-[#070c09]/90 border border-[#d4b46a]/40 p-6 sm:p-8 relative flex flex-col justify-between shadow-[0_0_35px_rgba(212,180,106,0.12)] group hover:border-[#d4b46a]/70 transition-all">
                 {/* Burnished Gold Top Hairline Accent */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#d4b46a] via-[#e5c77e] to-emerald-500" />
 
-                {/* Corner Decorative Ticks */}
+                {/* Corner Decorative Tick */}
                 <span className="absolute top-2.5 right-3 font-mono-tech text-[9px] text-[#d4b46a]/50 select-none">
                   +01
-                </span>
-                <span className="absolute bottom-2.5 left-3 font-mono-tech text-[9px] text-[#d4b46a]/50 select-none">
-                  CHAMPION_TIER
                 </span>
 
                 <div>
                   {/* Top Badge */}
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-between mb-5">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#d4b46a]/15 border border-[#d4b46a]/40 text-[#d4b46a] font-mono-tech text-[10px] sm:text-[11px] tracking-[0.22em] font-bold uppercase">
                       <Crown size={13} className="text-[#d4b46a]" />
                       1st Prize // Champions
@@ -609,7 +606,7 @@ export const Home = () => {
                   </div>
 
                   {/* Cash Amount Display */}
-                  <div className="mb-4">
+                  <div className="mb-5">
                     <span className="font-mono-tech text-[10px] tracking-[0.24em] text-[#8b9b90] uppercase block mb-1">
                       Cash Bounty
                     </span>
@@ -617,10 +614,6 @@ export const Home = () => {
                       ₹5,000
                     </div>
                   </div>
-
-                  <p className="text-sm text-[#8b9b90] leading-relaxed mb-6">
-                    Awarded to the overall winning squad demonstrating the most innovative concept, rock-solid architecture, and production-grade on-site execution.
-                  </p>
 
                   {/* Perks Checklist */}
                   <div className="space-y-2.5 pt-5 border-t border-white/[0.08]">
@@ -649,7 +642,7 @@ export const Home = () => {
                   </div>
                 </div>
 
-                <div className="mt-8 pt-5 border-t border-[#d4b46a]/20 flex items-center justify-between font-mono-tech text-[10px] text-[#d4b46a] tracking-wider">
+                <div className="mt-6 pt-4 border-t border-[#d4b46a]/20 flex items-center justify-between font-mono-tech text-[10px] text-[#d4b46a] tracking-wider">
                   <span>DISBURSEMENT: POST-EVALUATION</span>
                   <span className="uppercase">RANK #01</span>
                 </div>
@@ -660,21 +653,18 @@ export const Home = () => {
           {/* Card 2: 2nd Prize — ₹3,000 */}
           <div className="reveal-block">
             <Tilt3D maxTilt={5} perspective={1200} className="h-full">
-              <div className="h-full bg-[#070c09]/90 border border-white/[0.14] p-7 sm:p-9 relative flex flex-col justify-between hover:border-emerald-500/40 transition-all group shadow-[0_0_30px_rgba(16,185,129,0.06)]">
+              <div className="h-full bg-[#070c09]/90 border border-white/[0.14] p-6 sm:p-8 relative flex flex-col justify-between hover:border-emerald-500/40 transition-all group shadow-[0_0_30px_rgba(16,185,129,0.06)]">
                 {/* Brushed Steel & Emerald Hairline Accent */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-emerald-400 to-transparent" />
 
-                {/* Corner Decorative Ticks */}
+                {/* Corner Decorative Tick */}
                 <span className="absolute top-2.5 right-3 font-mono-tech text-[9px] text-[#8b9b90]/40 select-none">
                   +02
-                </span>
-                <span className="absolute bottom-2.5 left-3 font-mono-tech text-[9px] text-[#8b9b90]/40 select-none">
-                  RUNNERUP_TIER
                 </span>
 
                 <div>
                   {/* Top Badge */}
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-between mb-5">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/[0.08] border border-white/20 text-[#eef2ee] font-mono-tech text-[10px] sm:text-[11px] tracking-[0.22em] font-semibold uppercase">
                       <Medal size={13} className="text-emerald-400" />
                       2nd Prize // Runner-Up
@@ -685,7 +675,7 @@ export const Home = () => {
                   </div>
 
                   {/* Cash Amount Display */}
-                  <div className="mb-4">
+                  <div className="mb-5">
                     <span className="font-mono-tech text-[10px] tracking-[0.24em] text-[#8b9b90] uppercase block mb-1">
                       Cash Bounty
                     </span>
@@ -693,10 +683,6 @@ export const Home = () => {
                       ₹3,000
                     </div>
                   </div>
-
-                  <p className="text-sm text-[#8b9b90] leading-relaxed mb-6">
-                    Awarded to the second-place squad for outstanding technical merit, clean implementation, and resilience throughout the overnight build.
-                  </p>
 
                   {/* Perks Checklist */}
                   <div className="space-y-2.5 pt-5 border-t border-white/[0.08]">
@@ -725,7 +711,7 @@ export const Home = () => {
                   </div>
                 </div>
 
-                <div className="mt-8 pt-5 border-t border-white/[0.1] flex items-center justify-between font-mono-tech text-[10px] text-[#8b9b90] tracking-wider">
+                <div className="mt-6 pt-4 border-t border-white/[0.1] flex items-center justify-between font-mono-tech text-[10px] text-[#8b9b90] tracking-wider">
                   <span>DISBURSEMENT: POST-EVALUATION</span>
                   <span className="uppercase">RANK #02</span>
                 </div>
@@ -735,20 +721,22 @@ export const Home = () => {
         </div>
 
         {/* Universal Perks Bar for all attendees */}
-        <div className="mt-8 p-5 sm:p-6 border border-white/[0.1] bg-[#040806]/70 backdrop-blur-md reveal-block">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono-tech text-[11px]">
-            <div className="flex items-center gap-2.5 text-[#eef2ee]">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0" />
-              <span className="tracking-[0.16em] uppercase font-bold text-emerald-300 shrink-0">
-                Universal Squad Amenities:
-              </span>
-              <span className="text-[#8b9b90]">
-                Every registered squad receives participation certificates, high-speed Wi-Fi, dinner &amp; midnight refreshments.
-              </span>
+        <div className="mt-6 sm:mt-8 p-5 sm:p-6 border border-white/[0.1] bg-[#040806]/70 backdrop-blur-md reveal-block">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 font-mono-tech text-[11px] sm:text-xs">
+                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0" />
+                <span className="tracking-[0.16em] uppercase font-bold text-emerald-300">
+                  Universal Squad Amenities
+                </span>
+              </div>
+              <p className="font-mono-tech text-[11px] text-[#8b9b90] leading-relaxed pl-4">
+                Every registered squad receives official participation certificates, high-speed Wi-Fi, dinner &amp; midnight refreshments.
+              </p>
             </div>
             <a
               href="#rules"
-              className="text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-[0.18em] shrink-0 flex items-center gap-1.5"
+              className="inline-flex items-center gap-1.5 font-mono-tech text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-[0.18em] shrink-0 self-start sm:self-center pl-4 sm:pl-0"
             >
               <span>View Rulebook</span>
               <ArrowUpRight size={13} />
@@ -760,7 +748,7 @@ export const Home = () => {
       {/* =====================================================================
           RULES & ENTRY
          ===================================================================== */}
-      <section id="rules" className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 border-b border-white/[0.08]">
+      <section id="rules" className="max-w-7xl mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-20 sm:pb-28 border-b border-white/[0.08]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-4 reveal-block">
             <span className="font-mono-tech text-[10px] tracking-[0.26em] text-emerald-400 uppercase block mb-3">
