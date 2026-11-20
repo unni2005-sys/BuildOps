@@ -537,10 +537,10 @@ export const Home = () => {
             Prize Pool
           </span>
           <h2 className="font-poster text-3xl sm:text-4xl text-[#eef2ee] tracking-tight">
-            ₹8,000 Total Cash Awards
+            ₹8,000 Cash Prize Pool
           </h2>
           <p className="text-sm text-[#8b9b90] mt-2 max-w-xl font-display leading-relaxed">
-            Direct cash awards will be distributed to the winning teams following jury evaluation.
+            Direct cash prizes will be distributed to the winning teams following jury evaluation.
           </p>
         </div>
 
@@ -570,10 +570,6 @@ export const Home = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-[#8b9b90]">Cash Prize</span>
                       <span className="text-[#d4b46a] font-semibold">₹5,000</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#8b9b90]">Awards</span>
-                      <span className="text-[#eef2ee]">Build Ops Champion Trophy</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[#8b9b90]">Certification</span>
@@ -613,10 +609,6 @@ export const Home = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-[#8b9b90]">Cash Prize</span>
                       <span className="text-emerald-400 font-semibold">₹3,000</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#8b9b90]">Awards</span>
-                      <span className="text-[#eef2ee]">Build Ops Runner Up Trophy</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[#8b9b90]">Certification</span>
