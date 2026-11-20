@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, ShieldCheck, Ticket, QrCode, ArrowUpRight } from 'lucide-react';
+import { LogOut, ShieldCheck, Ticket, QrCode, ArrowUpRight, ArrowLeft } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -21,13 +21,23 @@ export const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 bg-[#030504]/85 backdrop-blur-xl border-b border-white/[0.08]">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Left: Minimal Brand Wordmark */}
-        <Link
-          to="/"
-          className="font-poster text-base sm:text-lg tracking-wider text-[#eef2ee] hover:text-emerald-400 transition-colors"
-        >
-          BUILD OPS
-        </Link>
+        {/* Left: Minimal Brand Wordmark & Back to Home */}
+        <div className="flex items-center gap-4">
+          <Link
+            to="/"
+            className="font-poster text-base sm:text-lg tracking-wider text-[#eef2ee] hover:text-emerald-400 transition-colors"
+          >
+            BUILD OPS
+          </Link>
+          <span className="text-white/20 hidden sm:inline">|</span>
+          <Link
+            to="/"
+            className="hidden sm:inline-flex items-center gap-1.5 font-display text-xs text-[#8b9b90] hover:text-[#eef2ee] transition-colors"
+          >
+            <ArrowLeft size={13} />
+            <span>Home</span>
+          </Link>
+        </div>
 
         {/* Right: Auth / Portal Controls */}
         <div className="flex items-center gap-3">
@@ -78,14 +88,21 @@ export const Navbar = () => {
           ) : (
             <div className="flex items-center gap-2.5">
               <Link
+                to="/"
+                className="inline-flex sm:hidden items-center gap-1 font-display text-xs text-[#8b9b90] hover:text-[#eef2ee] px-2.5 py-1.5 border border-white/10 transition"
+              >
+                <ArrowLeft size={12} />
+                <span>Home</span>
+              </Link>
+              <Link
                 to="/login"
-                className="font-mono-tech text-[11px] uppercase tracking-[0.16em] text-[#8b9b90] hover:text-[#eef2ee] px-3.5 py-2 transition"
+                className="font-display text-xs uppercase tracking-wider text-[#8b9b90] hover:text-[#eef2ee] px-3 py-1.5 transition"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
-                className="doom-btn-primary font-mono-tech text-[11px] uppercase tracking-[0.16em] px-4 py-2 gap-1.5"
+                className="doom-btn-primary font-display text-xs uppercase tracking-wider px-3.5 py-1.5 gap-1.5"
               >
                 <span>Register</span>
                 <ArrowUpRight size={13} />

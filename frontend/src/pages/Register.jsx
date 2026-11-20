@@ -5,6 +5,7 @@ import { Tilt3D } from '../components/Tilt3D';
 import {
   AlertCircle,
   ArrowUpRight,
+  ArrowLeft,
   Mail,
   RefreshCw,
 } from 'lucide-react';
@@ -117,9 +118,14 @@ export const Register = () => {
               <span>Enter Verification Token</span>
               <ArrowUpRight size={14} />
             </Link>
-            <div className="text-center pt-1">
-              <Link to="/login" className="font-mono-tech text-[11px] text-[#8b9b90] hover:text-[#eef2ee] uppercase tracking-wider">
-                ← Back to Sign In
+            <div className="text-center pt-2 flex items-center justify-center gap-5 font-display text-xs">
+              <Link to="/" className="text-[#8b9b90] hover:text-[#eef2ee] transition-colors flex items-center gap-1">
+                <ArrowLeft size={13} />
+                <span>Back to Home</span>
+              </Link>
+              <span className="text-white/20">|</span>
+              <Link to="/login" className="text-emerald-400 hover:text-emerald-300 uppercase tracking-wider font-semibold">
+                Proceed to Sign In
               </Link>
             </div>
           </div>
@@ -131,20 +137,33 @@ export const Register = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-10 px-4 sm:px-6 bg-[#030504] relative">
       <div className="max-w-md w-full relative z-10 animate-fade-in-up">
+        {/* Back to Home Navigation */}
+        <div className="mb-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 font-display text-xs text-[#8b9b90] hover:text-emerald-400 transition-colors group cursor-pointer"
+          >
+            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
+
         <Tilt3D maxTilt={4} perspective={1200}>
           <div className="doom-surface p-7 sm:p-9 border border-white/[0.12] relative">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500/80 via-[#d4b46a]/50 to-transparent" />
 
             {/* Header */}
             <div className="mb-6">
-              <div className="flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase mb-3">
+              <div className="flex items-center justify-between font-display text-xs text-[#8b9b90] tracking-wider mb-3">
                 <span>BUILD OPS 2026</span>
-                <span className="text-[#d4b46a]">₹500 / TEAM</span>
+                <Link to="/" className="text-[#d4b46a] hover:text-[#e5c77e] transition-colors">
+                  Home
+                </Link>
               </div>
               <h1 className="font-poster text-2xl sm:text-3xl text-[#eef2ee] tracking-tight">
                 Create Account
               </h1>
-              <p className="text-xs text-[#8b9b90] mt-1">
+              <p className="text-xs text-[#8b9b90] mt-1 font-display">
                 Sign up as Team Leader to register your team of two.
               </p>
             </div>
@@ -267,13 +286,19 @@ export const Register = () => {
               </button>
             </form>
 
-            <div className="mt-6 pt-5 border-t border-white/[0.08] flex items-center justify-between font-mono-tech text-[11px] text-[#8b9b90]">
-              <span>Already registered?</span>
+            <div className="mt-6 pt-5 border-t border-white/[0.08] flex items-center justify-between font-display text-xs text-[#8b9b90]">
+              <Link
+                to="/"
+                className="hover:text-[#eef2ee] transition-colors flex items-center gap-1"
+              >
+                <ArrowLeft size={13} />
+                <span>Back to Home</span>
+              </Link>
               <Link
                 to="/login"
-                className="text-emerald-400 hover:text-emerald-300 uppercase tracking-wider"
+                className="text-emerald-400 hover:text-emerald-300 uppercase tracking-wider font-semibold"
               >
-                Sign In →
+                Sign In
               </Link>
             </div>
           </div>
