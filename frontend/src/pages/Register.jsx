@@ -154,11 +154,8 @@ export const Register = () => {
 
             {/* Header */}
             <div className="mb-6">
-              <div className="flex items-center justify-between font-display text-xs text-[#8b9b90] tracking-wider mb-3">
-                <span>BUILD OPS 2026</span>
-                <Link to="/" className="text-[#d4b46a] hover:text-[#e5c77e] transition-colors">
-                  Home
-                </Link>
+              <div className="font-display text-xs text-[#8b9b90] tracking-wider mb-3">
+                BUILD OPS 2026
               </div>
               <h1 className="font-poster text-2xl sm:text-3xl text-[#eef2ee] tracking-tight">
                 Create Account
@@ -287,13 +284,7 @@ export const Register = () => {
             </form>
 
             <div className="mt-6 pt-5 border-t border-white/[0.08] flex items-center justify-between font-display text-xs text-[#8b9b90]">
-              <Link
-                to="/"
-                className="hover:text-[#eef2ee] transition-colors flex items-center gap-1"
-              >
-                <ArrowLeft size={13} />
-                <span>Back to Home</span>
-              </Link>
+              <span>Already registered?</span>
               <Link
                 to="/login"
                 className="text-emerald-400 hover:text-emerald-300 uppercase tracking-wider font-semibold"
