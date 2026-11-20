@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ArrowUpRight, Volume2, VolumeX, Plus, Minus } from 'lucide-react';
+import {
+  ArrowUpRight,
+  Volume2,
+  VolumeX,
+  Plus,
+  Minus,
+  Trophy,
+  Crown,
+  Medal,
+  Sparkles,
+  CheckCircle2,
+} from 'lucide-react';
+import { Tilt3D } from '../components/Tilt3D';
 
 // Plays once per fresh page load/refresh; navigating back from /login or /register skips replay
 let hasPlayedIntroReveal = false;
@@ -31,6 +43,11 @@ const RULES_ITEMS = [
     id: '05',
     title: 'One QR Gate Pass Per Squad',
     detail: 'Upon payment confirmation, your Doomsday Collector Pass is emailed to both members and unlocked inside your portal.',
+  },
+  {
+    id: '06',
+    title: 'Prize Pool & Evaluation Criteria',
+    detail: 'The ₹8,000 cash bounty (₹5,000 for 1st Place, ₹3,000 for 2nd Place) will be evaluated on technical architecture, originality, execution completeness, and final pitch presentation.',
   },
 ];
 
@@ -350,44 +367,68 @@ export const Home = () => {
               />
             </div>
 
-            {/* Structured 2x2 (Mobile) / 4-Col (Desktop) Architectural Spec Bar */}
+            {/* Structured Architectural Spec Bar with Prize Pool Ribbon */}
             <div
-              className={`w-full max-w-[680px] grid grid-cols-2 sm:grid-cols-4 border border-white/15 bg-[#040806]/75 backdrop-blur-md hero-ui-fade ${uiStateClass}`}
+              className={`w-full max-w-[680px] border border-white/15 bg-[#040806]/85 backdrop-blur-md hero-ui-fade overflow-hidden ${uiStateClass}`}
               style={{
                 transitionDelay: isRevealing ? '0ms' : '700ms',
               }}
             >
-              <div className="px-3 py-3 border-b border-r border-white/10 sm:border-b-0">
-                <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
-                  Date
-                </span>
-                <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#eef2ee] mt-1">
-                  DEC 08 – 09, 2026
-                </span>
-              </div>
-              <div className="px-3 py-3 border-b border-white/10 sm:border-b-0 sm:border-r">
-                <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
-                  Time
-                </span>
-                <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#eef2ee] mt-1">
-                  5:00 PM – 9:00 AM
-                </span>
-              </div>
-              <div className="px-3 py-3 border-r border-white/10">
-                <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
-                  Format
-                </span>
-                <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-emerald-300 mt-1">
-                  TEAMS OF TWO
-                </span>
-              </div>
-              <div className="px-3 py-3">
-                <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
-                  Entry Fee
-                </span>
-                <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#d4b46a] mt-1">
-                  ₹500 / TEAM
-                </span>
+              {/* Prize Pool Ribbon */}
+              <a
+                href="#prizes"
+                className="group flex items-center justify-between px-3.5 sm:px-4 py-2 border-b border-[#d4b46a]/30 bg-gradient-to-r from-[#d4b46a]/15 via-[#d4b46a]/[0.08] to-[#10b981]/15 hover:from-[#d4b46a]/25 hover:to-[#10b981]/25 transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4b46a] shadow-[0_0_8px_#d4b46a] animate-pulse" />
+                  <Trophy size={13} className="text-[#d4b46a]" />
+                  <span className="font-mono-tech text-[10px] sm:text-xs font-bold tracking-[0.22em] text-[#d4b46a] uppercase">
+                    Total Prize Pool
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 font-mono-tech text-xs sm:text-sm font-bold tracking-[0.16em] text-[#d4b46a]">
+                  <span>₹8,000</span>
+                  <ArrowUpRight
+                    size={13}
+                    className="opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                  />
+                </div>
+              </a>
+
+              {/* 4-Cell Spec Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4">
+                <div className="px-3 py-2.5 sm:py-3 border-b border-r border-white/10 sm:border-b-0">
+                  <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
+                    Date
+                  </span>
+                  <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#eef2ee] mt-1">
+                    DEC 08 – 09, 2026
+                  </span>
+                </div>
+                <div className="px-3 py-2.5 sm:py-3 border-b border-white/10 sm:border-b-0 sm:border-r">
+                  <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
+                    Time
+                  </span>
+                  <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#eef2ee] mt-1">
+                    5:00 PM – 9:00 AM
+                  </span>
+                </div>
+                <div className="px-3 py-2.5 sm:py-3 border-r border-white/10">
+                  <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
+                    Format
+                  </span>
+                  <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-emerald-300 mt-1">
+                    TEAMS OF TWO
+                  </span>
+                </div>
+                <div className="px-3 py-2.5 sm:py-3">
+                  <span className="block font-mono-tech text-[9px] tracking-[0.22em] text-[#8b9b90] uppercase">
+                    Entry Fee
+                  </span>
+                  <span className="block font-mono-tech text-[11px] sm:text-xs font-semibold tracking-[0.1em] text-[#d4b46a] mt-1">
+                    ₹500 / TEAM
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -459,10 +500,20 @@ export const Home = () => {
           className={`relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 pb-5 sm:pb-6 flex items-center justify-between font-mono-tech text-[10px] tracking-[0.22em] text-[#8b9b90] uppercase hero-ui-fade ${uiStateClass}`}
           style={{ transitionDelay: isRevealing ? '0ms' : '1500ms' }}
         >
-          <a href="#rules" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
-            <span className="w-4 h-px bg-emerald-500/70 inline-block" />
-            <span>Rules &amp; Entry</span>
-          </a>
+          <div className="flex items-center gap-3 sm:gap-5">
+            <a
+              href="#prizes"
+              className="text-[#d4b46a] hover:text-[#e5c77e] transition-colors flex items-center gap-1.5 font-bold"
+            >
+              <Trophy size={11} className="text-[#d4b46a]" />
+              <span>Prize Pool: ₹8,000</span>
+            </a>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <a href="#rules" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+              <span className="w-4 h-px bg-emerald-500/70 inline-block" />
+              <span>Rules &amp; Entry</span>
+            </a>
+          </div>
 
           <span className="hidden md:inline text-[#5a685e]">
             ADI SHANKARA INSTITUTE OF ENGINEERING &amp; TECHNOLOGY • KALADY
@@ -491,6 +542,219 @@ export const Home = () => {
             </span>
           </div>
         )}
+      </section>
+
+      {/* =====================================================================
+          PRIZE POOL & PODIUM (₹8,000 TOTAL: ₹5,000 1ST & ₹3,000 2ND)
+         ===================================================================== */}
+      <section
+        id="prizes"
+        className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 border-b border-white/[0.08] relative"
+      >
+        <div className="reveal-block mb-12 sm:mb-16">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-white/[0.08] pb-8">
+            <div>
+              <span className="font-mono-tech text-[10px] tracking-[0.28em] text-[#d4b46a] uppercase block mb-3 font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-[#d4b46a] inline-block shadow-[0_0_8px_#d4b46a]" />
+                BOUNTY ALLOCATION // CASH PRIZE POOL
+              </span>
+              <h2 className="font-poster text-3xl sm:text-5xl text-[#eef2ee] tracking-tight">
+                Prize Pool: <span className="text-[#d4b46a]">₹8,000</span>
+              </h2>
+              <p className="text-sm text-[#8b9b90] mt-3 max-w-2xl leading-relaxed">
+                Direct cash disbursements awarded to the highest-scoring engineering squads. Evaluated by an industry jury from TCS and ASIET faculty.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 font-mono-tech text-[11px]">
+              <div className="px-3.5 py-2 border border-[#d4b46a]/30 bg-[#d4b46a]/[0.08] text-[#d4b46a] flex items-center gap-2">
+                <Trophy size={13} className="text-[#d4b46a]" />
+                <span>TOTAL: ₹8,000 INR</span>
+              </div>
+              <div className="px-3.5 py-2 border border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-300 flex items-center gap-2">
+                <Sparkles size={13} className="text-emerald-400" />
+                <span>2 PODIUM TIERS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2-Column Podium Showcase (First & Second Prize) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10">
+          {/* Card 1: 1st Prize — ₹5,000 */}
+          <div className="reveal-block">
+            <Tilt3D maxTilt={5} perspective={1200} className="h-full">
+              <div className="h-full bg-[#070c09]/90 border border-[#d4b46a]/40 p-7 sm:p-9 relative flex flex-col justify-between shadow-[0_0_35px_rgba(212,180,106,0.12)] group hover:border-[#d4b46a]/70 transition-all">
+                {/* Burnished Gold Top Hairline Accent */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#d4b46a] via-[#e5c77e] to-emerald-500" />
+
+                {/* Corner Decorative Ticks */}
+                <span className="absolute top-2.5 right-3 font-mono-tech text-[9px] text-[#d4b46a]/50 select-none">
+                  +01
+                </span>
+                <span className="absolute bottom-2.5 left-3 font-mono-tech text-[9px] text-[#d4b46a]/50 select-none">
+                  CHAMPION_TIER
+                </span>
+
+                <div>
+                  {/* Top Badge */}
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#d4b46a]/15 border border-[#d4b46a]/40 text-[#d4b46a] font-mono-tech text-[10px] sm:text-[11px] tracking-[0.22em] font-bold uppercase">
+                      <Crown size={13} className="text-[#d4b46a]" />
+                      1st Prize // Champions
+                    </span>
+                    <span className="font-mono-tech text-xs text-[#8b9b90] tracking-wider uppercase">
+                      PODIUM I
+                    </span>
+                  </div>
+
+                  {/* Cash Amount Display */}
+                  <div className="mb-4">
+                    <span className="font-mono-tech text-[10px] tracking-[0.24em] text-[#8b9b90] uppercase block mb-1">
+                      Cash Bounty
+                    </span>
+                    <div className="font-poster text-5xl sm:text-6xl text-[#d4b46a] tracking-tight leading-none drop-shadow-[0_4px_16px_rgba(212,180,106,0.25)]">
+                      ₹5,000
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-[#8b9b90] leading-relaxed mb-6">
+                    Awarded to the overall winning squad demonstrating the most innovative concept, rock-solid architecture, and production-grade on-site execution.
+                  </p>
+
+                  {/* Perks Checklist */}
+                  <div className="space-y-2.5 pt-5 border-t border-white/[0.08]">
+                    <div className="flex items-start gap-2.5 text-xs text-[#eef2ee]">
+                      <CheckCircle2 size={14} className="text-[#d4b46a] shrink-0 mt-0.5" />
+                      <span>
+                        <strong>₹5,000 Direct Cash Prize</strong> transferred to squad
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2.5 text-xs text-[#eef2ee]">
+                      <CheckCircle2 size={14} className="text-[#d4b46a] shrink-0 mt-0.5" />
+                      <span>
+                        Official <strong>Build Ops 2026 Champion Trophy</strong>
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2.5 text-xs text-[#eef2ee]">
+                      <CheckCircle2 size={14} className="text-[#d4b46a] shrink-0 mt-0.5" />
+                      <span>
+                        Winner Certificates of Excellence endorsed by <strong>ASIET &amp; TCS</strong>
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2.5 text-xs text-[#eef2ee]">
+                      <CheckCircle2 size={14} className="text-[#d4b46a] shrink-0 mt-0.5" />
+                      <span>Direct technical recognition from industry jury panel</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-5 border-t border-[#d4b46a]/20 flex items-center justify-between font-mono-tech text-[10px] text-[#d4b46a] tracking-wider">
+                  <span>DISBURSEMENT: POST-EVALUATION</span>
+                  <span className="uppercase">RANK #01</span>
+                </div>
+              </div>
+            </Tilt3D>
+          </div>
+
+          {/* Card 2: 2nd Prize — ₹3,000 */}
+          <div className="reveal-block">
+            <Tilt3D maxTilt={5} perspective={1200} className="h-full">
+              <div className="h-full bg-[#070c09]/90 border border-white/[0.14] p-7 sm:p-9 relative flex flex-col justify-between hover:border-emerald-500/40 transition-all group shadow-[0_0_30px_rgba(16,185,129,0.06)]">
+                {/* Brushed Steel & Emerald Hairline Accent */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-emerald-400 to-transparent" />
+
+                {/* Corner Decorative Ticks */}
+                <span className="absolute top-2.5 right-3 font-mono-tech text-[9px] text-[#8b9b90]/40 select-none">
+                  +02
+                </span>
+                <span className="absolute bottom-2.5 left-3 font-mono-tech text-[9px] text-[#8b9b90]/40 select-none">
+                  RUNNERUP_TIER
+                </span>
+
+                <div>
+                  {/* Top Badge */}
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/[0.08] border border-white/20 text-[#eef2ee] font-mono-tech text-[10px] sm:text-[11px] tracking-[0.22em] font-semibold uppercase">
+                      <Medal size={13} className="text-emerald-400" />
+                      2nd Prize // Runner-Up
+                    </span>
+                    <span className="font-mono-tech text-xs text-[#8b9b90] tracking-wider uppercase">
+                      PODIUM II
+                    </span>
+                  </div>
+
+                  {/* Cash Amount Display */}
+                  <div className="mb-4">
+                    <span className="font-mono-tech text-[10px] tracking-[0.24em] text-[#8b9b90] uppercase block mb-1">
+                      Cash Bounty
+                    </span>
+                    <div className="font-poster text-5xl sm:text-6xl text-[#eef2ee] tracking-tight leading-none drop-shadow-[0_4px_16px_rgba(255,255,255,0.1)]">
+                      ₹3,000
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-[#8b9b90] leading-relaxed mb-6">
+                    Awarded to the second-place squad for outstanding technical merit, clean implementation, and resilience throughout the overnight build.
+                  </p>
+
+                  {/* Perks Checklist */}
+                  <div className="space-y-2.5 pt-5 border-t border-white/[0.08]">
+                    <div className="flex items-start gap-2.5 text-xs text-[#eef2ee]">
+                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+                      <span>
+                        <strong>₹3,000 Direct Cash Prize</strong> transferred to squad
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2.5 text-xs text-[#eef2ee]">
+                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+                      <span>
+                        Official <strong>Build Ops 2026 Runner-Up Trophy</strong>
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2.5 text-xs text-[#eef2ee]">
+                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+                      <span>
+                        Merit Certificates endorsed by <strong>ASIET &amp; TCS</strong>
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2.5 text-xs text-[#eef2ee]">
+                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+                      <span>Featured in Build Ops 2026 Innovation Showcase</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-5 border-t border-white/[0.1] flex items-center justify-between font-mono-tech text-[10px] text-[#8b9b90] tracking-wider">
+                  <span>DISBURSEMENT: POST-EVALUATION</span>
+                  <span className="uppercase">RANK #02</span>
+                </div>
+              </div>
+            </Tilt3D>
+          </div>
+        </div>
+
+        {/* Universal Perks Bar for all attendees */}
+        <div className="mt-8 p-5 sm:p-6 border border-white/[0.1] bg-[#040806]/70 backdrop-blur-md reveal-block">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono-tech text-[11px]">
+            <div className="flex items-center gap-2.5 text-[#eef2ee]">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0" />
+              <span className="tracking-[0.16em] uppercase font-bold text-emerald-300 shrink-0">
+                Universal Squad Amenities:
+              </span>
+              <span className="text-[#8b9b90]">
+                Every registered squad receives participation certificates, high-speed Wi-Fi, dinner &amp; midnight refreshments.
+              </span>
+            </div>
+            <a
+              href="#rules"
+              className="text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-[0.18em] shrink-0 flex items-center gap-1.5"
+            >
+              <span>View Rulebook</span>
+              <ArrowUpRight size={13} />
+            </a>
+          </div>
+        </div>
       </section>
 
       {/* =====================================================================
@@ -552,6 +816,7 @@ export const Home = () => {
               BUILD OPS 2026 — ASIET × TCS
             </span>
             <div className="flex items-center gap-6 uppercase tracking-wider">
+              <a href="#prizes" className="text-[#d4b46a] hover:text-[#e5c77e] transition-colors">Prizes</a>
               <a href="#rules" className="hover:text-[#eef2ee] transition-colors">Rules</a>
               <Link to="/login" className="hover:text-[#eef2ee] transition-colors">Sign In</Link>
               <Link to="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">Register</Link>
