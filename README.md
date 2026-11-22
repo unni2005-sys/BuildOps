@@ -1,6 +1,6 @@
 # Build Ops — Registration & Management System
 
-A full-stack web application for managing the **Build Ops** hackathon and build event (**December 8th, 5:00 PM – December 9th, 9:00 PM, 2026** | Registration Fee: **INR 500 per team**).
+A full-stack web application for managing the **Build Ops** hackathon and build event (**December 8th, 5:00 PM – December 9th, 8:00 AM, 2026** | Registration Fee: **INR 500 per team**).
 
 Built with **React + Vite + Tailwind CSS**, **Django + Django REST Framework + Simple JWT**, and **Supabase PostgreSQL**.
 

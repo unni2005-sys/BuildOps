@@ -226,7 +226,7 @@ def _render_doomsday_concert_ticket_png(png_filepath, team, ticket, leader, memb
     draw.text((c3, 290), "VENUE", font=f_bold_15, fill=c_gold)
 
     draw.text((c1, 315), "DEC 08 – 09, 2026", font=f_bold_22, fill=c_white)
-    draw.text((c2, 315), "5:00 PM – 9:00 AM IST", font=f_bold_22, fill=c_white)
+    draw.text((c2, 315), "5:00 PM – 8:00 AM IST", font=f_bold_22, fill=c_white)
     draw.text((c3, 315), _truncate(settings.EVENT_VENUE or "AI Lab, ASIET", 24), font=f_bold_22, fill=c_white)
 
     draw.line([(c2 - 24, 290), (c2 - 24, 348)], fill=(28, 56, 42, 255), width=2)

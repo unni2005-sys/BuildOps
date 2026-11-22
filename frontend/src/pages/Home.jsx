@@ -391,7 +391,7 @@ export const Home = () => {
                     Time
                   </span>
                   <span className="block font-display text-xs font-semibold tracking-wide text-[#eef2ee] mt-1">
-                    5:00 PM to 9:00 AM
+                    5:00 PM to 8:00 AM
                   </span>
                 </div>
                 <div className="px-3 py-2.5 sm:py-3 border-r border-white/10">

@@ -147,7 +147,7 @@ export const StudentDashboard = () => {
               Team Registration
             </h1>
             <p className="font-mono-tech text-[11px] text-[#8b9b90] mt-1 tracking-wider uppercase">
-              DEC 08, 5:00 PM – DEC 09, 9:00 AM, 2026
+              DEC 08, 5:00 PM – DEC 09, 8:00 AM, 2026
             </p>
           </div>
 
@@ -402,7 +402,7 @@ export const StudentDashboard = () => {
                       </h3>
                       <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                         <span className="font-mono-tech text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-emerald-400 uppercase">
-                          Official 12-Hour Buildathon Entry Pass
+                          Official Overnight Buildathon Entry Pass
                         </span>
                         <span className="font-mono-tech text-[10px] sm:text-[11px] font-bold tracking-wider text-[#f3d58d]">
                           FEE PAID: ₹{team.fee_amount || 500}
@@ -429,7 +429,7 @@ export const StudentDashboard = () => {
                           Window
                         </span>
                         <span className="block text-xs font-bold text-white mt-0.5">
-                          5:00 PM – 9:00 AM
+                          5:00 PM – 8:00 AM
                         </span>
                       </div>
                       <div className="border-l border-emerald-500/20 pl-3">
