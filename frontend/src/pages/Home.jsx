@@ -527,8 +527,20 @@ export const Home = () => {
             Adi Shankara Institute of Engineering and Technology, Kalady
           </span>
 
-          {/* Spacer to balance utility bar with bottom-right floating switch */}
-          <div className="hidden sm:block w-24" />
+          <button
+            onClick={toggleMusic}
+            aria-label={isMusicPlaying ? 'Disable sound' : 'Enable sound'}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 border bg-[#030504]/70 hover:border-emerald-500/60 hover:text-[#eef2ee] transition cursor-pointer ${
+              isMusicPlaying ? 'border-emerald-500/50 text-emerald-300' : 'border-white/15 text-[#8b9b90]'
+            }`}
+          >
+            {isMusicPlaying ? (
+              <Volume2 size={13} className="text-emerald-400" />
+            ) : (
+              <VolumeX size={13} className="text-emerald-400" />
+            )}
+            <span>{isMusicPlaying ? 'Sound On' : 'Sound Off'}</span>
+          </button>
         </div>
 
         {/* Subtle Skip Hint During Initial 2.4s Title Reveal */}
@@ -738,28 +750,6 @@ export const Home = () => {
           </div>
         </div>
       </footer>
-
-      {/* =====================================================================
-          CINEMATIC SOUND SWITCH — Active by default; user can toggle anytime
-         ===================================================================== */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
-        <button
-          onClick={toggleMusic}
-          aria-label={isMusicPlaying ? 'Disable sound' : 'Enable sound'}
-          className={`inline-flex items-center gap-2 px-3 py-1.5 border backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg font-display text-xs ${
-            isMusicPlaying
-              ? 'bg-[#030504]/90 border-emerald-500/60 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:border-emerald-400 hover:text-emerald-200'
-              : 'bg-[#030504]/90 border-white/15 text-[#8b9b90] hover:border-white/30 hover:text-[#eef2ee]'
-          }`}
-        >
-          {isMusicPlaying ? (
-            <Volume2 size={13} className="text-emerald-400 animate-pulse" />
-          ) : (
-            <VolumeX size={13} className="text-[#8b9b90]" />
-          )}
-          <span>{isMusicPlaying ? 'Sound On' : 'Sound Off'}</span>
-        </button>
-      </div>
     </div>
   );
 };
