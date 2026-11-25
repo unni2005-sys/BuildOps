@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { API_BASE_URL } from './api/client';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { DoomsdayAtmosphere } from './components/DoomsdayAtmosphere';
@@ -16,7 +17,17 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminScanner } from './pages/AdminScanner';
 
 export function App() {
-  // Keep-alive 10-minute ping temporarily paused until public launch (saves Render free-tier hours).
+  // Keep backend warm on load and every 10 minutes while any user/admin tab is open
+  useEffect(() => {
+    const pingHealth = () => {
+      fetch(`${API_BASE_URL}/health/`, { method: 'GET', keepalive: true }).catch(() => {});
+    };
+
+    pingHealth();
+    const intervalId = setInterval(pingHealth, 10 * 60 * 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
