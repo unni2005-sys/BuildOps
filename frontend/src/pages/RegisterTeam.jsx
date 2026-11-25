@@ -480,10 +480,10 @@ export const RegisterTeam = () => {
 
           {/* Two-Column Grid: Left QR & Instructions / Right Upload Box */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left: UPI QR Code & Instructions */}
-            <div className="lg:col-span-6 doom-card p-6 sm:p-7 rounded-xl flex flex-col justify-between space-y-6">
+            {/* Left: UPI QR Code */}
+            <div className="lg:col-span-6 doom-card p-6 sm:p-7 rounded-xl flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
                   <div className="flex items-center gap-2">
                     <Smartphone size={16} className="text-emerald-400" />
                     <h3 className="font-mono-tech text-xs font-bold uppercase tracking-widest text-[#eef2ee]">
@@ -496,8 +496,8 @@ export const RegisterTeam = () => {
                 </div>
 
                 {/* QR Code Container */}
-                <div className="text-center mb-5">
-                  <div className="inline-block p-2.5 bg-white rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.18)] border border-emerald-400/40 max-w-[280px]">
+                <div className="text-center py-2 flex flex-col items-center justify-center">
+                  <div className="inline-block p-2 sm:p-2.5 bg-white rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.18)] border border-emerald-400/40 max-w-[280px] sm:max-w-[310px]">
                     <img
                       src="/upi-qr.png"
                       alt="Build Ops UPI QR"
@@ -506,47 +506,6 @@ export const RegisterTeam = () => {
                         e.currentTarget.src = `/api/payments/upi-qr/?reg_id=${regId}`;
                       }}
                     />
-                  </div>
-                  <p className="font-mono-tech text-[11px] text-[#8b9b90] mt-2.5">
-                    Scan with Google Pay, PhonePe, Paytm, or any UPI app
-                  </p>
-                </div>
-
-                {/* UPI Details Box */}
-                <div className="doom-panel p-4 rounded-lg space-y-2.5 text-xs border border-white/10">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#8b9b90]">Payee UPI ID:</span>
-                    <div className="flex items-center gap-1.5 font-mono-tech font-bold text-[#eef2ee]">
-                      <span>{upiDetails.upi_id}</span>
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(upiDetails.upi_id, 'upi')}
-                        className="text-[#8b9b90] hover:text-white p-1 transition cursor-pointer"
-                        title="Copy UPI ID"
-                      >
-                        {copiedUpi ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#8b9b90]">Payee Name:</span>
-                    <span className="font-semibold text-[#eef2ee]">{upiDetails.payee_name}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#8b9b90]">Payment Remarks/Note:</span>
-                    <div className="flex items-center gap-1.5 font-mono-tech text-amber-200 font-bold">
-                      <span>{paymentNote}</span>
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(paymentNote, 'note')}
-                        className="text-[#8b9b90] hover:text-white p-1 transition cursor-pointer"
-                        title="Copy Note"
-                      >
-                        {copiedNote ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>
