@@ -92,6 +92,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             'order_id': latest.order_id,
             'payment_reference': latest.payment_reference,
             'amount': float(latest.amount),
+            'detected_amount': latest.gateway_response.get('detected_amount'),
             'payment_status': latest.payment_status,
             'screenshot_url': screenshot_url,
             'rejection_reason': latest.rejection_reason,

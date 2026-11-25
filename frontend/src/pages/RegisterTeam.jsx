@@ -60,6 +60,7 @@ export const RegisterTeam = () => {
   const [isScanningOcr, setIsScanningOcr] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
   const [autoDetectedInfo, setAutoDetectedInfo] = useState(null);
+  const [amountEvaluation, setAmountEvaluation] = useState(null);
   const [showManualEdit, setShowManualEdit] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedNote, setCopiedNote] = useState(false);
@@ -145,6 +146,7 @@ export const RegisterTeam = () => {
     setError('');
     setScreenshotFile(file);
     setAutoDetectedInfo(null);
+    setAmountEvaluation(null);
     setShowManualEdit(false);
 
     const reader = new FileReader();
@@ -153,7 +155,7 @@ export const RegisterTeam = () => {
     };
     reader.readAsDataURL(file);
 
-    // Automatically scan the uploaded screenshot for UTR / Transaction ID
+    // Automatically scan the uploaded screenshot for UTR / Transaction ID and payment amount
     setIsScanningOcr(true);
     setOcrProgress(15);
     try {
@@ -163,15 +165,25 @@ export const RegisterTeam = () => {
         }
       });
 
+      if (ocrResult.amountEvaluation) {
+        setAmountEvaluation(ocrResult.amountEvaluation);
+      }
+
       if (ocrResult.success && ocrResult.transactionId) {
         setTransactionId(ocrResult.transactionId);
         setAutoDetectedInfo({
           id: ocrResult.transactionId,
           type: ocrResult.type || 'Transaction ID',
           confidence: ocrResult.confidence || 'high',
+          detectedAmount: ocrResult.detectedAmount,
+          amountEvaluation: ocrResult.amountEvaluation,
         });
       } else {
-        setAutoDetectedInfo({ notFound: true });
+        setAutoDetectedInfo({
+          notFound: true,
+          detectedAmount: ocrResult.detectedAmount,
+          amountEvaluation: ocrResult.amountEvaluation,
+        });
       }
     } catch (ocrErr) {
       console.warn('Automatic transaction ID extraction error:', ocrErr);
@@ -290,6 +302,9 @@ export const RegisterTeam = () => {
       }
       if (autoDetectedInfo?.type) {
         uploadData.append('detection_type', autoDetectedInfo.type);
+      }
+      if (amountEvaluation?.amount) {
+        uploadData.append('detected_amount', String(amountEvaluation.amount));
       }
 
       const res = await api.post('/payments/submit-proof/', uploadData, {
@@ -683,6 +698,57 @@ export const RegisterTeam = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Payment Amount Detection & Warnings */}
+                  {!isScanningOcr && screenshotFile && amountEvaluation && (
+                    <div className="space-y-2">
+                      {amountEvaluation.status === 'UNDERPAID' && (
+                        <div className="doom-panel p-3.5 rounded-xl border border-rose-500/50 bg-rose-950/40 text-xs text-rose-200 space-y-1.5 shadow-[0_0_20px_rgba(244,63,94,0.15)] animate-fade-in-up">
+                          <div className="flex items-center gap-2 text-rose-300 font-bold uppercase tracking-wider text-[11px] font-mono-tech">
+                            <AlertCircle size={15} className="shrink-0 text-rose-400" />
+                            <span>Incorrect Payment Amount Detected (₹{amountEvaluation.amount?.toFixed(2)})</span>
+                          </div>
+                          <p className="text-[11px] text-rose-200/90 leading-relaxed">
+                            {amountEvaluation.message}
+                          </p>
+                          <div className="flex items-center justify-between text-[10px] text-rose-300/80 font-mono-tech pt-1 border-t border-rose-500/20">
+                            <span>Required: ₹500.00</span>
+                            <span className="font-bold">Shortfall: -₹{amountEvaluation.shortfall?.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {amountEvaluation.status === 'OVERPAID' && (
+                        <div className="doom-panel p-3.5 rounded-xl border border-amber-500/50 bg-amber-950/40 text-xs text-amber-200 space-y-1.5 shadow-[0_0_20px_rgba(245,158,11,0.15)] animate-fade-in-up">
+                          <div className="flex items-center gap-2 text-amber-300 font-bold uppercase tracking-wider text-[11px] font-mono-tech">
+                            <AlertCircle size={15} className="shrink-0 text-amber-400" />
+                            <span>Payment Amount Exceeds Fee Notice (₹{amountEvaluation.amount?.toFixed(2)})</span>
+                          </div>
+                          <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                            {amountEvaluation.message}
+                          </p>
+                          <div className="flex items-center justify-between text-[10px] text-amber-300/80 font-mono-tech pt-1 border-t border-amber-500/20">
+                            <span>Required: ₹500.00</span>
+                            <span className="font-bold">Surplus: +₹{amountEvaluation.surplus?.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {amountEvaluation.status === 'EXACT' && (
+                        <div className="doom-panel p-3 rounded-xl border border-emerald-500/40 bg-emerald-950/30 text-xs text-emerald-200 flex items-center justify-between shadow-[0_0_15px_rgba(16,185,129,0.12)]">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+                            <span className="font-mono-tech text-[11px] text-emerald-100 font-bold">
+                              Verified Amount: ₹{amountEvaluation.amount?.toFixed(2)}
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-mono-tech uppercase font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-400/30">
+                            Matches Fee (₹500.00)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Submit Button */}
                   <div className="pt-2">

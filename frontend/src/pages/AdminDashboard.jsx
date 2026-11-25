@@ -1003,6 +1003,18 @@ export const AdminDashboard = () => {
                             </span>
                           )}
                         </p>
+                        {selectedTeam.payment_proof.detected_amount != null && (
+                          <p className="text-[10px] font-mono-tech mt-0.5">
+                            Amount: <span className="font-bold text-emerald-100">₹{Number(selectedTeam.payment_proof.detected_amount).toFixed(2)}</span>
+                            {Number(selectedTeam.payment_proof.detected_amount) === 500 ? (
+                              <span className="ml-1.5 px-1 py-0.2 rounded text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Verified</span>
+                            ) : Number(selectedTeam.payment_proof.detected_amount) < 500 ? (
+                              <span className="ml-1.5 px-1 py-0.2 rounded text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30">Underpaid</span>
+                            ) : (
+                              <span className="ml-1.5 px-1 py-0.2 rounded text-[9px] bg-amber-500/20 text-amber-300 border border-amber-400/30">Exceeds Fee</span>
+                            )}
+                          </p>
+                        )}
                         <p className="text-[10px] text-emerald-200/60 mt-0.5">
                           Status: <span className="font-semibold text-amber-300">{selectedTeam.payment_status}</span>
                         </p>
@@ -1126,6 +1138,43 @@ export const AdminDashboard = () => {
                     <span className="text-emerald-200/55 block mb-0.5 uppercase text-[10px]">Required Registration Fee:</span>
                     <span className="font-display font-black text-amber-300 text-sm">₹500.00</span>
                   </div>
+                </div>
+
+                {/* Detected Receipt Amount Verification */}
+                <div className="doom-panel p-3 rounded-lg border border-white/10">
+                  <span className="text-emerald-200/55 block mb-1 uppercase text-[10px]">
+                    Receipt Amount Verification:
+                  </span>
+                  {proofReviewTeam.payment_proof?.detected_amount != null ? (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono-tech font-bold text-sm text-[#eef2ee]">
+                          ₹{Number(proofReviewTeam.payment_proof.detected_amount).toFixed(2)}
+                        </span>
+                        {Number(proofReviewTeam.payment_proof.detected_amount) === 500 ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+                            ✓ Verified ₹500.00
+                          </span>
+                        ) : Number(proofReviewTeam.payment_proof.detected_amount) < 500 ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                            ⚠ Underpaid (Short by ₹{(500 - Number(proofReviewTeam.payment_proof.detected_amount)).toFixed(2)})
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                            ⚠ Exceeds Fee (+₹{(Number(proofReviewTeam.payment_proof.detected_amount) - 500).toFixed(2)})
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-emerald-200/50 font-mono-tech">
+                        OCR Extracted
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-emerald-200/60 font-mono-tech flex items-center gap-1.5">
+                      <AlertCircle size={13} className="text-amber-400 shrink-0" />
+                      <span>Amount not auto-detected from image. Verify manually against screenshot.</span>
+                    </div>
+                  )}
                 </div>
 
                 {proofReviewTeam.payment_proof?.rejection_reason && (

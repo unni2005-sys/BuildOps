@@ -16,11 +16,6 @@ export function parseUpiTransactionId(rawText) {
   const fullText = lines.join(' ');
 
   // 1. Explicit labeled 12-digit UTR / UPI Ref No / RRN
-  // Matches:
-  // "UPI transaction ID 432198765432"
-  // "UPI Ref No: 4321 9876 5432"
-  // "UTR: 432198765432"
-  // "Bank Ref No: 432198765432"
   const labeledRegex = /(?:UPI\s*(?:transaction|ref|reference)?\s*(?:id|no|num|number)?|UTR|RRN|Bank\s*Ref(?:\s*No)?|Ref\s*(?:No|ID)?|Txn\s*(?:ID|Ref)?)[\s:#\.-]*([0-9\s]{12,16})/i;
   const matchLabeled = fullText.match(labeledRegex);
   if (matchLabeled && matchLabeled[1]) {
@@ -105,10 +100,8 @@ export function parseUpiTransactionId(rawText) {
   }
 
   // 5. Any standalone 12-digit number (standard NPCI UPI UTR length)
-  // Avoid 10-digit phone numbers (like 9497290648) and timestamps
   const all12DigitMatches = fullText.match(/\b([0-9]{12})\b/g);
   if (all12DigitMatches && all12DigitMatches.length > 0) {
-    // Prefer the first valid 12-digit sequence
     return {
       id: all12DigitMatches[0],
       type: '12-digit UTR',
@@ -130,10 +123,96 @@ export function parseUpiTransactionId(rawText) {
 }
 
 /**
- * Scans an image file using Tesseract.js and automatically extracts the UPI transaction ID / UTR.
+ * Parses raw OCR text to extract the payment amount (in INR).
+ */
+export function parseUpiAmount(rawText) {
+  if (!rawText || typeof rawText !== 'string') return null;
+
+  const text = rawText.replace(/\r\n/g, '\n');
+
+  // Priority 1: Currency symbol or abbreviation (₹, Rs, INR) followed by number
+  const currencyRegex = /(?:[₹\u20B9]|Rs\.?|INR)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)/gi;
+  const currencyMatches = [...text.matchAll(currencyRegex)];
+  if (currencyMatches.length > 0) {
+    for (const match of currencyMatches) {
+      const valStr = match[1].replace(/,/g, '');
+      const num = parseFloat(valStr);
+      if (!isNaN(num) && num > 0 && num < 100000 && num !== 2026) {
+        return num;
+      }
+    }
+  }
+
+  // Priority 2: Payment action keywords with amount
+  const actionRegex = /(?:Paid|Amount|Debited|Sent|Total|Transfer(?:red)?)\s*(?:of)?\s*(?:[₹\u20B9]|Rs\.?|INR)?\s*([0-9]+(?:\.[0-9]{2}))/gi;
+  const actionMatches = [...text.matchAll(actionRegex)];
+  if (actionMatches.length > 0) {
+    const valStr = actionMatches[0][1];
+    const num = parseFloat(valStr);
+    if (!isNaN(num) && num > 0 && num !== 2026) {
+      return num;
+    }
+  }
+
+  // Priority 3: Standalone 500 or amount with decimal
+  const lines = text.split('\n').map((l) => l.trim());
+  for (const line of lines) {
+    if (/^(?:[₹\u20B9Rs\.INR\s]*)?500(?:\.00)?$/i.test(line)) {
+      return 500;
+    }
+    const lineDec = line.match(/\b([0-9]{2,5}\.00)\b/);
+    if (lineDec) {
+      const num = parseFloat(lineDec[1]);
+      if (num !== 2026) return num;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Validates the detected payment amount against the required fee (default ₹500.00).
+ */
+export function evaluateUpiAmount(amount, expectedFee = 500) {
+  if (amount === null || amount === undefined || isNaN(amount)) {
+    return {
+      status: 'UNDETECTED',
+      amount: null,
+      message: 'Amount not automatically verified from image. Organizers will manually verify during proof review.',
+    };
+  }
+
+  const num = Number(amount);
+  if (num === expectedFee) {
+    return {
+      status: 'EXACT',
+      amount: num,
+      message: `Verified Registration Amount: ₹${num.toFixed(2)}`,
+    };
+  } else if (num < expectedFee) {
+    return {
+      status: 'UNDERPAID',
+      amount: num,
+      shortfall: expectedFee - num,
+      message: `Incorrect Payment Amount: Detected transaction of ₹${num.toFixed(2)} is less than the required registration fee of ₹${expectedFee.toFixed(2)}. Submissions with insufficient payment cannot be approved.`,
+    };
+  } else {
+    return {
+      status: 'OVERPAID',
+      amount: num,
+      surplus: num - expectedFee,
+      message: `Payment Amount Notice: Detected transaction of ₹${num.toFixed(2)} exceeds the required registration fee of ₹${expectedFee.toFixed(2)}. Please ensure you have uploaded the correct receipt.`,
+    };
+  }
+}
+
+/**
+ * Scans an image file using Tesseract.js and automatically extracts both the UPI transaction ID / UTR
+ * and the payment amount, validating whether it matches the required ₹500 fee.
+ *
  * @param {File|Blob|string} imageSource - The image file, blob, or URL.
  * @param {Function} [onProgress] - Optional callback receiving progress { status, progress }.
- * @returns {Promise<{ success: boolean, transactionId?: string, type?: string, rawText?: string, error?: string }>}
+ * @returns {Promise<{ success: boolean, transactionId?: string, type?: string, detectedAmount?: number, amountEvaluation: object, rawText?: string, error?: string }>}
  */
 export async function scanScreenshotForTransactionId(imageSource, onProgress) {
   try {
@@ -149,27 +228,26 @@ export async function scanScreenshotForTransactionId(imageSource, onProgress) {
     });
 
     const rawText = result?.data?.text || '';
-    const parsed = parseUpiTransactionId(rawText);
-
-    if (parsed && parsed.id) {
-      return {
-        success: true,
-        transactionId: parsed.id,
-        type: parsed.type,
-        confidence: parsed.confidence,
-        rawText,
-      };
-    }
+    const parsedId = parseUpiTransactionId(rawText);
+    const parsedAmount = parseUpiAmount(rawText);
+    const amountEvaluation = evaluateUpiAmount(parsedAmount, 500);
 
     return {
-      success: false,
+      success: Boolean(parsedId?.id),
+      transactionId: parsedId?.id || null,
+      type: parsedId?.type || 'Transaction ID',
+      confidence: parsedId?.confidence || 'medium',
+      detectedAmount: parsedAmount,
+      amountEvaluation,
       rawText,
-      error: 'No UPI transaction ID found in screenshot.',
     };
   } catch (err) {
     console.error('OCR processing error:', err);
     return {
       success: false,
+      transactionId: null,
+      detectedAmount: null,
+      amountEvaluation: evaluateUpiAmount(null, 500),
       error: err.message || 'Failed to scan image.',
     };
   }

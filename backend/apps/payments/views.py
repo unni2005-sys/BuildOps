@@ -110,10 +110,16 @@ class SubmitPaymentProofView(APIView):
             transaction_id = request.data.get('payment_reference', '').strip()
 
         detection_type = request.data.get('detection_type', '').strip()
+        detected_amount_raw = request.data.get('detected_amount')
         gateway_meta = {}
         if detection_type:
             gateway_meta['detection_type'] = detection_type
             gateway_meta['auto_fetched'] = True
+        if detected_amount_raw is not None and detected_amount_raw != '':
+            try:
+                gateway_meta['detected_amount'] = float(detected_amount_raw)
+            except (ValueError, TypeError):
+                pass
 
         try:
             payment = record_payment_proof(
