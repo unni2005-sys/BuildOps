@@ -197,7 +197,7 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Build Ops <noreply@buildops.co.in>')
 
 # UPI Payment Details
-UPI_ID = os.getenv('UPI_ID', '9497290648@upi').strip()
+UPI_ID = os.getenv('UPI_ID', 'unniacc9961@okaxis').strip()
 UPI_PAYEE_NAME = os.getenv('UPI_PAYEE_NAME', 'Build Ops ASIET').strip()
 UPI_PHONE_NUMBER = os.getenv('UPI_PHONE_NUMBER', '9497290648').strip()
 

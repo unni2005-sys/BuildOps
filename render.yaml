@@ -40,7 +40,7 @@ services:
       - key: DEFAULT_FROM_EMAIL
         value: "Build Ops <noreply@buildops.co.in>"
       - key: UPI_ID
-        value: "9497290648@upi"
+        value: "unniacc9961@okaxis"
       - key: UPI_PAYEE_NAME
         value: "Build Ops ASIET"
       - key: UPI_PHONE_NUMBER
