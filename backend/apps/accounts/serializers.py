@@ -82,21 +82,44 @@ class StudentRegisterSerializer(serializers.Serializer):
 
 
 class EmailVerificationSerializer(serializers.Serializer):
-    token = serializers.CharField(max_length=64)
+    code = serializers.CharField(max_length=64, required=False)
+    token = serializers.CharField(max_length=64, required=False)
+    email = serializers.EmailField(required=False)
 
-    def validate_token(self, value):
-        token_str = value.strip()
-        try:
-            token_obj = EmailVerificationToken.objects.select_related('user').get(token=token_str)
-        except EmailVerificationToken.DoesNotExist:
-            raise serializers.ValidationError("Invalid verification token.")
+    def validate(self, attrs):
+        code_str = (attrs.get('code') or attrs.get('token') or '').strip()
+        email_str = (attrs.get('email') or '').strip().lower()
 
-        if token_obj.is_used:
-            raise serializers.ValidationError("This verification token has already been used.")
+        if not code_str:
+            raise serializers.ValidationError({"code": "Please enter your 4-digit verification code."})
+
+        queryset = EmailVerificationToken.objects.select_related('user').filter(
+            token=code_str,
+            is_used=False
+        )
+
+        if email_str:
+            queryset = queryset.filter(user__email=email_str)
+
+        token_obj = queryset.order_by('-created_at').first()
+
+        if not token_obj:
+            check_qs = EmailVerificationToken.objects.filter(token=code_str)
+            if email_str:
+                check_qs = check_qs.filter(user__email=email_str)
+            any_token = check_qs.order_by('-created_at').first()
+            if any_token:
+                if any_token.is_used:
+                    raise serializers.ValidationError({"code": "This verification code has already been used."})
+                if timezone.now() > any_token.expires_at:
+                    raise serializers.ValidationError({"code": "This verification code has expired. Please request a new code."})
+            raise serializers.ValidationError({"code": "Invalid verification code. Please check your email and try again."})
+
         if timezone.now() > token_obj.expires_at:
-            raise serializers.ValidationError("This verification token has expired.")
+            raise serializers.ValidationError({"code": "This verification code has expired. Please request a new code."})
 
-        return token_obj
+        attrs['token_obj'] = token_obj
+        return attrs
 
 
 class ResendVerificationSerializer(serializers.Serializer):

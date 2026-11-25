@@ -13,6 +13,7 @@ class AccountsAuthTests(TestCase):
         reg_data = {
             'full_name': 'Aarav Sharma',
             'email': 'aarav@example.com',
+            'mobile_number': '9876543210',
             'password': 'SecurePassword123'
         }
         res = self.client.post('/api/accounts/register/', reg_data, format='json')
@@ -55,6 +56,7 @@ class AccountsAuthTests(TestCase):
         reg_data = {
             'full_name': 'Hacker Admin',
             'email': 'hacker@example.com',
+            'mobile_number': '9876543210',
             'password': 'SecurePassword123',
             'role': 'ADMIN'
         }

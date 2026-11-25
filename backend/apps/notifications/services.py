@@ -131,31 +131,53 @@ def send_email_notification(recipient_email, email_type, subject, text_content, 
 
 
 def send_verification_email(user, token_str):
-    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={token_str}"
-    subject = f"Verify Your Email - {settings.EVENT_NAME}"
+    verify_url = f"{settings.FRONTEND_URL}/verify-email?email={user.email}"
+    subject = f"Your Verification Code: {token_str} - {settings.EVENT_NAME}"
     text_content = (
         f"Hello {user.full_name},\n\n"
         f"Thank you for signing up for {settings.EVENT_NAME}!\n\n"
-        f"Please verify your email address by clicking the link below:\n"
+        f"Your 4-digit verification code is:\n\n"
+        f"    {token_str}\n\n"
+        f"Please enter this code on the verification page to activate your account:\n"
         f"{verify_url}\n\n"
-        f"Or enter your verification token: {token_str}\n\n"
-        f"This link expires in 24 hours.\n\n"
+        f"This code will expire in 24 hours.\n\n"
         f"Best regards,\n"
         f"{settings.EVENT_NAME} Team"
     )
     html_content = f"""
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #1e293b; margin-top: 0;">Welcome to {settings.EVENT_NAME}!</h2>
-        <p>Hello <strong>{user.full_name}</strong>,</p>
-        <p>Please click the button below to verify your email address and activate your account:</p>
-        <div style="margin: 25px 0; text-align: center;">
-            <a href="{verify_url}" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+    <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px; background-color: #030705; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; color: #eef2ee;">
+        <div style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 16px; margin-bottom: 24px;">
+            <span style="font-family: monospace; font-size: 11px; letter-spacing: 2px; color: #d4b46a; text-transform: uppercase;">BUILD OPS 2026 // SECURITY</span>
+            <h2 style="color: #eef2ee; margin: 8px 0 0 0; font-size: 22px;">Email Verification Code</h2>
         </div>
-        <p style="font-size: 14px; color: #64748b;">If the button does not work, copy and paste this link into your browser:<br/>
-        <a href="{verify_url}" style="color: #2563eb;">{verify_url}</a></p>
-        <p style="font-size: 14px; color: #64748b;">Verification Token: <code>{token_str}</code></p>
-        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #94a3b8;">This link will expire in 24 hours.</p>
+
+        <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 18px;">
+            Hello <strong>{user.full_name}</strong>,
+        </p>
+
+        <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
+            Thank you for registering for {settings.EVENT_NAME}. To complete your account setup and unlock squad registration, please enter the 4-digit verification code below:
+        </p>
+
+        <div style="text-align: center; margin: 32px 0;">
+            <div style="display: inline-block; background-color: #08110b; border: 2px solid #10b981; border-radius: 10px; padding: 18px 36px; box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);">
+                <span style="font-family: 'Courier New', Courier, monospace; font-size: 38px; font-weight: 900; letter-spacing: 14px; color: #10b981;">
+                    {token_str}
+                </span>
+            </div>
+            <p style="font-size: 11px; color: #8b9b90; margin-top: 12px; font-family: monospace; text-transform: uppercase; letter-spacing: 1px;">
+                4-Digit Security Code
+            </p>
+        </div>
+
+        <div style="background-color: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 14px; margin: 24px 0; font-size: 12px; color: #94a3b8; text-align: center;">
+            Enter this code on the verification page at:<br/>
+            <a href="{verify_url}" style="color: #10b981; text-decoration: underline; font-weight: 600;">{verify_url}</a>
+        </div>
+
+        <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 16px; margin-top: 24px; font-size: 11px; color: #64748b;">
+            <p style="margin: 0;">This code will expire in 24 hours. If you did not create an account on Build Ops, please ignore this email.</p>
+        </div>
     </div>
     """
     return send_email_notification(

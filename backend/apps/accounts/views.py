@@ -31,11 +31,12 @@ class StudentRegisterView(APIView):
         send_verification_email(user, token_obj.token)
 
         response_data = {
-            'message': 'Registration successful! Please check your email to verify your account.',
+            'message': 'Registration successful! A 4-digit verification code has been sent to your email.',
             'email': user.email,
         }
-        # Include token in response in debug mode for seamless local testing
+        # Include code in response in debug mode for seamless local testing
         if settings.DEBUG:
+            response_data['dev_verification_code'] = token_obj.token
             response_data['dev_verification_token'] = token_obj.token
 
         return Response(response_data, status=status.HTTP_201_CREATED)
@@ -49,7 +50,7 @@ class VerifyEmailView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        token_obj = serializer.validated_data['token']
+        token_obj = serializer.validated_data['token_obj']
         user = token_obj.user
 
         user.is_verified = True
@@ -77,15 +78,15 @@ class ResendVerificationView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.validated_data['email']
-        # Invalidate old unused tokens
-        EmailVerificationToken.objects.filter(user=user, is_used=False).update(is_used=True)
         token_obj = EmailVerificationToken.generate_token(user)
         send_verification_email(user, token_obj.token)
 
         response_data = {
-            'message': 'A new verification email has been sent.'
+            'message': f'A new 4-digit verification code has been sent to {user.email}.',
+            'email': user.email,
         }
         if settings.DEBUG:
+            response_data['dev_verification_code'] = token_obj.token
             response_data['dev_verification_token'] = token_obj.token
 
         return Response(response_data, status=status.HTTP_200_OK)

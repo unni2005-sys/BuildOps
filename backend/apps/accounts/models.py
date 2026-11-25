@@ -71,7 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class EmailVerificationToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verification_tokens')
-    token = models.CharField(max_length=64, unique=True, db_index=True)
+    token = models.CharField(max_length=64, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
@@ -81,11 +81,14 @@ class EmailVerificationToken(models.Model):
 
     @classmethod
     def generate_token(cls, user, expires_in_hours=24):
-        token_str = secrets.token_urlsafe(32)
+        # Invalidate any older unused verification codes for this user
+        cls.objects.filter(user=user, is_used=False).update(is_used=True)
+        # Generate a secure 4-digit code (1000 - 9999)
+        code_str = f"{secrets.randbelow(9000) + 1000}"
         expires_at = timezone.now() + timedelta(hours=expires_in_hours)
         return cls.objects.create(
             user=user,
-            token=token_str,
+            token=code_str,
             expires_at=expires_at,
             is_used=False
         )

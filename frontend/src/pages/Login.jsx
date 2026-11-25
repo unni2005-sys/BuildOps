@@ -110,7 +110,7 @@ export const Login = () => {
                       to={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
                       className="font-mono-tech text-[11px] text-[#d4b46a] uppercase tracking-wider hover:underline inline-flex items-center gap-1"
                     >
-                      <span>Verify email now</span>
+                      <span>Enter 4-digit verification code</span>
                       <ArrowUpRight size={12} />
                     </Link>
                   </div>

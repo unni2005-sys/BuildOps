@@ -90,21 +90,24 @@ export const Register = () => {
           <h2 className="font-poster text-2xl text-[#eef2ee] tracking-tight mb-2">
             Verify Your Email
           </h2>
-          <p className="text-xs text-[#8b9b90] leading-relaxed mb-6">
-            A verification link was sent to <strong className="text-[#eef2ee]">{formData.email}</strong>.
-            Once confirmed, team registration opens automatically.
+          <p className="text-xs text-[#8b9b90] leading-relaxed mb-6 font-display">
+            A 4-digit verification code has been sent to <strong className="text-[#eef2ee]">{formData.email}</strong>.
+            Please enter the 4-digit code to activate your account.
           </p>
 
-          {successData.dev_verification_token && (
+          {(successData.dev_verification_code || successData.dev_verification_token) && (
             <div className="bg-[#0b1510] border border-[#d4b46a]/40 p-4 mb-5">
-              <p className="font-mono-tech text-[10px] text-[#d4b46a] uppercase tracking-widest mb-2">
-                Dev Mode Quick Verify
+              <p className="font-mono-tech text-[10px] text-[#d4b46a] uppercase tracking-widest mb-1.5">
+                Dev Mode Quick Code
               </p>
+              <div className="font-mono-tech text-xl font-bold tracking-widest text-emerald-400 mb-3 text-center bg-black/50 py-2 border border-emerald-500/20">
+                {successData.dev_verification_code || successData.dev_verification_token}
+              </div>
               <button
-                onClick={() => navigate(`/verify-email?token=${successData.dev_verification_token}`)}
-                className="w-full doom-btn-primary py-2.5 px-3 font-mono-tech text-[11px] uppercase tracking-wider gap-1.5 cursor-pointer"
+                onClick={() => navigate(`/verify-email?email=${encodeURIComponent(formData.email)}&code=${successData.dev_verification_code || successData.dev_verification_token}`)}
+                className="w-full doom-btn-primary py-2 px-3 font-mono-tech text-[11px] uppercase tracking-wider gap-1.5 cursor-pointer"
               >
-                <span>Verify &amp; Continue</span>
+                <span>Autofill &amp; Continue</span>
                 <ArrowUpRight size={13} />
               </button>
             </div>
@@ -113,9 +116,9 @@ export const Register = () => {
           <div className="space-y-3">
             <Link
               to={`/verify-email?email=${encodeURIComponent(formData.email)}`}
-              className="w-full doom-btn-primary py-3 px-4 font-mono-tech text-xs uppercase tracking-[0.16em] gap-2"
+              className="w-full doom-btn-primary py-3 px-4 font-mono-tech text-xs uppercase tracking-[0.16em] gap-2 flex items-center justify-center"
             >
-              <span>Enter Verification Token</span>
+              <span>Enter 4-Digit Code</span>
               <ArrowUpRight size={14} />
             </Link>
             <div className="text-center pt-2 flex items-center justify-center gap-5 font-display text-xs">
