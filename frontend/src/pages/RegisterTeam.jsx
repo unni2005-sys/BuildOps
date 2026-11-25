@@ -325,7 +325,6 @@ export const RegisterTeam = () => {
   const activeTeam = existingPendingTeam;
   const regId = activeTeam?.registration_id || 'BUILDOPS';
   const paymentNote = `BuildOps-${regId}`;
-  const upiDeepLink = upiDetails.upi_uri || `upi://pay?pa=${encodeURIComponent(upiDetails.upi_id)}&pn=${encodeURIComponent(upiDetails.payee_name)}&am=500.00&cu=INR&tn=${encodeURIComponent(paymentNote)}`;
 
   // =========================================================================
   // STEP 3: VERIFICATION PENDING SCREEN
@@ -500,9 +499,12 @@ export const RegisterTeam = () => {
                 <div className="text-center mb-5">
                   <div className="inline-block p-3.5 bg-white rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.18)] border border-emerald-400/40">
                     <img
-                      src={`/api/payments/upi-qr/?reg_id=${regId}`}
+                      src="/upi-qr.png"
                       alt="Build Ops UPI QR"
-                      className="w-48 h-48 sm:w-52 sm:h-52 object-contain"
+                      className="w-48 h-48 sm:w-56 sm:h-56 object-contain"
+                      onError={(e) => {
+                        e.currentTarget.src = `/api/payments/upi-qr/?reg_id=${regId}`;
+                      }}
                     />
                   </div>
                   <p className="font-mono-tech text-[11px] text-[#8b9b90] mt-2.5">
@@ -547,18 +549,6 @@ export const RegisterTeam = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Direct UPI Mobile Link */}
-              <div className="pt-2">
-                <a
-                  href={upiDeepLink}
-                  className="w-full inline-flex items-center justify-center gap-2 doom-btn-primary font-mono-tech text-xs uppercase tracking-wider py-3 px-4 rounded-lg"
-                >
-                  <Smartphone size={14} />
-                  <span>Pay via Installed UPI App</span>
-                  <ExternalLink size={13} />
-                </a>
               </div>
             </div>
 
