@@ -109,8 +109,19 @@ class SubmitPaymentProofView(APIView):
         if not transaction_id:
             transaction_id = request.data.get('payment_reference', '').strip()
 
+        detection_type = request.data.get('detection_type', '').strip()
+        gateway_meta = {}
+        if detection_type:
+            gateway_meta['detection_type'] = detection_type
+            gateway_meta['auto_fetched'] = True
+
         try:
-            payment = record_payment_proof(team, screenshot, transaction_id=transaction_id)
+            payment = record_payment_proof(
+                team,
+                screenshot,
+                transaction_id=transaction_id,
+                gateway_meta=gateway_meta,
+            )
             return Response({
                 'success': True,
                 'message': 'Payment proof submitted successfully! Verification is pending.',

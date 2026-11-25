@@ -95,6 +95,8 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             'payment_status': latest.payment_status,
             'screenshot_url': screenshot_url,
             'rejection_reason': latest.rejection_reason,
+            'auto_fetched': bool(latest.gateway_response.get('auto_fetched')),
+            'detection_type': latest.gateway_response.get('detection_type', ''),
             'payment_timestamp': latest.payment_timestamp,
             'created_at': latest.created_at,
         }

@@ -996,7 +996,12 @@ export const AdminDashboard = () => {
                       />
                       <div className="text-[11px]">
                         <p className="font-mono-tech text-emerald-200">
-                          UTR: {selectedTeam.payment_proof.transaction_reference || 'Not provided'}
+                          UTR: {selectedTeam.payment_proof.payment_reference || selectedTeam.payment_proof.transaction_reference || 'Not provided'}
+                          {selectedTeam.payment_proof.auto_fetched && (
+                            <span className="ml-1.5 px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                              Auto-Fetched
+                            </span>
+                          )}
                         </p>
                         <p className="text-[10px] text-emerald-200/60 mt-0.5">
                           Status: <span className="font-semibold text-amber-300">{selectedTeam.payment_status}</span>
@@ -1106,9 +1111,16 @@ export const AdminDashboard = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="doom-panel p-3 rounded-lg">
                     <span className="text-emerald-200/55 block mb-0.5 uppercase text-[10px]">Submitted UTR / Transaction Ref:</span>
-                    <span className="font-mono-tech font-bold text-emerald-200 text-xs">
-                      {proofReviewTeam.payment_proof?.transaction_reference || 'Not provided'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono-tech font-bold text-emerald-200 text-xs">
+                        {proofReviewTeam.payment_proof?.payment_reference || proofReviewTeam.payment_proof?.transaction_reference || 'Not provided'}
+                      </span>
+                      {proofReviewTeam.payment_proof?.auto_fetched && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                          Auto-Fetched
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="doom-panel p-3 rounded-lg">
                     <span className="text-emerald-200/55 block mb-0.5 uppercase text-[10px]">Required Registration Fee:</span>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import { scanScreenshotForTransactionId } from '../utils/upiOcr';
 import {
   Users,
   AlertCircle,
@@ -16,7 +17,9 @@ import {
   ExternalLink,
   ShieldCheck,
   Building2,
-  Smartphone
+  Smartphone,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
 export const RegisterTeam = () => {
@@ -54,6 +57,10 @@ export const RegisterTeam = () => {
   const [screenshotFile, setScreenshotFile] = useState(null);
   const [screenshotPreview, setScreenshotPreview] = useState(null);
   const [transactionId, setTransactionId] = useState('');
+  const [isScanningOcr, setIsScanningOcr] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [autoDetectedInfo, setAutoDetectedInfo] = useState(null);
+  const [showManualEdit, setShowManualEdit] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedNote, setCopiedNote] = useState(false);
 
@@ -121,7 +128,7 @@ export const RegisterTeam = () => {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -137,11 +144,41 @@ export const RegisterTeam = () => {
 
     setError('');
     setScreenshotFile(file);
+    setAutoDetectedInfo(null);
+    setShowManualEdit(false);
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setScreenshotPreview(reader.result);
     };
     reader.readAsDataURL(file);
+
+    // Automatically scan the uploaded screenshot for UTR / Transaction ID
+    setIsScanningOcr(true);
+    setOcrProgress(15);
+    try {
+      const ocrResult = await scanScreenshotForTransactionId(file, (p) => {
+        if (p?.progress) {
+          setOcrProgress(Math.max(15, p.progress));
+        }
+      });
+
+      if (ocrResult.success && ocrResult.transactionId) {
+        setTransactionId(ocrResult.transactionId);
+        setAutoDetectedInfo({
+          id: ocrResult.transactionId,
+          type: ocrResult.type || 'Transaction ID',
+          confidence: ocrResult.confidence || 'high',
+        });
+      } else {
+        setAutoDetectedInfo({ notFound: true });
+      }
+    } catch (ocrErr) {
+      console.warn('Automatic transaction ID extraction error:', ocrErr);
+      setAutoDetectedInfo({ notFound: true });
+    } finally {
+      setIsScanningOcr(false);
+    }
   };
 
   const copyToClipboard = (text, type) => {
@@ -250,6 +287,9 @@ export const RegisterTeam = () => {
       uploadData.append('screenshot', screenshotFile);
       if (transactionId.trim()) {
         uploadData.append('transaction_id', transactionId.trim());
+      }
+      if (autoDetectedInfo?.type) {
+        uploadData.append('detection_type', autoDetectedInfo.type);
       }
 
       const res = await api.post('/payments/submit-proof/', uploadData, {
@@ -587,21 +627,112 @@ export const RegisterTeam = () => {
                     />
                   </div>
 
-                  {/* Transaction ID / UTR Input */}
-                  <div>
-                    <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
-                      Transaction / UTR Number (Recommended)
-                    </label>
-                    <input
-                      type="text"
-                      value={transactionId}
-                      onChange={(e) => setTransactionId(e.target.value)}
-                      placeholder="e.g. 432109876543 (12-digit UTR)"
-                      className="w-full px-3.5 py-2.5 text-xs font-mono-tech doom-input"
-                    />
-                    <p className="text-[10px] text-[#5a685e] mt-1 font-mono-tech">
-                      Enter the 12-digit reference number printed on your GPay / PhonePe / Paytm receipt.
-                    </p>
+                  {/* Automated Transaction ID / UTR Section */}
+                  <div className="space-y-2">
+                    {/* State 1: Currently Scanning OCR */}
+                    {isScanningOcr && (
+                      <div className="doom-panel p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 text-xs">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Loader2 size={15} className="animate-spin text-emerald-400 shrink-0" />
+                            <span className="font-semibold text-emerald-100 text-[11px] font-mono-tech uppercase tracking-wide">
+                              Scanning Screenshot for Transaction ID...
+                            </span>
+                          </div>
+                          <span className="font-mono-tech text-[11px] text-emerald-400 font-bold">{ocrProgress}%</span>
+                        </div>
+                        <div className="w-full bg-black/60 h-1.5 rounded-full overflow-hidden border border-emerald-500/20">
+                          <div
+                            className="bg-emerald-400 h-full transition-all duration-200 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                            style={{ width: `${ocrProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-emerald-200/60 font-mono-tech mt-2">
+                          Reading UPI UTR / reference code directly from your image...
+                        </p>
+                      </div>
+                    )}
+
+                    {/* State 2: Transaction ID Auto-Detected */}
+                    {!isScanningOcr && autoDetectedInfo && !autoDetectedInfo.notFound && (
+                      <div className="doom-panel p-3.5 rounded-xl border border-emerald-400/50 bg-emerald-950/40 text-xs shadow-[0_0_20px_rgba(16,185,129,0.15)] space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center">
+                              <CheckCircle2 size={14} />
+                            </div>
+                            <span className="text-[10px] font-mono-tech uppercase tracking-wider text-emerald-300 font-bold">
+                              Auto-Fetched {autoDetectedInfo.type}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowManualEdit(!showManualEdit)}
+                            className="text-[10px] font-mono-tech text-emerald-400/80 hover:text-emerald-200 underline cursor-pointer"
+                          >
+                            {showManualEdit ? 'Close edit' : 'Adjust manually'}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-emerald-500/20">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[#8b9b90] font-mono-tech text-[10px] uppercase">ID:</span>
+                            <span className="font-mono-tech font-bold text-sm text-emerald-100 tracking-wider">
+                              {transactionId}
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-mono-tech uppercase font-bold text-emerald-300/80 bg-emerald-500/15 border border-emerald-400/30 px-1.5 py-0.5 rounded">
+                            Verified
+                          </span>
+                        </div>
+
+                        {showManualEdit && (
+                          <div className="pt-1.5 space-y-1 animate-fade-in-up">
+                            <label className="block font-mono-tech text-[10px] uppercase tracking-wider text-[#8b9b90]">
+                              Override Transaction ID:
+                            </label>
+                            <input
+                              type="text"
+                              value={transactionId}
+                              onChange={(e) => setTransactionId(e.target.value)}
+                              placeholder="e.g. 432109876543 (12-digit UTR)"
+                              className="w-full px-3 py-1.5 text-xs font-mono-tech doom-input"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* State 3: Screenshot uploaded but no ID could be auto-extracted */}
+                    {!isScanningOcr && autoDetectedInfo?.notFound && (
+                      <div className="doom-panel p-3.5 rounded-xl border border-amber-500/30 bg-amber-950/20 text-xs space-y-2">
+                        <div className="flex items-start gap-2 text-amber-200">
+                          <AlertCircle size={15} className="shrink-0 text-amber-400 mt-0.5" />
+                          <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                            Could not auto-read transaction ID from this image. You can type it below or leave it for organizer manual review.
+                          </p>
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={transactionId}
+                            onChange={(e) => setTransactionId(e.target.value)}
+                            placeholder="Enter 12-digit UTR if available"
+                            className="w-full px-3 py-1.5 text-xs font-mono-tech doom-input"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* State 4: Initial state before image is chosen */}
+                    {!screenshotFile && (
+                      <div className="p-3 rounded-xl doom-panel border border-white/5 text-xs flex items-center gap-2.5 text-[#8b9b90]">
+                        <Sparkles size={15} className="text-emerald-400 shrink-0" />
+                        <span className="text-[11px] font-mono-tech">
+                          Transaction ID / UTR will be auto-fetched as soon as you select your screenshot.
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Submit Button */}

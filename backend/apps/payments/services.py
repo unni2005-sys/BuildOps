@@ -67,7 +67,7 @@ def generate_upi_qr_code_png(team=None):
     return buffer.getvalue()
 
 
-def record_payment_proof(team, screenshot_file, transaction_id=None):
+def record_payment_proof(team, screenshot_file, transaction_id=None, gateway_meta=None):
     """
     Records or updates a payment proof submission for a team, marking the payment
     and team status as VERIFICATION_PENDING.
@@ -88,6 +88,7 @@ def record_payment_proof(team, screenshot_file, transaction_id=None):
             payment_status='VERIFICATION_PENDING',
             payment_timestamp=timezone.now(),
             screenshot=screenshot_file,
+            gateway_response=gateway_meta or {},
         )
 
         team.payment_status = 'VERIFICATION_PENDING'
