@@ -497,11 +497,11 @@ export const RegisterTeam = () => {
 
                 {/* QR Code Container */}
                 <div className="text-center mb-5">
-                  <div className="inline-block p-3.5 bg-white rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.18)] border border-emerald-400/40">
+                  <div className="inline-block p-2.5 bg-white rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.18)] border border-emerald-400/40 max-w-[280px]">
                     <img
                       src="/upi-qr.png"
                       alt="Build Ops UPI QR"
-                      className="w-48 h-48 sm:w-56 sm:h-56 object-contain"
+                      className="w-full h-auto object-contain rounded-xl"
                       onError={(e) => {
                         e.currentTarget.src = `/api/payments/upi-qr/?reg_id=${regId}`;
                       }}
