@@ -34,8 +34,17 @@ class AccountsAuthTests(TestCase):
 
         # 3. Verify email with token
         token_obj = EmailVerificationToken.objects.get(user=user)
+
+        # 3a. Verification without email must fail (closes account takeover loophole)
+        bad_res = self.client.post('/api/accounts/verify-email/', {
+            'code': token_obj.token
+        }, format='json')
+        self.assertEqual(bad_res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 3b. Verification with correct code and email succeeds
         verify_res = self.client.post('/api/accounts/verify-email/', {
-            'token': token_obj.token
+            'code': token_obj.token,
+            'email': user.email
         }, format='json')
         self.assertEqual(verify_res.status_code, status.HTTP_200_OK)
         self.assertIn('access', verify_res.data)

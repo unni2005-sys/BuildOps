@@ -374,7 +374,8 @@ def generate_ticket_for_team(team, send_email=True):
     tickets_dir = os.path.join(settings.MEDIA_ROOT, 'tickets')
     os.makedirs(tickets_dir, exist_ok=True)
 
-    png_filename = f"ticket_{team.registration_id}.png"
+    token_suffix = ticket.qr_token.replace('-', '')[-12:]
+    png_filename = f"ticket_{team.registration_id}_{token_suffix}.png"
     png_filepath = os.path.join(tickets_dir, png_filename)
 
     # Explicitly identify LEADER (registered user) vs MEMBER

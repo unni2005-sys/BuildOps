@@ -100,16 +100,19 @@ export const VerifyEmail = () => {
       return;
     }
 
+    if (!email.trim()) {
+      setStatusMsg({ type: 'error', text: 'Please enter your registered email address.' });
+      return;
+    }
+
     setLoading(true);
     setStatusMsg({ type: '', text: '' });
 
     try {
       const payload = {
         code: fullCode,
+        email: email.trim().toLowerCase(),
       };
-      if (email.trim()) {
-        payload.email = email.trim();
-      }
 
       const res = await api.post('/accounts/verify-email/', payload);
       setStatusMsg({ type: 'success', text: 'Email verified successfully! Opening squad registration...' });
