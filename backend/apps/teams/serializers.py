@@ -85,8 +85,14 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             return None
         request = self.context.get('request')
         screenshot_url = None
-        if latest.screenshot:
-            screenshot_url = request.build_absolute_uri(latest.screenshot.url) if request else latest.screenshot.url
+        has_screenshot = bool(latest.screenshot) or bool(latest.gateway_response.get('screenshot_data_uri'))
+        if has_screenshot:
+            proof_endpoint = f"/api/payments/proof/{latest.id}/"
+            if request:
+                screenshot_url = request.build_absolute_uri(proof_endpoint)
+            else:
+                backend_base = getattr(settings, 'BACKEND_URL', '').rstrip('/')
+                screenshot_url = f"{backend_base}{proof_endpoint}" if backend_base else proof_endpoint
         return {
             'id': latest.id,
             'order_id': latest.order_id,

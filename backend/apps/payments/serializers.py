@@ -32,9 +32,12 @@ class PaymentSerializer(serializers.ModelSerializer):
         )
 
     def get_screenshot_url(self, obj):
-        if not obj.screenshot:
+        has_screenshot = bool(obj.screenshot) or bool(obj.gateway_response.get('screenshot_data_uri'))
+        if not has_screenshot:
             return None
+        proof_endpoint = f"/api/payments/proof/{obj.id}/"
         request = self.context.get('request')
         if request:
-            return request.build_absolute_uri(obj.screenshot.url)
-        return obj.screenshot.url
+            return request.build_absolute_uri(proof_endpoint)
+        backend_base = getattr(settings, 'BACKEND_URL', '').rstrip('/')
+        return f"{backend_base}{proof_endpoint}" if backend_base else proof_endpoint

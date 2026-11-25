@@ -26,6 +26,15 @@ import {
 } from 'lucide-react';
 
 export const AdminDashboard = () => {
+  const resolveMediaUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
   const [stats, setStats] = useState(null);
   const [teams, setTeams] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -635,7 +644,7 @@ export const AdminDashboard = () => {
                       <td className="py-3 px-3">
                         {p.screenshot_url ? (
                           <a
-                            href={p.screenshot_url}
+                            href={resolveMediaUrl(p.screenshot_url)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 underline font-semibold"
@@ -989,7 +998,7 @@ export const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <img
-                        src={selectedTeam.payment_proof.screenshot_url}
+                        src={resolveMediaUrl(selectedTeam.payment_proof.screenshot_url)}
                         alt="Proof thumbnail"
                         className="w-14 h-14 object-cover rounded border border-emerald-500/30 bg-black cursor-pointer"
                         onClick={() => setProofReviewTeam(selectedTeam)}
@@ -1192,7 +1201,7 @@ export const AdminDashboard = () => {
                     </span>
                     {proofReviewTeam.payment_proof?.screenshot_url && (
                       <a
-                        href={proofReviewTeam.payment_proof.screenshot_url}
+                        href={resolveMediaUrl(proofReviewTeam.payment_proof.screenshot_url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[11px] text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 font-semibold"
@@ -1206,10 +1215,10 @@ export const AdminDashboard = () => {
                   {proofReviewTeam.payment_proof?.screenshot_url ? (
                     <div className="rounded-xl overflow-hidden border border-emerald-500/30 bg-black/60 flex items-center justify-center p-2 max-h-[380px]">
                       <img
-                        src={proofReviewTeam.payment_proof.screenshot_url}
+                        src={resolveMediaUrl(proofReviewTeam.payment_proof.screenshot_url)}
                         alt={`Payment proof for ${proofReviewTeam.team_name}`}
                         className="max-h-[360px] w-auto max-w-full object-contain rounded-lg shadow-lg cursor-pointer hover:opacity-95 transition"
-                        onClick={() => window.open(proofReviewTeam.payment_proof.screenshot_url, '_blank')}
+                        onClick={() => window.open(resolveMediaUrl(proofReviewTeam.payment_proof.screenshot_url), '_blank')}
                         title="Click to view full resolution"
                       />
                     </div>

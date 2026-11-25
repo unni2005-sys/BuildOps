@@ -61,11 +61,38 @@ class PaymentProofAmountDetectionTests(TestCase):
         self.assertEqual(payment.payment_reference, '432109876543')
         self.assertEqual(payment.gateway_response.get('detected_amount'), 500.0)
         self.assertTrue(payment.gateway_response.get('auto_fetched'))
+        self.assertTrue(bool(payment.gateway_response.get('screenshot_data_uri')))
 
-        # Check serializer exposure
+        # Check serializer exposure points to proof view
         data = TeamDetailSerializer(self.team).data
         self.assertEqual(data['payment_proof']['detected_amount'], 500.0)
         self.assertEqual(data['payment_proof']['payment_reference'], '432109876543')
+        self.assertIn(f"/api/payments/proof/{payment.id}/", data['payment_proof']['screenshot_url'])
+
+        # Check proof view endpoint returns 200
+        proof_res = self.client.get(f"/api/payments/proof/{payment.id}/")
+        self.assertEqual(proof_res.status_code, status.HTTP_200_OK)
+        self.assertIn(proof_res['Content-Type'], ['image/png', 'image/jpeg'])
+
+    def test_proof_view_serves_from_db_when_disk_file_is_missing(self):
+        # Simulates container restart where disk file is lost
+        img = self._create_dummy_image()
+        res = self.client.post('/api/payments/submit-proof/', {
+            'screenshot': img,
+            'transaction_id': '998877665544',
+        }, format='multipart')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        payment = self.team.payments.latest('created_at')
+        # Simulate container disk wipe
+        payment.screenshot = ''
+        payment.save(update_fields=['screenshot'])
+
+        # Even with no disk file, it must successfully serve from PostgreSQL base64
+        proof_res = self.client.get(f"/api/payments/proof/{payment.id}/")
+        self.assertEqual(proof_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(proof_res['Content-Type'], 'image/jpeg')
+        self.assertTrue(len(proof_res.content) > 0)
 
     def test_submit_proof_with_underpaid_detected_amount(self):
         img = self._create_dummy_image()

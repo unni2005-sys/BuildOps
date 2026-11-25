@@ -1,7 +1,9 @@
 import io
+import base64
 import logging
 import secrets
 import urllib.parse
+from PIL import Image
 import qrcode
 from django.conf import settings
 from django.utils import timezone
@@ -71,12 +73,40 @@ def record_payment_proof(team, screenshot_file, transaction_id=None, gateway_met
     """
     Records or updates a payment proof submission for a team, marking the payment
     and team status as VERIFICATION_PENDING.
+    Also creates a persistent base64 data URI in database so container restarts never lose user uploads.
     """
     if team.payment_status == 'SUCCESS':
         raise ValueError("Team has already completed payment and is confirmed.")
 
     order_id = f"UPI-{team.registration_id}-{secrets.token_hex(3).upper()}"
     amount = getattr(settings, 'REGISTRATION_FEE_INR', 500)
+    meta = dict(gateway_meta or {})
+
+    # Generate persistent Data URI backup so Render container restarts never lose user uploads
+    if screenshot_file:
+        try:
+            screenshot_file.seek(0)
+            raw_bytes = screenshot_file.read()
+            screenshot_file.seek(0)
+
+            # Optimize with PIL to ensure high quality while keeping size ~150-300KB
+            try:
+                img = Image.open(io.BytesIO(raw_bytes))
+                if img.mode in ('RGBA', 'P'):
+                    img = img.convert('RGB')
+                img.thumbnail((1400, 1400), Image.Resampling.LANCZOS)
+                opt_buf = io.BytesIO()
+                img.save(opt_buf, format='JPEG', quality=82, optimize=True)
+                opt_bytes = opt_buf.getvalue()
+                b64_str = base64.b64encode(opt_bytes).decode('utf-8')
+                content_type = 'image/jpeg'
+            except Exception:
+                b64_str = base64.b64encode(raw_bytes).decode('utf-8')
+                content_type = getattr(screenshot_file, 'content_type', 'image/jpeg')
+
+            meta['screenshot_data_uri'] = f"data:{content_type};base64,{b64_str}"
+        except Exception as e:
+            logger.warning(f"Could not create persistent screenshot data URI: {e}")
 
     with transaction.atomic():
         payment = Payment.objects.create(
@@ -88,7 +118,7 @@ def record_payment_proof(team, screenshot_file, transaction_id=None, gateway_met
             payment_status='VERIFICATION_PENDING',
             payment_timestamp=timezone.now(),
             screenshot=screenshot_file,
-            gateway_response=gateway_meta or {},
+            gateway_response=meta,
         )
 
         team.payment_status = 'VERIFICATION_PENDING'

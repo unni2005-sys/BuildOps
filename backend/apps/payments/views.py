@@ -1,5 +1,7 @@
+import os
+import base64
 import logging
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
 from rest_framework import status, permissions
@@ -214,3 +216,47 @@ class AdminPaymentListView(APIView):
 
         serializer = PaymentSerializer(queryset, many=True, context={'request': request})
         return Response({'count': queryset.count(), 'payments': serializer.data})
+
+
+class PaymentProofImageView(APIView):
+    """
+    Serves the payment proof screenshot image.
+    1. Checks if the file exists on local disk.
+    2. If missing (e.g. wiped by Render container restart), falls back to the database-backed
+       base64 data URI in gateway_response['screenshot_data_uri'].
+    """
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, pk):
+        try:
+            payment = Payment.objects.select_related('team').get(pk=pk)
+        except Payment.DoesNotExist:
+            raise Http404("Payment proof not found.")
+
+        # 1. Try serving from local disk
+        if payment.screenshot:
+            try:
+                full_path = payment.screenshot.path
+                if os.path.exists(full_path):
+                    content_type = 'image/png' if full_path.lower().endswith('.png') else 'image/jpeg'
+                    with open(full_path, 'rb') as f:
+                        response = HttpResponse(f.read(), content_type=content_type)
+                        response['Cache-Control'] = 'public, max-age=86400'
+                        return response
+            except Exception:
+                pass
+
+        # 2. Try serving from persistent database data URI
+        data_uri = payment.gateway_response.get('screenshot_data_uri', '')
+        if data_uri and data_uri.startswith('data:'):
+            try:
+                header, b64_data = data_uri.split(',', 1)
+                content_type = header.split(';')[0].replace('data:', '') or 'image/jpeg'
+                img_bytes = base64.b64decode(b64_data)
+                response = HttpResponse(img_bytes, content_type=content_type)
+                response['Cache-Control'] = 'public, max-age=86400'
+                return response
+            except Exception as e:
+                logger.error(f"Error decoding base64 screenshot from DB: {e}")
+
+        raise Http404("Payment screenshot image file could not be found.")
