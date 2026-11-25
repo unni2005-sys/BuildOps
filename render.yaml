@@ -42,7 +42,7 @@ services:
       - key: UPI_ID
         value: "unniacc9961@okaxis"
       - key: UPI_PAYEE_NAME
-        value: "Build Ops ASIET"
+        value: "Unnikrishnan M"
       - key: UPI_PHONE_NUMBER
         value: "9497290648"
       - key: EVENT_NAME

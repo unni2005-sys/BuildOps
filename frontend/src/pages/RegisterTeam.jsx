@@ -47,7 +47,7 @@ export const RegisterTeam = () => {
   // UPI configuration & state
   const [upiDetails, setUpiDetails] = useState({
     upi_id: 'unniacc9961@okaxis',
-    payee_name: 'Build Ops ASIET',
+    payee_name: 'Unnikrishnan M',
     phone_number: '9497290648',
     amount: 500,
     upi_uri: '',

@@ -17,7 +17,7 @@ def get_upi_details(team=None):
     Returns configured UPI ID, Payee Name, Fee Amount, and standard UPI deep-link URI.
     """
     upi_id = getattr(settings, 'UPI_ID', 'unniacc9961@okaxis').strip()
-    payee_name = getattr(settings, 'UPI_PAYEE_NAME', 'Build Ops ASIET').strip()
+    payee_name = getattr(settings, 'UPI_PAYEE_NAME', 'Unnikrishnan M').strip()
     phone_number = getattr(settings, 'UPI_PHONE_NUMBER', '9497290648').strip()
     amount = int(getattr(settings, 'REGISTRATION_FEE_INR', 500))
 
