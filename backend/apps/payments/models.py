@@ -1,12 +1,15 @@
 from django.db import models
+from django.conf import settings
 from apps.teams.models import Team
 
 
 class Payment(models.Model):
     STATUS_CHOICES = (
         ('PENDING', 'Pending'),
+        ('VERIFICATION_PENDING', 'Verification Pending'),
         ('SUCCESS', 'Success'),
         ('FAILED', 'Failed'),
+        ('REJECTED', 'Rejected'),
     )
 
     team = models.ForeignKey(
@@ -20,12 +23,22 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10, default='INR')
     payment_status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=STATUS_CHOICES,
         default='PENDING',
         db_index=True
     )
     payment_timestamp = models.DateTimeField(null=True, blank=True)
+    screenshot = models.FileField(upload_to='payment_proofs/', null=True, blank=True)
+    rejection_reason = models.TextField(blank=True, default='')
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_payments'
+    )
+    verified_at = models.DateTimeField(null=True, blank=True)
     gateway_response = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -34,4 +47,4 @@ class Payment(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Order {self.order_id} - {self.team.team_name} - {self.payment_status} ({self.amount} {self.currency})"
+        return f"Payment {self.order_id} - {self.team.team_name} - {self.payment_status} ({self.amount} {self.currency})"

@@ -93,7 +93,7 @@ class AdminTeamListView(APIView):
                 Q(members__mobile_number__icontains=q)
             ).distinct()
 
-        serializer = TeamDetailSerializer(queryset, many=True)
+        serializer = TeamDetailSerializer(queryset, many=True, context={'request': request})
         return Response({'count': queryset.count(), 'teams': serializer.data})
 
 

@@ -5,13 +5,18 @@ import api from '../api/client';
 import {
   Users,
   AlertCircle,
-  CreditCard,
   CheckCircle2,
+  Clock,
   ArrowRight,
-  ShieldCheck,
   RefreshCw,
-  MessageCircle,
-  ExternalLink
+  Copy,
+  Check,
+  Upload,
+  Image as ImageIcon,
+  ExternalLink,
+  ShieldCheck,
+  Building2,
+  Smartphone
 } from 'lucide-react';
 
 export const RegisterTeam = () => {
@@ -33,22 +38,56 @@ export const RegisterTeam = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Payment flow steps: 'FORM' -> 'GATEWAY' -> 'SUCCESS'
+  // Flow steps: 'FORM' -> 'UPI_PAYMENT' -> 'VERIFICATION_PENDING'
   const [step, setStep] = useState('FORM');
-  const [paymentOrder, setPaymentOrder] = useState(null);
-  const [whatsappLink, setWhatsappLink] = useState('');
 
-  // Keep leader_phone synced with user profile
+  // UPI configuration & state
+  const [upiDetails, setUpiDetails] = useState({
+    upi_id: '9497290648@upi',
+    payee_name: 'Build Ops ASIET',
+    phone_number: '9497290648',
+    amount: 500,
+    upi_uri: '',
+  });
+
+  // Proof upload state
+  const [screenshotFile, setScreenshotFile] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState(null);
+  const [transactionId, setTransactionId] = useState('');
+  const [copiedUpi, setCopiedUpi] = useState(false);
+  const [copiedNote, setCopiedNote] = useState(false);
+
+  // Sync leader phone with user profile
   useEffect(() => {
     if (user?.mobile_number && !formData.leader_phone) {
       setFormData((prev) => ({ ...prev, leader_phone: user.mobile_number }));
     }
   }, [user]);
 
-  // Check if student already has a team
+  // Fetch UPI info from backend
+  const fetchUpiInfo = async () => {
+    try {
+      const res = await api.get('/payments/upi-details/');
+      if (res.data) {
+        setUpiDetails((prev) => ({
+          ...prev,
+          upi_id: res.data.upi_id || prev.upi_id,
+          payee_name: res.data.payee_name || prev.payee_name,
+          phone_number: res.data.phone_number || prev.phone_number,
+          amount: res.data.amount || prev.amount,
+          upi_uri: res.data.upi_uri || prev.upi_uri,
+        }));
+      }
+    } catch (err) {
+      console.warn('Could not fetch dynamic UPI details, using defaults:', err);
+    }
+  };
+
+  // Check if student already has a registered team
   useEffect(() => {
     const checkTeam = async () => {
       try {
+        await fetchUpiInfo();
         const res = await api.get('/teams/my-team/');
         const team = res.data.team;
         if (team) {
@@ -56,11 +95,15 @@ export const RegisterTeam = () => {
             navigate('/student/dashboard', { replace: true });
             return;
           }
-          // Team created previously but payment still pending
           setExistingPendingTeam(team);
+          if (team.payment_status === 'VERIFICATION_PENDING') {
+            setStep('VERIFICATION_PENDING');
+          } else {
+            setStep('UPI_PAYMENT');
+          }
         }
       } catch (err) {
-        console.error(err);
+        console.error('Error checking team:', err);
       } finally {
         setCheckingExisting(false);
       }
@@ -78,102 +121,42 @@ export const RegisterTeam = () => {
     }
   };
 
-  const loadRazorpayScript = () => {
-    if (window.Razorpay) return Promise.resolve(true);
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const openRazorpayCheckout = async (order) => {
-    const loaded = await loadRazorpayScript();
-    if (!loaded || !window.Razorpay) {
-      setError('Could not load Razorpay Checkout SDK. Please check your internet connection or disable ad-blockers and try again.');
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (PNG, JPG, JPEG, WebP).');
       return;
     }
 
-    const razorpayKeyId = order.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID || '';
-    const options = {
-      key: razorpayKeyId,
-      amount: order.amount_paise,
-      currency: order.currency || 'INR',
-      name: 'Build Ops',
-      description: `Team ${order.team?.team_name || ''} (${order.team?.registration_id || ''})`,
-      order_id: order.order_id,
-      prefill: {
-        name: order.prefill?.name || user?.full_name || '',
-        email: order.prefill?.email || user?.email || '',
-        contact: order.prefill?.contact || user?.mobile_number || '',
-      },
-      notes: {
-        registration_id: order.team?.registration_id || '',
-        team_name: order.team?.team_name || '',
-      },
-      theme: {
-        color: '#10b981',
-      },
-      handler: async (response) => {
-        setLoading(true);
-        setError('');
-        try {
-          const verRes = await api.post('/payments/verify-razorpay/', {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-          });
-          const waLink = verRes.data?.whatsapp_group_link || '';
-          setWhatsappLink(waLink);
-          setStep('SUCCESS');
-          if (!waLink) {
-            setTimeout(() => {
-              navigate('/student/dashboard', { replace: true });
-            }, 2500);
-          }
-        } catch (err) {
-          console.error(err);
-          setError(
-            err.response?.data?.error ||
-              'Payment verification failed. If money was debited, contact admin with your Razorpay Payment ID.'
-          );
-          setStep('FORM');
-        } finally {
-          setLoading(false);
-        }
-      },
-      modal: {
-        ondismiss: () => {
-          setError('Payment window was closed. Click Confirm & Pay to try again.');
-        },
-      },
-    };
+    if (file.size > 8 * 1024 * 1024) {
+      setError('Image file size must be less than 8MB.');
+      return;
+    }
 
-    const rzp = new window.Razorpay(options);
-    rzp.on('payment.failed', (resp) => {
-      setError(resp?.error?.description || 'Payment failed. Please try again.');
-    });
-    rzp.open();
+    setError('');
+    setScreenshotFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setScreenshotPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const initiateRazorpayOrder = async () => {
-    const orderRes = await api.post('/payments/create-order/', {});
-    const order = orderRes.data;
-    setPaymentOrder(order);
-
-    const razorpayKeyId = order.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID;
-    if (!order.is_mock && razorpayKeyId) {
-      await openRazorpayCheckout(order);
-    } else {
-      // Fallback test checkout screen when Razorpay keys are not yet configured
-      setStep('GATEWAY');
+  const copyToClipboard = (text, type) => {
+    navigator.clipboard.writeText(text);
+    if (type === 'upi') {
+      setCopiedUpi(true);
+      setTimeout(() => setCopiedUpi(false), 2000);
+    } else if (type === 'note') {
+      setCopiedNote(true);
+      setTimeout(() => setCopiedNote(false), 2000);
     }
   };
 
-  const handleConfirmAndPay = async (e) => {
+  // Register Team -> Proceed to UPI
+  const handleRegisterTeam = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -223,7 +206,6 @@ export const RegisterTeam = () => {
 
     setLoading(true);
     try {
-      // 1. Register the team
       const regRes = await api.post('/teams/register/', {
         team_name: formData.team_name.trim(),
         college_name: formData.college_name.trim(),
@@ -232,10 +214,11 @@ export const RegisterTeam = () => {
         member2_email: member2Email,
         member2_phone: member2Phone,
       });
-      setExistingPendingTeam(regRes.data.team);
 
-      // 2. Immediately create Razorpay order & open checkout
-      await initiateRazorpayOrder();
+      const team = regRes.data.team;
+      setExistingPendingTeam(team);
+      await fetchUpiInfo();
+      setStep('UPI_PAYMENT');
     } catch (err) {
       console.error(err);
       if (err.response?.data) {
@@ -251,36 +234,38 @@ export const RegisterTeam = () => {
     }
   };
 
-  const handleResumePayment = async () => {
+  // Submit Payment Proof (Screenshot + UTR)
+  const handleSubmitProof = async (e) => {
+    e.preventDefault();
     setError('');
-    setLoading(true);
-    try {
-      await initiateRazorpayOrder();
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || 'Could not launch Razorpay payment gateway.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleCompletePayment = async () => {
-    if (!paymentOrder?.order_id) return;
+    if (!screenshotFile) {
+      setError('Please select and upload a screenshot of your completed UPI payment.');
+      return;
+    }
+
     setLoading(true);
-    setError('');
     try {
-      const simRes = await api.post('/payments/simulate/', { order_id: paymentOrder.order_id });
-      const waLink = simRes.data?.whatsapp_group_link || '';
-      setWhatsappLink(waLink);
-      setStep('SUCCESS');
-      if (!waLink) {
-        setTimeout(() => {
-          navigate('/student/dashboard', { replace: true });
-        }, 2500);
+      const uploadData = new FormData();
+      uploadData.append('screenshot', screenshotFile);
+      if (transactionId.trim()) {
+        uploadData.append('transaction_id', transactionId.trim());
       }
+
+      const res = await api.post('/payments/submit-proof/', uploadData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (res.data?.team) {
+        setExistingPendingTeam(res.data.team);
+      }
+      setStep('VERIFICATION_PENDING');
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Payment failed. Please try again.');
+      setError(
+        err.response?.data?.error ||
+          'Failed to submit payment proof. Please check your image file and try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -297,193 +282,371 @@ export const RegisterTeam = () => {
     );
   }
 
-  // STEP 3: PAYMENT SUCCESS SCREEN
-  if (step === 'SUCCESS') {
+  const activeTeam = existingPendingTeam;
+  const regId = activeTeam?.registration_id || 'BUILDOPS';
+  const paymentNote = `BuildOps-${regId}`;
+  const upiDeepLink = upiDetails.upi_uri || `upi://pay?pa=${encodeURIComponent(upiDetails.upi_id)}&pn=${encodeURIComponent(upiDetails.payee_name)}&am=500.00&cu=INR&tn=${encodeURIComponent(paymentNote)}`;
+
+  // =========================================================================
+  // STEP 3: VERIFICATION PENDING SCREEN
+  // =========================================================================
+  if (step === 'VERIFICATION_PENDING') {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] rounded-full bg-emerald-500/15 blur-[120px] animate-pulse-aura" />
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] rounded-full bg-amber-500/10 blur-[130px] animate-pulse-aura" />
 
-        <div className="max-w-md w-full doom-card p-8 rounded-xl text-center relative z-10 animate-fade-in-up">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-400/50 text-emerald-300 flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(34,255,102,0.35)]">
-            <CheckCircle2 size={34} />
+        <div className="max-w-lg w-full doom-card p-7 sm:p-9 rounded-xl text-center relative z-10 animate-fade-in-up border border-amber-500/30">
+          <div className="w-16 h-16 rounded-full bg-amber-500/15 border border-amber-400/50 text-amber-300 flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(245,158,11,0.25)]">
+            <Clock size={32} />
           </div>
-          <h2 className="font-display text-xl font-bold tracking-wider text-arcane-gold uppercase mb-1">
-            Payment Successful!
+
+          <h2 className="font-display text-xl font-bold tracking-wider text-amber-200 uppercase mb-1">
+            Payment Proof Submitted
           </h2>
-          <p className="text-xs text-emerald-200/70 mb-6">
-            Your team registration for <strong className="text-emerald-100">Build Ops</strong> is confirmed and your E-Ticket is live.
+          <p className="text-xs text-emerald-200/75 mb-6">
+            Your payment is currently <strong className="text-amber-300">Under Review</strong> by the event organizing team.
           </p>
 
-          <div className="doom-panel rounded-lg p-4 text-left text-xs space-y-2.5 mb-6">
-            <div className="flex justify-between">
-              <span className="text-emerald-200/60">Team Name:</span>
-              <span className="font-semibold text-emerald-50">{paymentOrder?.team?.team_name || existingPendingTeam?.team_name}</span>
+          <div className="doom-panel rounded-lg p-4 text-left text-xs space-y-2.5 mb-6 border border-white/10">
+            <div className="flex justify-between items-center">
+              <span className="text-emerald-200/60">Squad Name:</span>
+              <span className="font-semibold text-emerald-50">{activeTeam?.team_name}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-emerald-200/60">Order ID:</span>
-              <span className="font-mono-tech text-emerald-200">{paymentOrder?.order_id}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-emerald-200/60">Registration ID:</span>
+              <span className="font-mono-tech text-amber-200 font-bold">{regId}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-emerald-200/60">Amount Paid:</span>
-              <span className="font-bold text-emerald-glow">₹{paymentOrder?.amount || 500}</span>
+              <span className="font-bold text-emerald-glow">₹{activeTeam?.fee_amount || 500}</span>
+            </div>
+            {activeTeam?.payment_proof?.payment_reference && (
+              <div className="flex justify-between items-center">
+                <span className="text-emerald-200/60">Transaction / UTR:</span>
+                <span className="font-mono-tech text-emerald-300">{activeTeam.payment_proof.payment_reference}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center pt-1 border-t border-white/10">
+              <span className="text-emerald-200/60">Status:</span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 uppercase">
+                <Clock size={12} /> Verification Pending
+              </span>
             </div>
           </div>
 
-          {whatsappLink && (
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center gap-2 bg-[#16a34a] hover:bg-[#22c55e] text-[#030705] font-mono-tech text-xs font-bold tracking-wider uppercase py-3 px-4 mb-3 transition border border-emerald-400"
-            >
-              <MessageCircle size={15} />
-              <span>Join Official WhatsApp Group</span>
-              <ExternalLink size={13} />
-            </a>
+          {(screenshotPreview || activeTeam?.payment_proof?.screenshot_url) && (
+            <div className="mb-6 p-3 bg-black/40 border border-white/10 rounded-lg text-left">
+              <span className="block text-[10px] font-mono-tech uppercase tracking-wider text-emerald-200/60 mb-2">
+                Submitted Screenshot Preview:
+              </span>
+              <div className="max-h-48 overflow-hidden rounded border border-white/10 flex items-center justify-center bg-black/60">
+                <img
+                  src={screenshotPreview || activeTeam?.payment_proof?.screenshot_url}
+                  alt="Payment Proof"
+                  className="max-h-48 w-auto object-contain"
+                />
+              </div>
+            </div>
           )}
 
-          <button
-            onClick={() => navigate('/student/dashboard', { replace: true })}
-            className="w-full inline-flex items-center justify-center gap-2 doom-btn-primary text-xs font-mono-tech tracking-widest uppercase py-3 px-4 cursor-pointer"
-          >
-            View My Gate Pass <ArrowRight size={14} />
-          </button>
-          {!whatsappLink && (
-            <p className="text-[11px] text-emerald-200/50 mt-3">
-              Redirecting to your dashboard automatically...
+          <div className="p-3.5 bg-emerald-950/40 border border-emerald-500/20 rounded-lg text-[11px] text-emerald-200/80 mb-6 text-left">
+            <p className="font-semibold text-emerald-300 mb-1 flex items-center gap-1.5">
+              <ShieldCheck size={14} /> What happens next?
             </p>
-          )}
+            <p>
+              Once our organizers confirm receipt of your ₹500 transfer against the UTR, your digital pass with QR gate access will unlock on your dashboard, and confirmation will be sent to both members via email.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate('/student/dashboard', { replace: true })}
+              className="w-full inline-flex items-center justify-center gap-2 doom-btn-primary text-xs font-mono-tech tracking-widest uppercase py-3 px-4 cursor-pointer"
+            >
+              <span>Go to My Dashboard</span>
+              <ArrowRight size={14} />
+            </button>
+
+            <button
+              onClick={() => setStep('UPI_PAYMENT')}
+              className="w-full text-xs text-emerald-200/60 hover:text-amber-200 py-1.5 transition cursor-pointer"
+            >
+              Need to upload a different screenshot? Click here
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  // STEP 2: RAZORPAY TEST CHECKOUT FALLBACK (when keys are not yet configured)
-  if (step === 'GATEWAY' && paymentOrder) {
+  // =========================================================================
+  // STEP 2: UPI PAYMENT & SCREENSHOT UPLOAD SCREEN
+  // =========================================================================
+  if (step === 'UPI_PAYMENT' && activeTeam) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] rounded-full bg-emerald-500/12 blur-[120px]" />
-
-        <div className="max-w-md w-full doom-card p-8 rounded-xl relative z-10 animate-fade-in-up">
-          <div className="flex items-center justify-between pb-4 border-b border-emerald-500/20 mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center">
-                <CreditCard size={20} />
+      <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
+          {/* Header */}
+          <div className="doom-card p-6 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-mono-tech font-bold text-[#d4b46a] bg-[#0b1510] px-2.5 py-1 border border-[#d4b46a]/35 tracking-wider">
+                  {regId}
+                </span>
+                <span className="text-[11px] font-mono-tech text-emerald-400 uppercase tracking-widest">
+                  Step 2 of 2 • UPI Payment
+                </span>
               </div>
+              <h1 className="font-poster text-xl sm:text-2xl text-[#eef2ee] tracking-tight mt-1.5">
+                {activeTeam.team_name}
+              </h1>
+              <p className="text-xs text-[#8b9b90] flex items-center gap-1.5 mt-0.5">
+                <Building2 size={13} className="text-emerald-400" />
+                <span>{activeTeam.college_name}</span>
+              </p>
+            </div>
+
+            <div className="flex items-center sm:flex-col sm:items-end justify-between border-t sm:border-t-0 pt-3 sm:pt-0 border-white/10">
+              <span className="text-[10px] font-mono-tech uppercase tracking-wider text-[#8b9b90]">
+                Registration Fee
+              </span>
+              <span className="font-display text-2xl font-black text-arcane-gold">
+                ₹{activeTeam.fee_amount || 500}
+              </span>
+            </div>
+          </div>
+
+          {/* Rejection notice if previously rejected */}
+          {activeTeam.payment_status === 'REJECTED' && (
+            <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-4 rounded-xl text-xs flex items-start gap-3">
+              <AlertCircle size={18} className="shrink-0 text-rose-400 mt-0.5" />
               <div>
-                <h2 className="font-display text-sm font-bold tracking-wider text-emerald-50 uppercase">
-                  Razorpay Checkout
-                </h2>
-                <p className="text-[11px] text-amber-200/75 font-mono-tech uppercase">
-                  Test Mode ({paymentOrder.environment})
+                <p className="font-bold text-rose-100 uppercase tracking-wider text-[11px] mb-1">
+                  Previous Payment Proof Rejected
+                </p>
+                <p className="text-rose-200/80">
+                  {activeTeam.payment_proof?.rejection_reason ||
+                    'Your previous payment proof could not be verified. Please check the transaction details and upload a clear screenshot.'}
                 </p>
               </div>
             </div>
-            <ShieldCheck size={20} className="text-emerald-400" />
-          </div>
+          )}
 
           {error && (
-            <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3 rounded-lg text-xs flex items-center gap-2 mb-4">
+            <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3.5 rounded-xl text-xs flex items-center gap-2.5">
               <AlertCircle size={16} className="shrink-0 text-rose-400" />
               <span>{error}</span>
             </div>
           )}
 
-          <div className="doom-panel p-4 rounded-lg space-y-2.5 text-xs mb-6">
-            <div className="flex justify-between">
-              <span className="text-emerald-200/60">Event:</span>
-              <span className="font-semibold text-emerald-50">Build Ops</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-emerald-200/60">Team:</span>
-              <span className="font-semibold text-emerald-50">{paymentOrder.team?.team_name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-emerald-200/60">Registration ID:</span>
-              <span className="font-mono-tech text-amber-200">{paymentOrder.team?.registration_id}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-emerald-200/60">Order ID:</span>
-              <span className="font-mono-tech text-emerald-200/80">{paymentOrder.order_id}</span>
-            </div>
-            <div className="laser-divider my-2 opacity-60" />
-            <div className="flex justify-between items-center pt-1">
-              <span className="font-semibold text-emerald-100 uppercase tracking-wider text-[11px]">Total Payable:</span>
-              <span className="font-display text-xl font-black text-arcane-gold">₹{paymentOrder.amount}</span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleCompletePayment}
-            disabled={loading}
-            className="w-full doom-btn-primary py-3 px-4 rounded-lg text-xs font-display tracking-[0.15em] uppercase disabled:opacity-50 cursor-pointer"
-          >
-            {loading ? 'Processing Payment...' : `Pay ₹${paymentOrder.amount} Now`}
-          </button>
-
-          <button
-            onClick={() => navigate('/student/dashboard')}
-            disabled={loading}
-            className="w-full mt-3 text-xs text-emerald-200/60 hover:text-amber-200 py-1.5 cursor-pointer transition"
-          >
-            Pay Later from Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // If user already registered a pending team earlier, let them jump right to Confirm & Pay
-  if (existingPendingTeam) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
-        <div className="max-w-lg w-full doom-card p-8 rounded-xl animate-fade-in-up">
-          <p className="font-imperial text-[10px] tracking-[0.26em] text-amber-200/80 uppercase">
-            Pending Registration
-          </p>
-          <h2 className="font-display text-lg font-bold tracking-wider text-buildops uppercase mt-1 mb-1">
-            Complete Team Payment
-          </h2>
-          <p className="text-xs text-emerald-200/70 mb-5">
-            Team <strong className="text-emerald-100">{existingPendingTeam.team_name}</strong>{' '}
-            (<span className="font-mono-tech text-amber-200">{existingPendingTeam.registration_id}</span>) is saved. Complete payment to unlock your E-Ticket.
-          </p>
-
-          {error && (
-            <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3 rounded-lg text-xs flex items-center gap-2 mb-4">
-              <AlertCircle size={16} className="shrink-0 text-rose-400" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="space-y-2.5 mb-6">
-            {existingPendingTeam.members.map((m) => (
-              <div key={m.id} className="p-3.5 rounded-lg doom-panel text-xs flex justify-between items-center">
-                <div>
-                  <p className="font-semibold text-emerald-50">{m.full_name}</p>
-                  <p className="text-emerald-200/65 font-mono-tech text-[11px] mt-0.5">{m.email} • {m.mobile_number}</p>
+          {/* Two-Column Grid: Left QR & Instructions / Right Upload Box */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left: UPI QR Code & Instructions */}
+            <div className="lg:col-span-6 doom-card p-6 sm:p-7 rounded-xl flex flex-col justify-between space-y-6">
+              <div>
+                <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+                  <div className="flex items-center gap-2">
+                    <Smartphone size={16} className="text-emerald-400" />
+                    <h3 className="font-mono-tech text-xs font-bold uppercase tracking-widest text-[#eef2ee]">
+                      Scan UPI QR Code
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-mono-tech uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/30 rounded">
+                    Instant Pay
+                  </span>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 rounded uppercase">
-                  {m.member_role}
-                </span>
-              </div>
-            ))}
-          </div>
 
-          <button
-            onClick={handleResumePayment}
-            disabled={loading}
-            className="w-full doom-btn-primary py-3 px-4 rounded-lg text-xs font-display tracking-[0.14em] uppercase disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <CreditCard size={16} />
-            {loading ? 'Opening Razorpay...' : `Confirm & Pay ₹${existingPendingTeam.fee_amount || 500}`}
-          </button>
+                {/* QR Code Container */}
+                <div className="text-center mb-5">
+                  <div className="inline-block p-3.5 bg-white rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.18)] border border-emerald-400/40">
+                    <img
+                      src={`/api/payments/upi-qr/?reg_id=${regId}`}
+                      alt="Build Ops UPI QR"
+                      className="w-48 h-48 sm:w-52 sm:h-52 object-contain"
+                    />
+                  </div>
+                  <p className="font-mono-tech text-[11px] text-[#8b9b90] mt-2.5">
+                    Scan with Google Pay, PhonePe, Paytm, or any UPI app
+                  </p>
+                </div>
+
+                {/* UPI Details Box */}
+                <div className="doom-panel p-4 rounded-lg space-y-2.5 text-xs border border-white/10">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#8b9b90]">Payee UPI ID:</span>
+                    <div className="flex items-center gap-1.5 font-mono-tech font-bold text-[#eef2ee]">
+                      <span>{upiDetails.upi_id}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(upiDetails.upi_id, 'upi')}
+                        className="text-[#8b9b90] hover:text-white p-1 transition cursor-pointer"
+                        title="Copy UPI ID"
+                      >
+                        {copiedUpi ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#8b9b90]">Payee Name:</span>
+                    <span className="font-semibold text-[#eef2ee]">{upiDetails.payee_name}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#8b9b90]">Payment Remarks/Note:</span>
+                    <div className="flex items-center gap-1.5 font-mono-tech text-amber-200 font-bold">
+                      <span>{paymentNote}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(paymentNote, 'note')}
+                        className="text-[#8b9b90] hover:text-white p-1 transition cursor-pointer"
+                        title="Copy Note"
+                      >
+                        {copiedNote ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Direct UPI Mobile Link */}
+              <div className="pt-2">
+                <a
+                  href={upiDeepLink}
+                  className="w-full inline-flex items-center justify-center gap-2 doom-btn-primary font-mono-tech text-xs uppercase tracking-wider py-3 px-4 rounded-lg"
+                >
+                  <Smartphone size={14} />
+                  <span>Pay via Installed UPI App</span>
+                  <ExternalLink size={13} />
+                </a>
+              </div>
+            </div>
+
+            {/* Right: Screenshot Upload Form */}
+            <div className="lg:col-span-6 doom-card p-6 sm:p-7 rounded-xl flex flex-col justify-between">
+              <div>
+                <div className="pb-4 border-b border-white/10 mb-5">
+                  <div className="flex items-center gap-2">
+                    <Upload size={16} className="text-emerald-400" />
+                    <h3 className="font-mono-tech text-xs font-bold uppercase tracking-widest text-[#eef2ee]">
+                      Upload Payment Screenshot
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-[#8b9b90] mt-1">
+                    Upload the screenshot of your successful transaction to verify registration.
+                  </p>
+                </div>
+
+                <form onSubmit={handleSubmitProof} className="space-y-4">
+                  {/* File Upload Drop Area */}
+                  <div>
+                    <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-2">
+                      Screenshot Image (PNG, JPG, WebP) *
+                    </label>
+
+                    {screenshotPreview ? (
+                      <div className="relative border border-emerald-400/40 rounded-xl p-3 bg-black/50 text-center">
+                        <img
+                          src={screenshotPreview}
+                          alt="Screenshot Preview"
+                          className="max-h-56 mx-auto object-contain rounded mb-3"
+                        />
+                        <div className="flex items-center justify-between text-xs text-[#8b9b90] px-2 border-t border-white/10 pt-2">
+                          <span className="truncate max-w-[200px]">{screenshotFile?.name}</span>
+                          <label
+                            htmlFor="screenshot-upload"
+                            className="text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer underline text-[11px]"
+                          >
+                            Change image
+                          </label>
+                        </div>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="screenshot-upload"
+                        className="border-2 border-dashed border-white/20 hover:border-emerald-400/60 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition bg-black/30 hover:bg-black/50 group"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-400/30 text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <ImageIcon size={22} />
+                        </div>
+                        <span className="font-display text-xs font-semibold text-[#eef2ee] group-hover:text-emerald-300 transition-colors">
+                          Click to select payment screenshot
+                        </span>
+                        <span className="font-mono-tech text-[10px] text-[#8b9b90]">
+                          PNG, JPG, JPEG, WebP up to 8MB
+                        </span>
+                      </label>
+                    )}
+
+                    <input
+                      id="screenshot-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {/* Transaction ID / UTR Input */}
+                  <div>
+                    <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
+                      Transaction / UTR Number (Recommended)
+                    </label>
+                    <input
+                      type="text"
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      placeholder="e.g. 432109876543 (12-digit UTR)"
+                      className="w-full px-3.5 py-2.5 text-xs font-mono-tech doom-input"
+                    />
+                    <p className="text-[10px] text-[#5a685e] mt-1 font-mono-tech">
+                      Enter the 12-digit reference number printed on your GPay / PhonePe / Paytm receipt.
+                    </p>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={loading || !screenshotFile}
+                      className="w-full doom-btn-primary py-3 px-4 font-mono-tech text-xs uppercase tracking-[0.18em] gap-2 disabled:opacity-50 cursor-pointer flex items-center justify-center rounded-lg"
+                    >
+                      {loading ? (
+                        <>
+                          <RefreshCw size={14} className="animate-spin" />
+                          <span>Uploading &amp; Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Submit Payment Proof</span>
+                          <ArrowRight size={14} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Pay Later link */}
+              <div className="pt-4 border-t border-white/10 text-center mt-6">
+                <button
+                  type="button"
+                  onClick={() => navigate('/student/dashboard')}
+                  className="text-xs text-[#8b9b90] hover:text-[#eef2ee] transition cursor-pointer"
+                >
+                  Save progress and return to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
+  // =========================================================================
   // STEP 1: TEAM REGISTRATION FORM
+  // =========================================================================
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8 relative">
       <div className="max-w-2xl mx-auto doom-card p-6 sm:p-8 rounded-xl animate-fade-in-up">
@@ -498,120 +661,103 @@ export const RegisterTeam = () => {
             <h1 className="font-display text-lg sm:text-xl font-bold tracking-wider text-buildops uppercase">
               Register Your Team
             </h1>
-            <p className="text-xs text-emerald-200/65 mt-0.5">
-              Verify leader info, add your partner, and confirm with ₹500 registration fee.
-            </p>
           </div>
         </div>
 
         {error && (
-          <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3 rounded-lg text-xs flex items-center gap-2 mb-5">
+          <div className="bg-rose-950/60 border border-rose-500/40 text-rose-200 p-3.5 rounded-lg text-xs flex items-center gap-2.5 mb-5">
             <AlertCircle size={16} className="shrink-0 text-rose-400" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleConfirmAndPay} className="space-y-6">
-          {/* Team Details */}
-          <div className="space-y-3">
-            <h3 className="text-[11px] font-display font-bold uppercase tracking-[0.18em] text-amber-200/90 border-l-2 border-emerald-400 pl-2.5">
-              Team Details
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
-                  Team Name
-                </label>
-                <input
-                  type="text"
-                  name="team_name"
-                  required
-                  value={formData.team_name}
-                  onChange={handleChange}
-                  placeholder="e.g. Neural Ninjas"
-                  className="w-full rounded-lg px-3 py-2.5 text-sm doom-input"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
-                  College Name
-                </label>
-                <input
-                  type="text"
-                  name="college_name"
-                  required
-                  value={formData.college_name}
-                  onChange={handleChange}
-                  placeholder="e.g. ASIET / College Name"
-                  className="w-full rounded-lg px-3 py-2.5 text-sm doom-input"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Participant 1 (Team Leader - Auto-populated from login) */}
-          <div className="space-y-3 pt-4 border-t border-emerald-500/15">
-            <h3 className="text-[11px] font-display font-bold uppercase tracking-[0.18em] text-emerald-300 border-l-2 border-amber-300/70 pl-2.5">
-              Team Leader (Auto-filled)
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/60 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={user?.full_name || ''}
-                  className="w-full rounded-lg px-3 py-2 text-sm doom-input"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/60 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  disabled
-                  value={user?.email || ''}
-                  className="w-full rounded-lg px-3 py-2 text-sm doom-input"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/60 mb-1">
-                  Mobile Number
-                </label>
-                {user?.mobile_number ? (
-                  <input
-                    type="tel"
-                    disabled
-                    value={user.mobile_number}
-                    className="w-full rounded-lg px-3 py-2 text-sm font-mono-tech doom-input"
-                  />
-                ) : (
-                  <input
-                    type="tel"
-                    name="leader_phone"
-                    required
-                    maxLength={10}
-                    value={formData.leader_phone}
-                    onChange={handleChange}
-                    placeholder="10-digit mobile"
-                    className="w-full rounded-lg px-3 py-2 text-sm font-mono-tech doom-input"
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Participant 2 (Team Member) */}
-          <div className="space-y-3 pt-4 border-t border-emerald-500/15">
-            <h3 className="text-[11px] font-display font-bold uppercase tracking-[0.18em] text-amber-200/90 border-l-2 border-emerald-400 pl-2.5">
-              Second Team Member
-            </h3>
+        <form onSubmit={handleRegisterTeam} className="space-y-6">
+          {/* Team Basic Info */}
+          <div className="space-y-4">
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
-                Full Name
+              <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
+                Team Name *
+              </label>
+              <input
+                type="text"
+                name="team_name"
+                required
+                value={formData.team_name}
+                onChange={handleChange}
+                placeholder="e.g. Arcane Coders"
+                className="w-full px-3.5 py-2.5 text-sm doom-input"
+              />
+            </div>
+
+            <div>
+              <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1.5">
+                College / Institution Name *
+              </label>
+              <input
+                type="text"
+                name="college_name"
+                required
+                value={formData.college_name}
+                onChange={handleChange}
+                placeholder="e.g. Adi Shankara Institute of Engineering and Technology"
+                className="w-full px-3.5 py-2.5 text-sm doom-input"
+              />
+            </div>
+          </div>
+
+          {/* Member 1: Team Leader */}
+          <div className="doom-panel p-5 rounded-xl border border-white/10 space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10">
+              <span className="font-mono-tech text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                Team Leader (Member 1)
+              </span>
+              <span className="text-[10px] font-mono-tech text-[#8b9b90] uppercase">
+                Current Account
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-[#8b9b90] block text-[10px] font-mono-tech uppercase">Full Name</span>
+                <span className="font-semibold text-[#eef2ee]">{user?.full_name}</span>
+              </div>
+              <div>
+                <span className="text-[#8b9b90] block text-[10px] font-mono-tech uppercase">Email Address</span>
+                <span className="font-mono-tech text-emerald-300">{user?.email}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1">
+                Leader Mobile Number (10 Digits) *
+              </label>
+              <input
+                type="tel"
+                name="leader_phone"
+                required
+                maxLength={10}
+                value={formData.leader_phone}
+                onChange={handleChange}
+                placeholder="9876543210"
+                className="w-full px-3 py-2 text-xs font-mono-tech doom-input"
+              />
+            </div>
+          </div>
+
+          {/* Member 2: Second Teammate */}
+          <div className="doom-panel p-5 rounded-xl border border-white/10 space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10">
+              <span className="font-mono-tech text-[11px] font-bold uppercase tracking-wider text-amber-200">
+                Team Member 2
+              </span>
+              <span className="text-[10px] font-mono-tech text-[#8b9b90] uppercase">
+                Required Teammate
+              </span>
+            </div>
+
+            <div>
+              <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1">
+                Full Name *
               </label>
               <input
                 type="text"
@@ -619,14 +765,15 @@ export const RegisterTeam = () => {
                 required
                 value={formData.member2_name}
                 onChange={handleChange}
-                placeholder="Second member's full name"
-                className="w-full rounded-lg px-3 py-2.5 text-sm doom-input"
+                placeholder="Teammate full name"
+                className="w-full px-3 py-2 text-xs doom-input"
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
-                  Email Address
+                <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1">
+                  Email Address *
                 </label>
                 <input
                   type="email"
@@ -635,12 +782,13 @@ export const RegisterTeam = () => {
                   value={formData.member2_email}
                   onChange={handleChange}
                   placeholder="member2@college.edu"
-                  className="w-full rounded-lg px-3 py-2.5 text-sm doom-input"
+                  className="w-full px-3 py-2 text-xs doom-input"
                 />
               </div>
+
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-200/80 mb-1">
-                  Mobile Number (10 digits)
+                <label className="block font-mono-tech text-[10px] uppercase tracking-[0.18em] text-[#8b9b90] mb-1">
+                  Mobile Number (10 Digits) *
                 </label>
                 <input
                   type="tel"
@@ -649,24 +797,45 @@ export const RegisterTeam = () => {
                   maxLength={10}
                   value={formData.member2_phone}
                   onChange={handleChange}
-                  placeholder="10-digit mobile number"
-                  className="w-full rounded-lg px-3 py-2.5 text-sm font-mono-tech doom-input"
+                  placeholder="9876543210"
+                  className="w-full px-3 py-2 text-xs font-mono-tech doom-input"
                 />
               </div>
             </div>
           </div>
 
-          <div className="pt-4">
-            <div className="laser-divider mb-5 opacity-60" />
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full doom-btn-primary py-3 px-4 rounded-lg text-xs font-display tracking-[0.16em] uppercase disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <CreditCard size={17} />
-              {loading ? 'Confirming & Opening Payment Gateway...' : 'Confirm & Pay ₹500'}
-            </button>
+          {/* Registration Fee Summary */}
+          <div className="p-4 bg-black/40 border border-white/10 rounded-xl flex items-center justify-between">
+            <div>
+              <span className="block font-mono-tech text-[10px] uppercase tracking-wider text-[#8b9b90]">
+                Registration Fee (Per Team)
+              </span>
+              <span className="text-xs text-emerald-200/80">
+                Covers both participants, gate pass &amp; universal amenities
+              </span>
+            </div>
+            <span className="font-display text-2xl font-black text-arcane-gold">
+              ₹500
+            </span>
           </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full doom-btn-primary py-3.5 px-4 font-mono-tech text-xs uppercase tracking-[0.18em] gap-2 disabled:opacity-50 cursor-pointer flex items-center justify-center rounded-lg"
+          >
+            {loading ? (
+              <>
+                <RefreshCw size={14} className="animate-spin" />
+                <span>Saving Team Registration...</span>
+              </>
+            ) : (
+              <>
+                <span>Register Team &amp; Proceed to UPI QR Payment</span>
+                <ArrowRight size={14} />
+              </>
+            )}
+          </button>
         </form>
       </div>
     </div>

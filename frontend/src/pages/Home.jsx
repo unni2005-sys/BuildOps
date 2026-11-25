@@ -21,7 +21,7 @@ const RULES_ITEMS = [
   {
     id: '03',
     title: 'Single Registration Fee of ₹500 Per Team',
-    detail: 'One confirmed ₹500 Razorpay payment covers both team members, venue access, power, Wi-Fi, and event meals.',
+    detail: 'One verified ₹500 UPI registration payment covers both team members, venue access, power, Wi-Fi, and event meals.',
   },
   {
     id: '04',

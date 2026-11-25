@@ -39,14 +39,12 @@ services:
         sync: false
       - key: DEFAULT_FROM_EMAIL
         value: "Build Ops <noreply@buildops.co.in>"
-      - key: RAZORPAY_KEY_ID
-        sync: false
-      - key: RAZORPAY_KEY_SECRET
-        sync: false
-      - key: RAZORPAY_WEBHOOK_SECRET
-        sync: false
-      - key: RAZORPAY_ENV
-        value: TEST
+      - key: UPI_ID
+        value: "9497290648@upi"
+      - key: UPI_PAYEE_NAME
+        value: "Build Ops ASIET"
+      - key: UPI_PHONE_NUMBER
+        value: "9497290648"
       - key: EVENT_NAME
         value: "Build Ops"
       - key: EVENT_DATE

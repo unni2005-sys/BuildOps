@@ -20,6 +20,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
     fee_amount = serializers.SerializerMethodField()
     event_venue = serializers.SerializerMethodField()
     whatsapp_group_link = serializers.SerializerMethodField()
+    payment_proof = serializers.SerializerMethodField()
 
     class Meta:
         model = Team
@@ -40,6 +41,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             'fee_amount',
             'event_venue',
             'whatsapp_group_link',
+            'payment_proof',
         )
 
     def get_ticket_id(self, obj):
@@ -76,6 +78,26 @@ class TeamDetailSerializer(serializers.ModelSerializer):
         if obj.payment_status == 'SUCCESS' and settings.WHATSAPP_GROUP_LINK:
             return settings.WHATSAPP_GROUP_LINK
         return None
+
+    def get_payment_proof(self, obj):
+        latest = obj.payments.order_by('-created_at').first()
+        if not latest:
+            return None
+        request = self.context.get('request')
+        screenshot_url = None
+        if latest.screenshot:
+            screenshot_url = request.build_absolute_uri(latest.screenshot.url) if request else latest.screenshot.url
+        return {
+            'id': latest.id,
+            'order_id': latest.order_id,
+            'payment_reference': latest.payment_reference,
+            'amount': float(latest.amount),
+            'payment_status': latest.payment_status,
+            'screenshot_url': screenshot_url,
+            'rejection_reason': latest.rejection_reason,
+            'payment_timestamp': latest.payment_timestamp,
+            'created_at': latest.created_at,
+        }
 
 
 class TeamCreateSerializer(serializers.Serializer):

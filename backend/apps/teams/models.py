@@ -13,8 +13,10 @@ def generate_registration_id():
 class Team(models.Model):
     PAYMENT_STATUS_CHOICES = (
         ('PENDING', 'Pending'),
+        ('VERIFICATION_PENDING', 'Verification Pending'),
         ('SUCCESS', 'Success'),
         ('FAILED', 'Failed'),
+        ('REJECTED', 'Rejected'),
     )
 
     REGISTRATION_STATUS_CHOICES = (
@@ -42,7 +44,7 @@ class Team(models.Model):
         related_name='led_teams'
     )
     payment_status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=PAYMENT_STATUS_CHOICES,
         default='PENDING',
         db_index=True

@@ -157,6 +157,16 @@ export const StudentDashboard = () => {
                 <CheckCircle2 size={13} className="text-emerald-400" />
                 <span>Confirmed</span>
               </span>
+            ) : team.payment_status === 'VERIFICATION_PENDING' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/40 text-amber-300 font-mono-tech text-[11px] tracking-wider uppercase">
+                <Clock size={13} className="text-amber-400" />
+                <span>Verification Pending</span>
+              </span>
+            ) : team.payment_status === 'REJECTED' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-950/40 border border-rose-500/40 text-rose-300 font-mono-tech text-[11px] tracking-wider uppercase">
+                <AlertCircle size={13} className="text-rose-400" />
+                <span>Proof Rejected</span>
+              </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0b1510] border border-[#d4b46a]/40 text-[#d4b46a] font-mono-tech text-[11px] tracking-wider uppercase">
                 <Clock size={13} />
@@ -212,6 +222,10 @@ export const StudentDashboard = () => {
                 className={`inline-flex items-center gap-1.5 font-mono-tech text-xs font-bold px-3 py-1.5 border ${
                   team.payment_status === 'SUCCESS'
                     ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40'
+                    : team.payment_status === 'VERIFICATION_PENDING'
+                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/40'
+                    : team.payment_status === 'REJECTED'
+                    ? 'bg-rose-950/40 text-rose-300 border-rose-500/40'
                     : 'bg-[#0b1510] text-[#d4b46a] border-[#d4b46a]/40'
                 }`}
               >
@@ -219,6 +233,16 @@ export const StudentDashboard = () => {
                   <>
                     <CheckCircle2 size={14} className="text-emerald-400" />
                     <span>PAID • ₹{team.fee_amount || 500}</span>
+                  </>
+                ) : team.payment_status === 'VERIFICATION_PENDING' ? (
+                  <>
+                    <Clock size={14} className="text-amber-400" />
+                    <span>UNDER REVIEW • ₹{team.fee_amount || 500}</span>
+                  </>
+                ) : team.payment_status === 'REJECTED' ? (
+                  <>
+                    <AlertCircle size={14} className="text-rose-400" />
+                    <span>REJECTED • ₹{team.fee_amount || 500}</span>
                   </>
                 ) : (
                   <>
@@ -231,14 +255,80 @@ export const StudentDashboard = () => {
               {team.payment_status !== 'SUCCESS' && (
                 <button
                   onClick={() => navigate('/student/register-team')}
-                  className="mt-2 inline-flex items-center gap-2 doom-btn-primary font-mono-tech text-xs uppercase tracking-wider px-4 py-2 cursor-pointer"
+                  className={`mt-2 inline-flex items-center gap-2 font-mono-tech text-xs uppercase tracking-wider px-4 py-2 cursor-pointer ${
+                    team.payment_status === 'VERIFICATION_PENDING'
+                      ? 'doom-btn-secondary'
+                      : 'doom-btn-primary'
+                  }`}
                 >
                   <CreditCard size={14} />
-                  <span>Pay ₹{team.fee_amount || 500}</span>
+                  <span>
+                    {team.payment_status === 'VERIFICATION_PENDING'
+                      ? 'View Payment Proof'
+                      : team.payment_status === 'REJECTED'
+                      ? 'Re-upload Proof'
+                      : `Pay ₹${team.fee_amount || 500} via UPI QR`}
+                  </span>
                 </button>
               )}
             </div>
           </div>
+
+          {/* Payment Proof Status Banner */}
+          {team.payment_status === 'VERIFICATION_PENDING' && (
+            <div className="mt-5 p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-start gap-3">
+                <Clock size={18} className="text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-amber-200 uppercase tracking-wider text-[11px]">
+                    Payment Verification In Progress
+                  </p>
+                  <p className="text-emerald-200/70 mt-0.5">
+                    Your UPI payment proof has been submitted. Our event team is cross-checking the UTR reference. Once confirmed, your official gate pass and WhatsApp group link will activate.
+                  </p>
+                  {team.payment_proof?.payment_reference && (
+                    <p className="font-mono-tech text-[11px] text-amber-300 mt-1">
+                      UTR / Reference: {team.payment_proof.payment_reference}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {team.payment_proof?.screenshot_url && (
+                <a
+                  href={team.payment_proof.screenshot_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 px-3 py-1.5 doom-btn-secondary text-[11px] font-mono-tech uppercase tracking-wider inline-flex items-center gap-1.5"
+                >
+                  <span>View Screenshot</span>
+                  <ExternalLink size={12} />
+                </a>
+              )}
+            </div>
+          )}
+
+          {team.payment_status === 'REJECTED' && (
+            <div className="mt-5 p-4 rounded-xl bg-rose-950/40 border border-rose-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-start gap-3">
+                <AlertCircle size={18} className="text-rose-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-rose-200 uppercase tracking-wider text-[11px]">
+                    Payment Proof Rejected
+                  </p>
+                  <p className="text-rose-200/80 mt-0.5">
+                    {team.payment_proof?.rejection_reason || 'Your payment proof could not be verified. Please re-upload a clear screenshot showing the successful transaction.'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/student/register-team')}
+                className="shrink-0 px-3 py-1.5 doom-btn-primary text-[11px] font-mono-tech uppercase tracking-wider inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Re-upload Proof</span>
+                <ArrowRight size={12} />
+              </button>
+            </div>
+          )}
 
           {/* Team Members Section */}
           <div className="pt-6">

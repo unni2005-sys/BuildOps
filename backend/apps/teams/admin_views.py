@@ -56,9 +56,10 @@ class AdminDashboardStatsView(APIView):
         
         successful_payments = Payment.objects.filter(payment_status='SUCCESS').count()
         pending_payments = Team.objects.filter(payment_status='PENDING').exclude(registration_status='CANCELLED').count()
+        verification_pending = Team.objects.filter(payment_status='VERIFICATION_PENDING').exclude(registration_status='CANCELLED').count()
 
         revenue_result = Payment.objects.filter(payment_status='SUCCESS').aggregate(total=Sum('amount'))
-        total_revenue = float(revenue_result['total'] or 0)
+        total_revenue = float(revenue_result['total'] or (successful_payments * int(getattr(settings, 'REGISTRATION_FEE_INR', 500))))
 
         arrived_teams = Team.objects.filter(attendance_status='ARRIVED').count()
         not_arrived_teams = Team.objects.filter(payment_status='SUCCESS', attendance_status='NOT_ARRIVED').count()
@@ -68,6 +69,7 @@ class AdminDashboardStatsView(APIView):
             'total_participants': total_participants,
             'successful_payments': successful_payments,
             'pending_payments': pending_payments,
+            'verification_pending': verification_pending,
             'total_revenue': total_revenue,
             'arrived_teams': arrived_teams,
             'not_arrived_teams': not_arrived_teams,

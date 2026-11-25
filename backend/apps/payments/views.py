@@ -1,233 +1,175 @@
-import json
 import logging
+from django.http import HttpResponse
+from django.conf import settings
+from django.db.models import Q
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.conf import settings
-from django.db.models import Q
 from apps.accounts.permissions import IsAdminUserRole
 from apps.teams.models import Team, TeamMember
+from apps.teams.serializers import TeamDetailSerializer
 from apps.payments.models import Payment
 from apps.payments.serializers import PaymentSerializer
 from apps.payments.services import (
-    RazorpayAuthError,
-    RazorpayGatewayError,
-    is_razorpay_configured,
-    is_razorpay_live,
-    create_razorpay_order,
-    verify_and_confirm_razorpay_payment,
-    verify_payment_with_gateway,
-    verify_razorpay_webhook_signature,
-    simulate_sandbox_payment,
+    get_upi_details,
+    generate_upi_qr_code_png,
+    record_payment_proof,
+    approve_payment,
+    reject_payment,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def _user_can_access_team(user, team):
-    if not user or not user.is_authenticated:
-        return False
-    if user.role == 'ADMIN' or user.is_staff or user.is_superuser:
-        return True
-    if team.team_leader_id == user.id:
-        return True
-    return team.members.filter(Q(user=user) | Q(email=user.email.lower())).exists()
+def _get_user_team(user):
+    member = TeamMember.objects.filter(
+        Q(user=user) | Q(email=user.email.lower())
+    ).exclude(team__registration_status='CANCELLED').select_related('team').first()
+
+    if member:
+        return member.team
+    return Team.objects.filter(team_leader=user).exclude(registration_status='CANCELLED').first()
 
 
-class CreateOrderView(APIView):
+class UPIDetailsView(APIView):
     """
-    Creates a Razorpay payment order for the student's pending team.
-    """
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request):
-        user = request.user
-        member = TeamMember.objects.filter(
-            Q(user=user) | Q(email=user.email.lower())
-        ).exclude(team__registration_status='CANCELLED').select_related('team').first()
-
-        if not member:
-            team = Team.objects.filter(team_leader=user).exclude(registration_status='CANCELLED').first()
-        else:
-            team = member.team
-
-        if not team:
-            return Response({'error': 'You do not have any registered team.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if team.payment_status == 'SUCCESS':
-            return Response({'error': 'Team has already completed payment.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        leader = team.members.filter(member_role='LEADER').first() or team.members.first()
-
-        try:
-            payment = create_razorpay_order(team)
-            configured = is_razorpay_configured()
-            return Response({
-                'gateway': 'RAZORPAY',
-                'order_id': payment.order_id,
-                'key_id': settings.RAZORPAY_KEY_ID if configured else '',
-                'amount': float(payment.amount),
-                'amount_paise': int(float(payment.amount) * 100),
-                'currency': payment.currency,
-                'environment': settings.RAZORPAY_ENV,
-                'is_mock': not configured,
-                'prefill': {
-                    'name': leader.full_name if leader else user.full_name,
-                    'email': leader.email if leader else user.email,
-                    'contact': leader.mobile_number if leader else getattr(user, 'mobile_number', ''),
-                },
-                'team': {
-                    'id': team.id,
-                    'registration_id': team.registration_id,
-                    'team_name': team.team_name,
-                },
-            }, status=status.HTTP_201_CREATED)
-        except RazorpayAuthError as e:
-            return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-        except RazorpayGatewayError as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except ValueError as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class VerifyRazorpayPaymentView(APIView):
-    """
-    Verifies Razorpay Checkout callback signature and confirms actual capture via Razorpay API.
+    Returns configured UPI payment details, amount, payee name, and dynamic deep-link URI.
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request):
-        razorpay_order_id = request.data.get('razorpay_order_id', '').strip()
-        razorpay_payment_id = request.data.get('razorpay_payment_id', '').strip()
-        razorpay_signature = request.data.get('razorpay_signature', '').strip()
-
-        if not (razorpay_order_id and razorpay_payment_id and razorpay_signature):
-            return Response(
-                {'error': 'Missing Razorpay verification fields (order_id, payment_id, signature).'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        payment_obj = Payment.objects.select_related('team').filter(order_id=razorpay_order_id).first()
-        if not payment_obj:
-            return Response({'error': 'Payment order not found.'}, status=status.HTTP_404_NOT_FOUND)
-        if not _user_can_access_team(request.user, payment_obj.team):
-            return Response({'error': 'You are not authorized to verify this order.'}, status=status.HTTP_403_FORBIDDEN)
-
-        success, message, payment = verify_and_confirm_razorpay_payment(
-            razorpay_order_id, razorpay_payment_id, razorpay_signature
-        )
-        if not payment:
-            return Response({'error': message}, status=status.HTTP_404_NOT_FOUND)
-
+    def get(self, request):
+        team = _get_user_team(request.user)
+        details = get_upi_details(team)
         return Response({
-            'success': success,
-            'message': message,
-            'payment': PaymentSerializer(payment).data,
-            'team_status': payment.team.registration_status,
-            'whatsapp_group_link': settings.WHATSAPP_GROUP_LINK if (success and settings.WHATSAPP_GROUP_LINK) else None,
-        }, status=status.HTTP_200_OK if success else status.HTTP_400_BAD_REQUEST)
+            'success': True,
+            **details,
+            'team': {
+                'id': team.id if team else None,
+                'registration_id': team.registration_id if team else None,
+                'team_name': team.team_name if team else None,
+                'payment_status': team.payment_status if team else None,
+            } if team else None,
+        })
 
 
-class VerifyPaymentView(APIView):
+class UPIQRCodeView(APIView):
     """
-    Verifies order status directly against Razorpay server-side API.
-    """
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self, request, order_id):
-        payment_obj = Payment.objects.select_related('team').filter(order_id=order_id).first()
-        if not payment_obj:
-            return Response({'error': 'Payment order not found.'}, status=status.HTTP_404_NOT_FOUND)
-        if not _user_can_access_team(request.user, payment_obj.team):
-            return Response({'error': 'You are not authorized to access this order.'}, status=status.HTTP_403_FORBIDDEN)
-
-        success, message, payment = verify_payment_with_gateway(order_id)
-        if not payment:
-            return Response({'error': message}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response({
-            'success': success,
-            'message': message,
-            'payment': PaymentSerializer(payment).data,
-            'team_status': payment.team.registration_status,
-            'whatsapp_group_link': settings.WHATSAPP_GROUP_LINK if (success and settings.WHATSAPP_GROUP_LINK) else None,
-        }, status=status.HTTP_200_OK if success else status.HTTP_400_BAD_REQUEST)
-
-
-class SimulatePaymentView(APIView):
-    """
-    Allows simulating a successful payment ONLY when Razorpay is not in LIVE mode.
-    """
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request):
-        if is_razorpay_live():
-            return Response(
-                {'error': 'Payment simulation is disabled in LIVE mode.'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        order_id = request.data.get('order_id')
-        if not order_id:
-            return Response({'error': 'order_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        payment_obj = Payment.objects.select_related('team').filter(order_id=order_id).first()
-        if not payment_obj:
-            return Response({'error': 'Payment order not found.'}, status=status.HTTP_404_NOT_FOUND)
-        if not _user_can_access_team(request.user, payment_obj.team):
-            return Response({'error': 'You are not authorized to access this order.'}, status=status.HTTP_403_FORBIDDEN)
-
-        success, message = simulate_sandbox_payment(order_id)
-        if not success:
-            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            payment = Payment.objects.get(order_id=order_id)
-            return Response({
-                'success': True,
-                'message': message,
-                'payment': PaymentSerializer(payment).data,
-                'team_status': payment.team.registration_status,
-                'whatsapp_group_link': settings.WHATSAPP_GROUP_LINK or None,
-            }, status=status.HTTP_200_OK)
-        except Payment.DoesNotExist:
-            return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
-class RazorpayWebhookView(APIView):
-    """
-    Receives Razorpay server-to-server payment confirmation webhooks.
-    Verifies X-Razorpay-Signature and idempotently confirms team registration.
+    Returns a dynamically generated PNG QR code image for the team's UPI payment URI.
     """
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request):
-        signature = request.headers.get('X-Razorpay-Signature') or request.headers.get('x-razorpay-signature')
-        raw_body = request.body
+    def get(self, request):
+        reg_id = request.query_params.get('reg_id', '').strip()
+        team = None
+        if reg_id:
+            team = Team.objects.filter(registration_id=reg_id).first()
+        elif request.user and request.user.is_authenticated:
+            team = _get_user_team(request.user)
 
-        # Enforce webhook signature verification whenever secret is configured
-        if settings.RAZORPAY_WEBHOOK_SECRET:
-            if not verify_razorpay_webhook_signature(raw_body, signature):
-                logger.warning("Rejected Razorpay webhook due to invalid signature")
-                return Response({'error': 'Invalid webhook signature'}, status=status.HTTP_400_BAD_REQUEST)
+        png_bytes = generate_upi_qr_code_png(team)
+        return HttpResponse(png_bytes, content_type='image/png')
+
+
+class SubmitPaymentProofView(APIView):
+    """
+    Accepts student's uploaded payment confirmation screenshot and transaction/UTR number.
+    Marks team payment_status as VERIFICATION_PENDING.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        team = _get_user_team(request.user)
+        if not team:
+            return Response(
+                {'error': 'You do not have any registered team.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if team.payment_status == 'SUCCESS':
+            return Response(
+                {'error': 'This team has already completed payment and is confirmed.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        screenshot = request.FILES.get('screenshot')
+        if not screenshot:
+            return Response(
+                {'error': 'Please upload a screenshot of your completed UPI transaction.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate file size (max 8MB)
+        if screenshot.size > 8 * 1024 * 1024:
+            return Response(
+                {'error': 'File size exceeds 8MB. Please upload a smaller image.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        transaction_id = request.data.get('transaction_id', '').strip()
+        if not transaction_id:
+            transaction_id = request.data.get('payment_reference', '').strip()
 
         try:
-            payload = json.loads(raw_body.decode('utf-8'))
-        except Exception:
-            return Response({'error': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
+            payment = record_payment_proof(team, screenshot, transaction_id=transaction_id)
+            return Response({
+                'success': True,
+                'message': 'Payment proof submitted successfully! Verification is pending.',
+                'payment': PaymentSerializer(payment, context={'request': request}).data,
+                'team': TeamDetailSerializer(team, context={'request': request}).data,
+            }, status=status.HTTP_201_CREATED)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.exception("Error saving payment proof")
+            return Response(
+                {'error': f'Failed to upload payment proof: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-        event = payload.get('event')
-        payment_entity = payload.get('payload', {}).get('payment', {}).get('entity', {})
-        order_entity = payload.get('payload', {}).get('order', {}).get('entity', {})
 
-        order_id = payment_entity.get('order_id') or order_entity.get('id')
-        if not order_id:
-            return Response({'status': 'ignored', 'reason': 'No order_id in payload'}, status=status.HTTP_200_OK)
+class AdminApprovePaymentView(APIView):
+    """
+    Admin endpoint to approve a team's payment proof.
+    Marks payment and team SUCCESS/CONFIRMED, and dispatches gate pass tickets + WhatsApp link.
+    """
+    permission_classes = (IsAdminUserRole,)
 
-        if event in ('payment.captured', 'order.paid'):
-            verify_payment_with_gateway(order_id)
+    def post(self, request, team_id):
+        try:
+            team = Team.objects.get(pk=team_id)
+        except Team.DoesNotExist:
+            return Response({'error': 'Team not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response({'status': 'received'}, status=status.HTTP_200_OK)
+        payment = approve_payment(team, admin_user=request.user)
+        return Response({
+            'success': True,
+            'message': f"Payment for team '{team.team_name}' approved successfully! Tickets and WhatsApp link dispatched.",
+            'payment': PaymentSerializer(payment, context={'request': request}).data,
+            'team': TeamDetailSerializer(team, context={'request': request}).data,
+        }, status=status.HTTP_200_OK)
+
+
+class AdminRejectPaymentView(APIView):
+    """
+    Admin endpoint to reject a team's payment proof with an optional reason.
+    Allows the student to re-upload.
+    """
+    permission_classes = (IsAdminUserRole,)
+
+    def post(self, request, team_id):
+        try:
+            team = Team.objects.get(pk=team_id)
+        except Team.DoesNotExist:
+            return Response({'error': 'Team not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        reason = request.data.get('reason', '').strip()
+        payment = reject_payment(team, reason=reason)
+        return Response({
+            'success': True,
+            'message': f"Payment for team '{team.team_name}' marked as rejected.",
+            'payment': PaymentSerializer(payment, context={'request': request}).data,
+            'team': TeamDetailSerializer(team, context={'request': request}).data,
+        }, status=status.HTTP_200_OK)
 
 
 class AdminPaymentListView(APIView):
@@ -253,5 +195,5 @@ class AdminPaymentListView(APIView):
                 Q(team__registration_id__icontains=q)
             )
 
-        serializer = PaymentSerializer(queryset, many=True)
+        serializer = PaymentSerializer(queryset, many=True, context={'request': request})
         return Response({'count': queryset.count(), 'payments': serializer.data})

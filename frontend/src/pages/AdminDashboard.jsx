@@ -20,7 +20,9 @@ import {
   Trash2,
   AlertTriangle,
   UserCheck,
-  UserX
+  UserX,
+  Image as ImageIcon,
+  ExternalLink
 } from 'lucide-react';
 
 export const AdminDashboard = () => {
@@ -43,6 +45,48 @@ export const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [proofReviewTeam, setProofReviewTeam] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [proofActionLoading, setProofActionLoading] = useState(false);
+
+  const handleApprovePayment = async (teamId) => {
+    setProofActionLoading(true);
+    try {
+      const res = await api.post(`/payments/admin/approve/${teamId}/`);
+      setActionMsg(res.data.message || 'Payment approved! Digital tickets & WhatsApp group link sent.');
+      setTimeout(() => setActionMsg(''), 5000);
+      setProofReviewTeam(null);
+      setSelectedTeam(null);
+      await Promise.all([fetchTeams(), fetchStats(), fetchPayments()]);
+    } catch (err) {
+      console.error(err);
+      setActionMsg(err.response?.data?.error || 'Failed to approve payment.');
+      setTimeout(() => setActionMsg(''), 5000);
+    } finally {
+      setProofActionLoading(false);
+    }
+  };
+
+  const handleRejectPayment = async (teamId) => {
+    setProofActionLoading(true);
+    try {
+      const res = await api.post(`/payments/admin/reject/${teamId}/`, {
+        reason: rejectionReason.trim(),
+      });
+      setActionMsg(res.data.message || 'Payment proof rejected.');
+      setTimeout(() => setActionMsg(''), 5000);
+      setProofReviewTeam(null);
+      setSelectedTeam(null);
+      setRejectionReason('');
+      await Promise.all([fetchTeams(), fetchStats(), fetchPayments()]);
+    } catch (err) {
+      console.error(err);
+      setActionMsg(err.response?.data?.error || 'Failed to reject payment.');
+      setTimeout(() => setActionMsg(''), 5000);
+    } finally {
+      setProofActionLoading(false);
+    }
+  };
   const [actionMsg, setActionMsg] = useState('');
 
   const fetchStats = async () => {
@@ -265,7 +309,7 @@ export const AdminDashboard = () => {
         {/* TAB 1: OVERVIEW & METRICS */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
               <div className="doom-card p-4 rounded-xl">
                 <p className="text-[10px] font-display font-semibold text-emerald-200/60 uppercase tracking-wider">Total Teams</p>
                 <p className="text-2xl font-display font-black text-emerald-50 mt-1">{stats?.total_teams ?? 0}</p>
@@ -281,9 +325,17 @@ export const AdminDashboard = () => {
                 <p className="text-2xl font-display font-black text-emerald-glow mt-1">{stats?.successful_payments ?? 0}</p>
               </div>
 
+              <div
+                onClick={() => { setPaymentFilter('VERIFICATION_PENDING'); setActiveTab('teams'); }}
+                className="doom-card p-4 rounded-xl border border-amber-500/40 bg-amber-950/20 cursor-pointer hover:border-amber-400 transition"
+              >
+                <p className="text-[10px] font-display font-semibold text-amber-300 uppercase tracking-wider">Verify Proofs</p>
+                <p className="text-2xl font-display font-black text-amber-200 mt-1">{stats?.verification_pending ?? 0}</p>
+              </div>
+
               <div className="doom-card p-4 rounded-xl">
-                <p className="text-[10px] font-display font-semibold text-amber-300 uppercase tracking-wider">Pending Pay</p>
-                <p className="text-2xl font-display font-black text-amber-200 mt-1">{stats?.pending_payments ?? 0}</p>
+                <p className="text-[10px] font-display font-semibold text-amber-300/80 uppercase tracking-wider">Pending Pay</p>
+                <p className="text-2xl font-display font-black text-amber-200/80 mt-1">{stats?.pending_payments ?? 0}</p>
               </div>
 
               <div className="doom-card p-4 rounded-xl">
@@ -429,9 +481,10 @@ export const AdminDashboard = () => {
                   className="rounded-lg px-2.5 py-2 text-xs doom-input"
                 >
                   <option value="">All Payments</option>
-                  <option value="SUCCESS">Success</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="FAILED">Failed</option>
+                  <option value="VERIFICATION_PENDING">Verification Pending</option>
+                  <option value="SUCCESS">Confirmed / Paid</option>
+                  <option value="PENDING">Pending Payment</option>
+                  <option value="REJECTED">Proof Rejected</option>
                 </select>
 
                 <select
@@ -478,9 +531,13 @@ export const AdminDashboard = () => {
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                           t.payment_status === 'SUCCESS'
                             ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/35'
-                            : 'bg-amber-500/15 text-amber-200 border-amber-400/35'
+                            : t.payment_status === 'VERIFICATION_PENDING'
+                            ? 'bg-amber-500/20 text-amber-200 border-amber-400/40 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                            : t.payment_status === 'REJECTED'
+                            ? 'bg-rose-950/40 text-rose-300 border-rose-500/40'
+                            : 'bg-white/5 text-emerald-200/50 border-white/10'
                         }`}>
-                          {t.payment_status}
+                          {t.payment_status === 'VERIFICATION_PENDING' ? 'VERIFY PROOF' : t.payment_status}
                         </span>
                       </td>
                       <td className="py-3 px-3">
@@ -493,6 +550,16 @@ export const AdminDashboard = () => {
                         </span>
                       </td>
                       <td className="py-3 px-3 text-right space-x-1.5 whitespace-nowrap">
+                        {t.payment_proof?.screenshot_url && (
+                          <button
+                            onClick={() => { setProofReviewTeam(t); setRejectionReason(''); }}
+                            className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40 rounded text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer transition"
+                            title="Review uploaded UPI screenshot"
+                          >
+                            <ImageIcon size={12} />
+                            <span>Proof</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => setSelectedTeam(t)}
                           className="px-2.5 py-1 doom-btn-secondary rounded text-[11px] font-semibold cursor-pointer"
@@ -528,18 +595,19 @@ export const AdminDashboard = () => {
         {activeTab === 'payments' && (
           <div className="doom-card rounded-xl p-6 space-y-4">
             <h3 className="font-display text-xs font-bold uppercase tracking-widest text-amber-200">
-              Razorpay Transactions Log
+              UPI &amp; Payments Audit Log
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-emerald-500/20 bg-emerald-950/40 text-emerald-200/75 font-semibold uppercase text-[10px] tracking-wider">
-                    <th className="py-2.5 px-3">Order ID</th>
+                    <th className="py-2.5 px-3">Order / Submission ID</th>
                     <th className="py-2.5 px-3">Team Name</th>
                     <th className="py-2.5 px-3">Reg ID</th>
                     <th className="py-2.5 px-3">Amount</th>
                     <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3">Payment Reference</th>
+                    <th className="py-2.5 px-3">UTR / Reference</th>
+                    <th className="py-2.5 px-3">Screenshot Proof</th>
                     <th className="py-2.5 px-3">Date</th>
                   </tr>
                 </thead>
@@ -554,18 +622,38 @@ export const AdminDashboard = () => {
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                           p.payment_status === 'SUCCESS'
                             ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/35'
-                            : 'bg-amber-500/15 text-amber-200 border-amber-400/35'
+                            : p.payment_status === 'VERIFICATION_PENDING'
+                            ? 'bg-amber-500/20 text-amber-200 border-amber-400/40'
+                            : p.payment_status === 'REJECTED'
+                            ? 'bg-rose-950/40 text-rose-300 border-rose-500/40'
+                            : 'bg-white/5 text-emerald-200/50 border-white/10'
                         }`}>
-                          {p.payment_status}
+                          {p.payment_status === 'VERIFICATION_PENDING' ? 'VERIFY PROOF' : p.payment_status}
                         </span>
                       </td>
-                      <td className="py-3 px-3 font-mono-tech text-emerald-200/60 text-[11px]">{p.payment_reference || 'N/A'}</td>
+                      <td className="py-3 px-3 font-mono-tech text-emerald-200/80 text-[11px]">{p.payment_reference || 'N/A'}</td>
+                      <td className="py-3 px-3">
+                        {p.screenshot_url ? (
+                          <a
+                            href={p.screenshot_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 underline font-semibold"
+                          >
+                            <ImageIcon size={12} />
+                            <span>View Proof</span>
+                            <ExternalLink size={10} />
+                          </a>
+                        ) : (
+                          <span className="text-emerald-200/40 text-[11px]">—</span>
+                        )}
+                      </td>
                       <td className="py-3 px-3 text-emerald-200/60 text-[11px]">{new Date(p.created_at).toLocaleString()}</td>
                     </tr>
                   ))}
                   {payments.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-emerald-200/45">
+                      <td colSpan={8} className="py-8 text-center text-emerald-200/45">
                         No payment records found.
                       </td>
                     </tr>
@@ -633,7 +721,7 @@ export const AdminDashboard = () => {
                   </div>
                   <h4 className="text-sm font-bold text-emerald-50 mb-1">Payments Audit Report</h4>
                   <p className="text-[11px] text-emerald-200/65">
-                    All Razorpay order IDs, gateway reference codes, timestamps, and amounts.
+                    All UPI submission IDs, UTR references, screenshots, timestamps, and amounts.
                   </p>
                 </div>
                 <span className="inline-flex items-center gap-1.5 text-xs text-amber-200 group-hover:text-emerald-300 font-semibold mt-4 transition">
@@ -884,6 +972,59 @@ export const AdminDashboard = () => {
                   </div>
                 </div>
 
+                {selectedTeam.payment_proof?.screenshot_url && (
+                  <div className="doom-panel p-3 rounded-lg space-y-2 border border-emerald-500/30">
+                    <div className="flex items-center justify-between">
+                      <span className="font-display font-bold text-emerald-200/90 text-[10px] uppercase tracking-widest">
+                        UPI Payment Proof:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setProofReviewTeam(selectedTeam)}
+                        className="text-[11px] text-amber-300 hover:text-amber-200 inline-flex items-center gap-1 font-semibold cursor-pointer"
+                      >
+                        <ImageIcon size={12} />
+                        <span>Inspect Full Proof</span>
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={selectedTeam.payment_proof.screenshot_url}
+                        alt="Proof thumbnail"
+                        className="w-14 h-14 object-cover rounded border border-emerald-500/30 bg-black cursor-pointer"
+                        onClick={() => setProofReviewTeam(selectedTeam)}
+                      />
+                      <div className="text-[11px]">
+                        <p className="font-mono-tech text-emerald-200">
+                          UTR: {selectedTeam.payment_proof.transaction_reference || 'Not provided'}
+                        </p>
+                        <p className="text-[10px] text-emerald-200/60 mt-0.5">
+                          Status: <span className="font-semibold text-amber-300">{selectedTeam.payment_status}</span>
+                        </p>
+                      </div>
+                    </div>
+                    {selectedTeam.payment_status !== 'SUCCESS' && (
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          type="button"
+                          disabled={proofActionLoading}
+                          onClick={() => handleApprovePayment(selectedTeam.id)}
+                          className="flex-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-bold text-[11px] rounded transition cursor-pointer"
+                        >
+                          {proofActionLoading ? 'Processing...' : 'Approve Payment'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setProofReviewTeam(selectedTeam)}
+                          className="px-3 py-1.5 bg-rose-950/60 text-rose-300 border border-rose-500/40 text-[11px] rounded hover:bg-rose-900/60 transition cursor-pointer"
+                        >
+                          Reject...
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {selectedTeam.ticket_id && (
                   <div className="pt-3 border-t border-emerald-500/20 space-y-3">
                     <div className="flex items-center gap-3 p-2.5 doom-panel rounded-lg">
@@ -924,6 +1065,141 @@ export const AdminDashboard = () => {
               >
                 Close
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Dedicated Payment Proof Review Modal */}
+        {proofReviewTeam && (
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+            <div className="doom-card rounded-2xl max-w-xl w-full p-6 max-h-[92vh] overflow-y-auto border border-emerald-500/40">
+              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3 mb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-display text-base font-bold text-emerald-100 uppercase tracking-wide">
+                      Review UPI Payment Proof
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                      proofReviewTeam.payment_status === 'SUCCESS'
+                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/35'
+                        : proofReviewTeam.payment_status === 'VERIFICATION_PENDING'
+                        ? 'bg-amber-500/20 text-amber-200 border-amber-400/40'
+                        : 'bg-rose-950/40 text-rose-300 border-rose-500/40'
+                    }`}>
+                      {proofReviewTeam.payment_status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-200/80 font-mono-tech mt-0.5">
+                    Team: <span className="text-emerald-300 font-semibold">{proofReviewTeam.team_name}</span> ({proofReviewTeam.registration_id}) • {proofReviewTeam.college_name}
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setProofReviewTeam(null); setRejectionReason(''); }}
+                  className="text-emerald-200/60 hover:text-amber-200 text-sm font-bold cursor-pointer p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                {/* Payment Metadata */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="doom-panel p-3 rounded-lg">
+                    <span className="text-emerald-200/55 block mb-0.5 uppercase text-[10px]">Submitted UTR / Transaction Ref:</span>
+                    <span className="font-mono-tech font-bold text-emerald-200 text-xs">
+                      {proofReviewTeam.payment_proof?.transaction_reference || 'Not provided'}
+                    </span>
+                  </div>
+                  <div className="doom-panel p-3 rounded-lg">
+                    <span className="text-emerald-200/55 block mb-0.5 uppercase text-[10px]">Required Registration Fee:</span>
+                    <span className="font-display font-black text-amber-300 text-sm">₹500.00</span>
+                  </div>
+                </div>
+
+                {proofReviewTeam.payment_proof?.rejection_reason && (
+                  <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-200">
+                    <p className="font-semibold text-[11px] uppercase tracking-wider text-rose-300 mb-1">Previous Rejection Note:</p>
+                    <p className="text-xs">{proofReviewTeam.payment_proof.rejection_reason}</p>
+                  </div>
+                )}
+
+                {/* Screenshot Image Preview */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-emerald-200/70 font-semibold uppercase text-[10px] tracking-wider">
+                      Transaction Screenshot
+                    </span>
+                    {proofReviewTeam.payment_proof?.screenshot_url && (
+                      <a
+                        href={proofReviewTeam.payment_proof.screenshot_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 font-semibold"
+                      >
+                        <span>Open full size</span>
+                        <ExternalLink size={11} />
+                      </a>
+                    )}
+                  </div>
+
+                  {proofReviewTeam.payment_proof?.screenshot_url ? (
+                    <div className="rounded-xl overflow-hidden border border-emerald-500/30 bg-black/60 flex items-center justify-center p-2 max-h-[380px]">
+                      <img
+                        src={proofReviewTeam.payment_proof.screenshot_url}
+                        alt={`Payment proof for ${proofReviewTeam.team_name}`}
+                        className="max-h-[360px] w-auto max-w-full object-contain rounded-lg shadow-lg cursor-pointer hover:opacity-95 transition"
+                        onClick={() => window.open(proofReviewTeam.payment_proof.screenshot_url, '_blank')}
+                        title="Click to view full resolution"
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center text-emerald-200/40 doom-panel rounded-xl">
+                      No screenshot uploaded for this team.
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Controls */}
+                <div className="pt-2 border-t border-emerald-500/20 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={proofActionLoading || proofReviewTeam.payment_status === 'SUCCESS'}
+                      onClick={() => handleApprovePayment(proofReviewTeam.id)}
+                      className="flex-1 py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-black font-display font-bold text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle2 size={15} />
+                      <span>{proofActionLoading ? 'Processing...' : proofReviewTeam.payment_status === 'SUCCESS' ? 'Already Approved' : 'Approve Payment & Issue Digital Pass'}</span>
+                    </button>
+                  </div>
+
+                  {/* Rejection Option */}
+                  {proofReviewTeam.payment_status !== 'SUCCESS' && (
+                    <div className="pt-2">
+                      <label className="block text-[11px] text-rose-300 font-semibold mb-1">
+                        Reject with Note (Optional explanation for student):
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={rejectionReason}
+                          onChange={(e) => setRejectionReason(e.target.value)}
+                          placeholder="e.g., UTR mismatch, blur screenshot, amount incorrect"
+                          className="flex-1 px-3 py-1.5 rounded-lg text-xs doom-input"
+                        />
+                        <button
+                          type="button"
+                          disabled={proofActionLoading}
+                          onClick={() => handleRejectPayment(proofReviewTeam.id)}
+                          className="px-4 py-1.5 bg-rose-950/70 hover:bg-rose-900/80 text-rose-200 border border-rose-500/40 rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50 transition"
+                        >
+                          Reject Proof
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}

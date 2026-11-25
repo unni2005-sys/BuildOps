@@ -108,16 +108,28 @@ class BuildathonSystemIntegrationTests(TestCase):
         # Switch back to Student 1
         self.client.force_authenticate(user=self.student1)
 
-        # 4. Create Payment Order
-        order_res = self.client.post('/api/payments/create-order/', {}, format='json')
-        self.assertEqual(order_res.status_code, status.HTTP_201_CREATED)
-        order_id = order_res.data['order_id']
-        self.assertEqual(order_res.data['gateway'], 'RAZORPAY')
-        self.assertIn('amount_paise', order_res.data)
+        # 4. Submit UPI Payment Proof
+        import io
+        from PIL import Image as PILImage
+        img_io = io.BytesIO()
+        img = PILImage.new('RGB', (100, 100), color='green')
+        img.save(img_io, format='JPEG')
+        img_io.seek(0)
+        img_io.name = 'payment_proof.jpg'
 
-        # 5. Simulate / Verify Payment
-        sim_res = self.client.post('/api/payments/simulate/', {'order_id': order_id}, format='json')
-        self.assertEqual(sim_res.status_code, status.HTTP_200_OK)
+        proof_res = self.client.post('/api/payments/submit-proof/', {
+            'screenshot': img_io,
+            'transaction_reference': 'UPI-REF-9988776655',
+        }, format='multipart')
+        self.assertIn(proof_res.status_code, [status.HTTP_200_OK, status.HTTP_201_CREATED])
+
+        team.refresh_from_db()
+        self.assertEqual(team.payment_status, 'VERIFICATION_PENDING')
+
+        # 5. Admin Approves Payment Proof
+        self.client.force_authenticate(user=self.admin)
+        approve_res = self.client.post(f'/api/payments/admin/approve/{team.id}/', {}, format='json')
+        self.assertEqual(approve_res.status_code, status.HTTP_200_OK)
 
         team.refresh_from_db()
         self.assertEqual(team.payment_status, 'SUCCESS')
@@ -130,6 +142,7 @@ class BuildathonSystemIntegrationTests(TestCase):
         self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, ticket.pdf_path)))
 
         # Student accesses ticket
+        self.client.force_authenticate(user=self.student1)
         my_ticket_res = self.client.get('/api/tickets/my-ticket/')
         self.assertEqual(my_ticket_res.status_code, status.HTTP_200_OK)
         self.assertEqual(my_ticket_res.data['qr_token'], ticket.qr_token)
